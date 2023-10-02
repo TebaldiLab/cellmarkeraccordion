@@ -309,7 +309,7 @@ accordion_cell_cycle<-function(data,
       data@meta.data[,name_score] = ""
       anno_dt_cell<-final_dt[order(-diff_score)][,head(.SD, 1),"cell"]
       if (allow_unknown == T){
-        anno_dt_cell[diff_score < 0, annotation_per_cell:= "allow_unknown"][diff_score > 0, annotation_per_cell := cell_type]
+        anno_dt_cell[diff_score < 0, annotation_per_cell:= "allow"][diff_score > 0, annotation_per_cell := cell_type]
 
       } else {
         anno_dt_cell[, annotation_per_cell := cell_type]
