@@ -96,16 +96,13 @@ accordion_plot<-function(data,
       ontology_celltype<-as.data.table(ontology_celltype)
       if("cluster" %in% resolution){
         top_celltypes<-merge(top_cell_type_dt,ontology_celltype,  by.x="accordion_per_cluster", by.y="cell_type")
-        cluster_column_name<-colnames(top_cell_type_dt)[1]
-
       } else if ("cell" %in% resolution){
         top_celltypes<-merge(top_cell_type_dt,ontology_celltype,  by.x="accordion_per_cell", by.y="cell_type")
       }
     } else{
       top_celltypes<-top_cell_type_dt
     }
-
-
+  cluster_column_name<-colnames(top_cell_type_dt)[1]
   info_to_plot_per_cluster<-paste0(info_to_plot, "_per_cluster")
   info_to_plot_per_cell<-paste0(info_to_plot, "_per_cell")
 
