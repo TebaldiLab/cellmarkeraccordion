@@ -63,7 +63,7 @@
 #'  either the metadata of the input Seurat object or in the input
 #'  \code{cluster_info} where the annotation will be stored. Per cluster and per
 #'  cell annotation results will be stored in the
-#'  \code{annotation_column}_per_cluster and \code{annotation_column}_per_cell
+#'  \code{annotation_name}_per_cluster and \code{annotation_name}_per_cell
 #'  columns respectively.
 #'  If \code{include_detailed_annotation_info} parameter is set to TRUE, the
 #'  detailed information the stored in a list named \code{annotation_name}.
@@ -352,8 +352,8 @@ accordion_custom_annotation<-function(data,
     anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster")]
     colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster")
 
-    name<-paste0(annotation_column,"_per_cluster")
-    name_score<-paste0(annotation_column,"_per_cluster_score")
+    name<-paste0(annotation_name,"_per_cluster")
+    name_score<-paste0(annotation_name,"_per_cluster_score")
 
     if(data_type == "seurat"){
       data@meta.data[,name] = ""
@@ -384,8 +384,8 @@ accordion_custom_annotation<-function(data,
 
   # annotation per cell
   if ("cell" %in% annotation_resolution){
-    name<-paste0(annotation_column,"_per_cell")
-    name_score<-paste0(annotation_column,"_per_cell_score")
+    name<-paste0(annotation_name,"_per_cell")
+    name_score<-paste0(annotation_name,"_per_cell_score")
 
     data@meta.data[,name] = ""
     data@meta.data[,name_score] = ""
@@ -428,7 +428,7 @@ accordion_custom_annotation<-function(data,
     if ("cluster" %in% annotation_resolution){
       dt_top_marker<-unique(merge.data.table(dt_score,anno_dt_cell_ptc, by=c("cell_type","cell")))
       anno_dt_cl_rank<-unique(anno_dt_cell_ptc[,-c("cell","diff_score")])[order(-quantile_score_cluster)][,head(.SD, n_top_celltypes),"seurat_clusters"][,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","ncell_tot_cluster","perc_celltype_cluster")]
-      name<-paste0(annotation_column,"_per_cluster")
+      name<-paste0(annotation_name,"_per_cluster")
       colnames(anno_dt_cl_rank)<-c("seurat_clusters",name,"celltype_impact_score", "ncell_tot_cluster","perc_celltype_cluster")
 
       if(data_type == "seurat"){
@@ -486,8 +486,8 @@ accordion_custom_annotation<-function(data,
       dt_top_ct_by_cell<-final_dt[order(-diff_score)][,head(.SD, n_top_celltypes),cell]
       dt_top_ct_per_cell<-as.data.table(dt_top_ct_by_cell)[,c("cell","cell_type","diff_score")]
 
-      name<-paste0(annotation_column,"_per_cell")
-      name_score<-paste0(annotation_column,"_per_cell_score")
+      name<-paste0(annotation_name,"_per_cell")
+      name_score<-paste0(annotation_name,"_per_cell_score")
 
       colnames(dt_top_ct_per_cell)<-c("cell",eval(name),eval(name_score))
 
@@ -511,8 +511,8 @@ accordion_custom_annotation<-function(data,
         #for each cell retrieves first N cell type and first N markers
         dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
 
-        name<-paste0(annotation_column,"_per_cell")
-        name_score<-paste0(annotation_column,"_per_cell_score")
+        name<-paste0(annotation_name,"_per_cell")
+        name_score<-paste0(annotation_name,"_per_cell_score")
 
         dt_top_marker_per_cell<-as.data.table(dt_top_marker_by_cell)[,c("cell","annotation_per_cell","diff_score","marker","marker_type","weight","specificity","score","quantile_score_marker")]
         colnames(dt_top_marker_per_cell)<-c("cell",eval(name),eval(name_score), "marker","marker_type","weight","specificity", "gene_impact_score_per_cell","gene_impact_score_per_celltype_cell")
