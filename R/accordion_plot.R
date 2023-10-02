@@ -52,6 +52,12 @@ accordion_plot<-function(data,
 
 
   bs<-22
+  # check group_markers_by input
+  if(!(resolution %in% c("cluster","cell"))){
+    stop("invalid resolution Please select \"cluster\" or \"cell\"")
+  } else{
+    resolution_slot <- paste0(resolution,"_resolution")
+  }
 
   # check di input data
   if(class(data) != "Seurat"){
@@ -71,13 +77,6 @@ accordion_plot<-function(data,
       top_cell_type_dt<-data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][["top_celltypes"]]
       top_marker_dt<-data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[top_markers]]
     }
-  }
-
-  # check group_markers_by input
-  if(!(resolution %in% c("cluster","cell"))){
-    stop("invalid resolution Please select \"cluster\" or \"cell\"")
-  } else{
-    resolution_slot <- paste0(resolution,"_resolution")
   }
 
   # check group_markers_by input
