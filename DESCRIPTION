@@ -1,12 +1,40 @@
 Package: cellmarkeraccordion
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Title: Annotation of normal and aberrant hematopoietic cell types in single-cell datasets
+Version: 0.9.0
+Authors@R: c(
+    person("Emma", "Busarello", email = "emma.busarello@unitn.it", role = c("aut", "cre")),
+    person("Toma", "Tebaldi", email = "toma.tebaldi@unitn.it", role = "aut"),
+	person("Fabio", "Lauria", email = "fabio.lauria88@gmail.com", role = "aut"))
+Description: cellmarkeraccordion is an R package designed to obtain a robust identification of 
+	normal and aberrant hematopoietic cell types in single-cell datasets and easy interpretation of 
+	the results. The cellmarkeraccordion package allows to automatically annotate normal and disease 
+	ritical cell populations based on the built-in Accordion gene marker database. It requires in 
+	input only the counts matrix (raw or normalized) or a Seurat object. In addition, by exploiting 
+	the built-in cell cycle labeling you can easily assign the cell cycle phase to each cell. 
+	The users can also customize the annotation by simply providing their own genes list as input, 
+	which can be associated with cell types or even to specific pathways or signatures of interest. 
+	Importantly, the Accordion implements novel options to explore annotation results by inspecting 
+	for each group of cells the top marker genes which mostly impacted the annotation, together with 
+	the top cell types and their relationship based on the cell ontology tree. 
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Depends:
+    R (>= 4.2.3)
+Imports:
+	scales (>= 1.2.1),
+	plyr (>= 1.8.8),
+	data.table (>= 1.14.8),
+	Seurat (>= 4.0.0),
+	ggplot2 (>= 3.0.0),
+	stringr (>= 1.5.0),
+	ontoProc (>= 1.20.0),
+	ontologyIndex (>= 2.10),
+	igraph (>= 1.4.2),
+	ontologyPlot (>= 1.6),
+	ggraph (>= 2.1.0),
+	cowplot(>= 1.1.1),
+	ggnewscale (>= 0.4.8),
+	purrr (>= 1.0.1),
+
