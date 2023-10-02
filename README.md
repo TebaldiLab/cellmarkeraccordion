@@ -22,13 +22,27 @@ library(cellmarkeraccordion)
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting the for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 To perform cell types identification and obtain detailed annotation information simply run:
 ```bash
-data<-accordion(data)
+data<-accordion(data, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
-# Annotate and inteprete single-cell populations with custom marker genes sets
-<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```bash accordion_custom ```.It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included.
+# Cell type or pathways identification with custom genes sets
+<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```.It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included.
 To perform custom annotation run:
 ```bash
-data<-accordion_custom(data, marker_table)
+data<-accordion_custom(data, marker_table, category_column= "cell_type", marker_column ="marker", marker_type_column = "marker_type", weight_column = "weight")
+```
+# Automatically identify and interpreting cell cycle state of single-cell populations
+<strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assing cell cycle state to cell populations. This function exploits the built-in collection of
+marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
+To perform cell cycle identification run: 
+```bash
+data<-accordion_cellcycle(data)
+```
+# Annotate and interprete aberrant single-cell populations with the built-in Cell Marker Accordion disease database
+<strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
+This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specific both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters.
+To identify for example "leukemia stem cell" in "acute myeloid leukemia" samples run: 
+```bash
+data<-accordion_disease(data, disease="acute myeloid leukemia", cell_types ="leukemia stem cell")
 ```
 
 
