@@ -18,8 +18,8 @@ library(cellmarkeraccordion)
 ```
 
 # Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
-*cellmarkeraccordion* allows to automatically identifies hematopoietic populations in single-cell dataset by exploiting the built-in collections of marker genes. 
-In addition, the package provides an easy interpretation of the results by reporting the for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the include_detailed_annotation_info and plot parameters). 
+<strong>cellmarkeraccordion</strong> allows to automatically identifies hematopoietic populations in single-cell dataset by exploiting the built-in collections of marker genes. 
+In addition, the package provides an easy interpretation of the results by reporting the for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot parameters*). 
 To perform cell types identification and obtain detailed annotation information simply run:
 ```bash
 data<-accordion(data)
