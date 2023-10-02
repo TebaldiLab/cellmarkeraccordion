@@ -64,21 +64,24 @@
 #'   clusters to be labeled as “unknown”. If it is set to TRUE, cells or
 #'   clusters with negative scores are assigned to the “unknown” category.
 #'   Default is TRUE.
-#' @param annotation_column Character string specifying the name of the column
+#' @param annotation_name Character string specifying the name of the column
 #'   in either the metadata of the input Seurat object or in the input
 #'   \code{cluster_info} where the annotation will be stored. Per cluster and
 #'   per cell annotation results will be stored in the
-#'   \code{annotation_column}_per_cluster and \code{annotation_column}_per_cell
-#'   columns respectively. Default is “accordion”.
+#'   \code{annotation_name}_per_cluster and \code{annotation_name}_per_cell
+#'   columns respectively.
+#'   If \code{include_detailed_annotation_info} parameter is set to TRUE, the
+#'   detailed information the stored in a list named \code{annotation_name}.
+#'   Default is “accordion”.
 #' @param include_detailed_annotation_info Logical value indicating whether to
 #'   store information on the top cell types and markers in the output. If TRUE,
-#'   a nested list named "accordion" is created. If \code{resolution_annotation}
+#'   a nested list named \code{annotation_name} is created. If \code{resolution_annotation}
 #'   is set to “cluster” and/or “cell, sublists named “cluster_resolution”
 #'   and/or “cell_resolution” are then added. Inside the sublist
 #'   “detailed_annotation_info” the \code{n_top_markers} markers, group by
 #'   \code{group_markers_by} and the \code{n_top_celltypes} cell types are then
 #'   included. If a Seurat object is provided as input the list is stored in the
-#'   misc slot of the object (object@misc@accordion). If the input is a count
+#'   misc slot of the object (object@misc@\code{annotation_name}). If the input is a count
 #'   matrix, the list is returned in the final output. Default is TRUE.
 #' @param group_markers_by Character string or character string vector
 #'   specifying the classification of marker genes. It possible to retrieve
@@ -106,7 +109,7 @@
 #' Seurat object with markers-based scaled data in the scale.data slot and cell
 #' types annotation results in the metadata. If
 #' \code{include_detailed_annotation_info} was set to TRUE, a list containing
-#' cell types and markers information is stored in the “misc@accordion” slot. If
+#' cell types and markers information is stored in the “misc@\code{annotation_name}” slot. If
 #' a count matrix was provided in input, the function returns a list containing
 #' the following elements:
 #' \itemize{
@@ -114,15 +117,15 @@
 #' }
 #' If \code{annotation_resolution} is set to “cell”:
 #' \itemize{
-#' \item{"cell_annotation:"}{data table containing cell types annotation results for each cell;}
+#' \item{"cell_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{annotation_resolution} is set to “cluster”:
 #' \itemize{
-#' \item{"cluster_annotation"}{data table containing cell types annotation results for each cell;}
+#' \item{"cluster_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{include_detailed_annotation_info} is set to TRUE:
 #' \itemize{
-#' \item{"accordion:"}{list containing detailed information of cell types annotation.}
+#' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
 #'
 #' @import scales
@@ -145,7 +148,7 @@ accordion_annotation<-function(data,
                     annotation_resolution = "cluster",
                     cluster_score_quantile_threshold = 0.75,
                     allow_unknown = TRUE,
-                    annotation_column = "accordion",
+                    annotation_name = "accordion",
                     include_detailed_annotation_info = TRUE,
                     group_markers_by = "celltype_cluster",
                     n_top_celltypes = 5,
@@ -448,8 +451,8 @@ accordion_annotation<-function(data,
     anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster")]
     colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster")
 
-    name<-paste0(annotation_column,"_per_cluster")
-    name_score<-paste0(annotation_column,"_per_cluster_score")
+    name<-paste0(annotation_name,"_per_cluster")
+    name_score<-paste0(annotation_name,"_per_cluster_score")
 
     if(data_type == "seurat"){
       data@meta.data[,name] = ""
@@ -480,8 +483,8 @@ accordion_annotation<-function(data,
 
   # annotation per cell
   if ("cell" %in% annotation_resolution){
-    name<-paste0(annotation_column,"_per_cell")
-    name_score<-paste0(annotation_column,"_per_cell_score")
+    name<-paste0(annotation_name,"_per_cell")
+    name_score<-paste0(annotation_name,"_per_cell_score")
 
     data@meta.data[,name] = ""
     data@meta.data[,name_score] = ""
@@ -525,7 +528,7 @@ accordion_annotation<-function(data,
     if ("cluster" %in% annotation_resolution){
       dt_top_marker<-unique(merge.data.table(dt_score,anno_dt_cell_ptc, by=c("cell_type","cell")))
       anno_dt_cl_rank<-unique(anno_dt_cell_ptc[,-c("cell","diff_score")])[order(-quantile_score_cluster)][,head(.SD, n_top_celltypes),"seurat_clusters"][,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","ncell_tot_cluster","perc_celltype_cluster")]
-      name<-paste0(annotation_column,"_per_cluster")
+      name<-paste0(annotation_name,"_per_cluster")
       colnames(anno_dt_cl_rank)<-c("seurat_clusters",name,"celltype_impact_score", "ncell_tot_cluster","perc_celltype_cluster")
 
       if(data_type == "seurat"){
@@ -572,9 +575,9 @@ accordion_annotation<-function(data,
       }
 
       if(data_type == "seurat"){
-        data@misc[["accordion"]]<-cluster_res_detailed_annotation_info
+        data@misc[[annotation_name]]<-cluster_res_detailed_annotation_info
       } else{
-        info_list[["accordion"]]<-cluster_res_detailed_annotation_info
+        info_list[[annotation_name]]<-cluster_res_detailed_annotation_info
         accordion_output<-append(accordion_output,info_list)
       }
     }
@@ -585,8 +588,8 @@ accordion_annotation<-function(data,
     dt_top_ct_by_cell<-final_dt[order(-diff_score)][,head(.SD, n_top_celltypes),cell]
     dt_top_ct_per_cell<-as.data.table(dt_top_ct_by_cell)[,c("cell","cell_type","diff_score")]
 
-    name<-paste0(annotation_column,"_per_cell")
-    name_score<-paste0(annotation_column,"_per_cell_score")
+    name<-paste0(annotation_name,"_per_cell")
+    name_score<-paste0(annotation_name,"_per_cell_score")
 
     colnames(dt_top_ct_per_cell)<-c("cell",eval(name),eval(name_score))
 
@@ -610,8 +613,8 @@ accordion_annotation<-function(data,
       #for each cell retrieves first N cell type and first N markers
       dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
 
-      name<-paste0(annotation_column,"_per_cell")
-      name_score<-paste0(annotation_column,"_per_cell_score")
+      name<-paste0(annotation_name,"_per_cell")
+      name_score<-paste0(annotation_name,"_per_cell_score")
 
       dt_top_marker_per_cell<-as.data.table(dt_top_marker_by_cell)[,c("cell","annotation_per_cell","diff_score","marker","marker_type","EC_score","specificity","score","quantile_score_marker")]
       colnames(dt_top_marker_per_cell)<-c("cell",eval(name),eval(name_score), "marker","marker_type","EC_score","specificity", "gene_impact_score_per_cell","gene_impact_score_per_celltype_cell")
@@ -619,14 +622,14 @@ accordion_annotation<-function(data,
       cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_per_cell)
       }
       if(data_type == "seurat"){
-        if(is_empty(data@misc[["accordion"]])){
-          data@misc[["accordion"]]<-cell_res_detailed_annotation_info
+        if(is_empty(data@misc[[annotation_name]])){
+          data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
         } else {
-          data@misc[["accordion"]]<-append(data@misc[["accordion"]], cell_res_detailed_annotation_info)
+          data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], cell_res_detailed_annotation_info)
         }
       } else{
-        if(is_empty(info_list[["accordion"]])){
-          info_list[["accordion"]]<-cell_res_detailed_annotation_info
+        if(is_empty(info_list[[annotation_name]])){
+          info_list[[annotation_name]]<-cell_res_detailed_annotation_info
         } else{
           info_list<-append(info_list,cell_res_detailed_annotation_info)
         }

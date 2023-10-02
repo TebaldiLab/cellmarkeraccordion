@@ -60,21 +60,24 @@
 #'  clusters to be labeled as “unknown”. If it is set to TRUE, cells or clusters
 #'  with negative scores are assigned to the “unknown” category. Default is
 #'  TRUE.
-#'@param annotation_column Character string specifying the name of the column in
+#'@param annotation_name Character string specifying the name of the column in
 #'  either the metadata of the input Seurat object or in the input
 #'  \code{cluster_info} where the annotation will be stored. Per cluster and per
 #'  cell annotation results will be stored in the
 #'  \code{annotation_column}_per_cluster and \code{annotation_column}_per_cell
-#'  columns respectively. Default is “accordion”.
+#'  columns respectively.
+#'  If \code{include_detailed_annotation_info} parameter is set to TRUE, the
+#'  detailed information the stored in a list named \code{annotation_name}.
+#'  Default is “accordion_custom”.
 #'@param include_detailed_annotation_info Logical value indicating whether to
 #'  store information on the top cell types and markers in the output. If TRUE,
-#'  a list named "accordion_custom" is created. If \code{resolution_annotation}
+#'  a list named \code{annotation_name} is created. If \code{resolution_annotation}
 #'  is set to “cluster” and/or “cell, sublists named “cluster_resolution” and/or
 #'  “cell_resolution” are then added. Inside the sublist
 #'  “detailed_annotation_info” the \code{n_top_markers} markers, group by
 #'  \code{group_markers_by} and the \code{n_top_celltypes} cell types are then
 #'  included. If a Seurat object is provided as input the list is stored in the
-#'  misc slot of the object (object@misc@accordion_custom). If the input is a
+#'  misc slot of the object (object@misc@\code{annotation_name}). If the input is a
 #'  count matrix, the list is returned in the final output. Default is TRUE.
 #'@param group_markers_by Character string or character string vector specifying
 #'  the classification of marker genes. It possible to retrieve
@@ -102,7 +105,7 @@
 #'  lollipop plots displaying the top \code{n_top_markers} group by
 #'  \code{group_markers_by} and  op \code{n_top_celltypes} for each
 #'  \code{annotation_resolution} together with the cell types hierarchies based
-#'  on the cell ontology structure are stored in the "accordion" list. Default
+#'  on the cell ontology structure are stored in the \code{annotation_name} list. Default
 #'  is TRUE.
 #'
 #'
@@ -112,24 +115,24 @@
 #' types annotation results in the metadata. If
 #' \code{include_detailed_annotation_info} and \code{plot} were set to TRUE, a
 #' list containing cell types and markers information, together with ggplot
-#' objects, is stored in the “misc@accordion_custom” slot. If a count matrix was
+#' objects, is stored in the “misc@\code{annotation_name}” slot. If a count matrix was
 #' provided in input, the function returns a list containing the following
 #' elements:
 #'
 #' \itemize{
-#' \item{"scaled_matrix"}{normalized and scaled expression matrix;}
+#' \item{"scaled_matrix":}{normalized and scaled expression matrix;}
 #' }
 #' If \code{annotation_resolution} is set to “cell”:
 #' \itemize{
-#' \item{"cell_annotation"}{data table containing cell types annotation results for each cell;}
+#' \item{"cell_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{annotation_resolution} is set to “cluster”:
 #' \itemize{
-#' \item{"cluster_annotation"}{data table containing cell types annotation results for each cell;}
+#' \item{"cluster_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{include_detailed_annotation_info} is set to TRUE:
 #' \itemize{
-#' \item{accordion_custom}{list containing detailed information of cell types annotation.}
+#' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
 #'
 #' @import scales
@@ -480,9 +483,9 @@ accordion_custom<-function(data,
       }
 
       if(data_type == "seurat"){
-        data@misc[["accordion_custom"]]<-cluster_res_detailed_annotation_info
+        data@misc[[annotation_name]]<-cluster_res_detailed_annotation_info
       } else{
-        info_list[["accordion_custom"]]<-cluster_res_detailed_annotation_info
+        info_list[[annotation_name]]<-cluster_res_detailed_annotation_info
         accordion_output<-append(accordion_output,info_list)
       }
     }
@@ -525,14 +528,14 @@ accordion_custom<-function(data,
       cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_per_cell)
       }
       if(data_type == "seurat"){
-        if(is_empty(data@misc[["accordion_custom"]])){
-          data@misc[["accordion_custom"]]<-cell_res_detailed_annotation_info
+        if(is_empty(data@misc[[annotation_name]])){
+          data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
         } else {
-          data@misc[["accordion_custom"]]<-append(data@misc[["accordion_custom"]], cell_res_detailed_annotation_info)
+          data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], cell_res_detailed_annotation_info)
         }
       } else{
-        if(is_empty(info_list[["accordion_custom"]])){
-          info_list[["accordion_custom"]]<-cell_res_detailed_annotation_info
+        if(is_empty(info_list[[annotation_name]])){
+          info_list[[annotation_name]]<-cell_res_detailed_annotation_info
         } else{
           info_list<-append(info_list,cell_res_detailed_annotation_info)
         }
@@ -541,9 +544,9 @@ accordion_custom<-function(data,
   }
   if( "cluster" %in% annotation_resolution & plot == T){
     if(data_type == "seurat"){
-      data<-accordion_plot(data, info_to_plot = "accordion_custom")
+      data<-accordion_plot(data, info_to_plot = annotation_name)
     } else{
-      accordion_output<-accordion_plot(accordion_output, info_to_plot = "accordion_custom")
+      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name)
     }
   }
   if(data_type == "seurat"){
