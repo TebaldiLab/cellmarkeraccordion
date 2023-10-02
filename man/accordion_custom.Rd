@@ -7,7 +7,7 @@ marker genes sets}
 \usage{
 accordion_custom(
   data,
-  marker_celltype_table,
+  marker_table,
   category_column = "cell_type",
   marker_column = "marker",
   marker_type_column = "marker_type",
@@ -34,7 +34,7 @@ matrix with genes on rows and cells on columns. If raw counts are provided,
 data are log-normalized exploiting the NormalizeData() function from the
 Seurat package.}
 
-\item{marker_celltype_table}{Data table or data frame containing cell type
+\item{marker_table}{Data table or data frame containing cell type
 markers. The table needs to have at least two columns, the
 \code{category_column},  which specifies cell types or categories, and the
 \code{marker_column}, which specifies the corresponding markers on each row.
@@ -42,22 +42,22 @@ Columns indicating the marker type (either positive or negative), and the
 marker weight can be optionally included.}
 
 \item{category_column}{String characters specifying the name of the
-\code{marker_celltype_table} column containing cell types or categories.
+\code{marker_table} column containing cell types or categories.
 Default is “cell_type”.}
 
 \item{marker_column}{String characters specifying the name of the
-\code{marker_celltype_table} column containing markers. Default is “marker”.}
+\code{marker_table} column containing markers. Default is “marker”.}
 
 \item{marker_type_column}{Optional string characters specifying the name of
-the \code{marker_celltype_table} column containing string characters
+the \code{marker_table} column containing string characters
 indicating the type of markers, either “positive” or “negative”. If no
-\code{marker_type_column} is found in the \code{marker_celltype_table} all
+\code{marker_type_column} is found in the \code{marker_table} all
 markers are considered “positive”. Default is “marker_type”.}
 
 \item{weight_column}{Optional string characters specifying the name of the
-\code{marker_celltype_table} column containing numeric value indicating the
+\code{marker_table} column containing numeric value indicating the
 weight for each marker. If no \code{weight_column} is found in the
-\code{marker_celltype_table} all markers are equally weighted as 1. Default
+\code{marker_table} all markers are equally weighted as 1. Default
 is “weight”.}
 
 \item{cluster_info}{in case \code{object} is a Seurat object,

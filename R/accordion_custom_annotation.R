@@ -11,26 +11,26 @@
 #'  matrix with genes on rows and cells on columns. If raw counts are provided,
 #'  data are log-normalized exploiting the NormalizeData() function from the
 #'  Seurat package.
-#'@param marker_celltype_table Data table or data frame containing cell type
+#'@param marker_table Data table or data frame containing cell type
 #'  markers. The table needs to have at least two columns, the
 #'  \code{category_column},  which specifies cell types or categories, and the
 #'  \code{marker_column}, which specifies the corresponding markers on each row.
 #'  Columns indicating the marker type (either positive or negative), and the
 #'  marker weight can be optionally included.
 #'@param category_column String characters specifying the name of the
-#'  \code{marker_celltype_table} column containing cell types or categories.
+#'  \code{marker_table} column containing cell types or categories.
 #'  Default is “cell_type”.
 #'@param marker_column String characters specifying the name of the
-#'  \code{marker_celltype_table} column containing markers. Default is “marker”.
+#'  \code{marker_table} column containing markers. Default is “marker”.
 #'@param marker_type_column Optional string characters specifying the name of
-#'  the \code{marker_celltype_table} column containing string characters
+#'  the \code{marker_table} column containing string characters
 #'  indicating the type of markers, either “positive” or “negative”. If no
-#'  \code{marker_type_column} is found in the \code{marker_celltype_table} all
+#'  \code{marker_type_column} is found in the \code{marker_table} all
 #'  markers are considered “positive”. Default is “marker_type”.
 #'@param weight_column  Optional string characters specifying the name of the
-#'  \code{marker_celltype_table} column containing numeric value indicating the
+#'  \code{marker_table} column containing numeric value indicating the
 #'  weight for each marker. If no \code{weight_column} is found in the
-#'  \code{marker_celltype_table} all markers are equally weighted as 1. Default
+#'  \code{marker_table} all markers are equally weighted as 1. Default
 #'  is “weight”.
 #'@param cluster_info in case \code{object} is a Seurat object,
 #'  \code{cluster_info} should be need to be a character string specifying the
@@ -130,7 +130,7 @@
 #' @import stringr
 #' @export
 accordion_custom_annotation<-function(data,
-                           marker_celltype_table,
+                           marker_table,
                            category_column = "cell_type",
                            marker_column = "marker",
                            marker_type_column = "marker_type",
@@ -252,19 +252,19 @@ accordion_custom_annotation<-function(data,
   }
 
   #check input tabel
-  if(nrow(marker_celltype_table) < 2){
+  if(nrow(marker_table) < 2){
     stop("Insufficient number of columns. The marker table must contains at least \"cell_type\"  and \"marker\" columns ")
   } else {
-    if(category_column %in% colnames(marker_celltype_table) & marker_column %in% colnames(marker_celltype_table)){
-      if(!marker_type_column %in% colnames(marker_celltype_table)){
-        marker_celltype_table[,marker_type:="positive"]
+    if(category_column %in% colnames(marker_table) & marker_column %in% colnames(marker_table)){
+      if(!marker_type_column %in% colnames(marker_table)){
+        marker_table[,marker_type:="positive"]
       }
-      if(!weight_column %in% colnames(marker_celltype_table)){
-        marker_celltype_table[,weight:=1]
+      if(!weight_column %in% colnames(marker_table)){
+        marker_table[,weight:=1]
       }
       col_vec<-c(category_column, marker_column, marker_type_column, weight_column)
-      marker_celltype_table<-marker_celltype_table[,..col_vec]
-      colnames(marker_celltype_table)<-c("cell_type","marker","marker_type","weight")
+      marker_table<-marker_table[,..col_vec]
+      colnames(marker_table)<-c("cell_type","marker","marker_type","weight")
     }
 
   }
@@ -277,33 +277,33 @@ accordion_custom_annotation<-function(data,
     }
   }
   # subselect genes only found in data
-  marker_celltype_table<-marker_celltype_table[marker %in% rownames(data)]
+  marker_table<-marker_table[marker %in% rownames(data)]
 
   #Evidence consistency score log-transformed
-  marker_celltype_table[,weight_scaled := log10(weight)+1]
+  marker_table[,weight_scaled := log10(weight)+1]
 
   #compute specificity for positive and negative markers
-  mark_spec<-ddply(marker_celltype_table,.(marker,marker_type),nrow)
+  mark_spec<-ddply(marker_table,.(marker,marker_type),nrow)
   colnames(mark_spec)<-c("marker","marker_type","specificity")
-  marker_celltype_table<-merge(marker_celltype_table,mark_spec,by=c("marker","marker_type"),all.x = TRUE)
+  marker_table<-merge(marker_table,mark_spec,by=c("marker","marker_type"),all.x = TRUE)
 
-  length_ct_pos<-uniqueN(marker_celltype_table[marker_type=="positive"]$cell_type)
-  length_ct_neg<-uniqueN(marker_celltype_table[marker_type=="negative"]$cell_type)
+  length_ct_pos<-uniqueN(marker_table[marker_type=="positive"]$cell_type)
+  length_ct_neg<-uniqueN(marker_table[marker_type=="negative"]$cell_type)
 
   #scale and log transforme specificity
-  marker_celltype_table<-marker_celltype_table[marker_type=="positive",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
+  marker_table<-marker_table[marker_type=="positive",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
   ][marker_type=="negative",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
   ][,c("cell_type","marker","marker_type","specificity","specificity_scaled","weight_scaled","weight")]
-  marker_celltype_table[,specificity_scaled:=log10(specificity_scaled)+1]
+  marker_table[,specificity_scaled:=log10(specificity_scaled)+1]
 
-  setkey(marker_celltype_table,marker,cell_type)
+  setkey(marker_table,marker,cell_type)
 
   # merge Z_scaled_dt and accordion table
-  marker_celltype_table[,combined_score := specificity_scaled * weight_scaled]
+  marker_table[,combined_score := specificity_scaled * weight_scaled]
 
 
   # scale data based on markers used for the annotation
-  data<-ScaleData(data, features = unique(marker_celltype_table$marker))
+  data<-ScaleData(data, features = unique(marker_table$marker))
   scale_data_mat<-data@assays[[assay]]@scale.data
 
   Zscaled_data<-setDT(as.data.frame(scale_data_mat))
@@ -314,7 +314,7 @@ accordion_custom_annotation<-function(data,
   colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
 
   # compute the score for each cell
-  dt_score<-merge.data.table(Zscaled_m_data,marker_celltype_table, by="marker",allow.cartesian = TRUE)
+  dt_score<-merge.data.table(Zscaled_m_data,marker_table, by="marker",allow.cartesian = TRUE)
   dt_score[,score := expr_scaled * combined_score]
   dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
   setkey(dt_score, cell_type, cell, marker_type)
