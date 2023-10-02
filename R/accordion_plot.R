@@ -58,7 +58,12 @@ accordion_plot<-function(data,
   } else{
     resolution_slot <- paste0(resolution,"_resolution")
   }
-
+  # check group_markers_by input
+  if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell"))){
+    stop("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\" or \"celltype_cell\"")
+  } else{
+    top_markers<-paste0("top_markers_per_",group_markers_by)
+  }
   # check di input data
   if(class(data) != "Seurat"){
     data_type <- "matrix"
@@ -77,13 +82,6 @@ accordion_plot<-function(data,
       top_cell_type_dt<-data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][["top_celltypes"]]
       top_marker_dt<-data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[top_markers]]
     }
-  }
-
-  # check group_markers_by input
-  if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell"))){
-    stop("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\" or \"celltype_cell\"")
-  } else{
-    top_markers<-paste0("top_markers_per_",group_markers_by)
   }
 
   marker_slot_plot<-paste0(top_markers,"_plot")
