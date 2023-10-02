@@ -343,7 +343,7 @@ accordion_plot<-function(data,
                 theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))+
                 scale_x_continuous(limits = c(0, round_any(max(top_celltypes_cl$impact_score)*1.25+2, 1, f = ceiling)))
               if(data_type == "seurat"){
-                data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]] <- como_plot
+                data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]] <- pl
               } else{
                 data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]]<-pl
 
