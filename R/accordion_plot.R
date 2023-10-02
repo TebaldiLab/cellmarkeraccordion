@@ -265,9 +265,8 @@ accordion_plot<-function(data,
 
         for (gr in group){
           #lolliplot with top N cell types per cluster
-          if(info_to_plot == "accordion"){
 
-            if("cluster" %in% resolution){
+           if("cluster" %in% resolution){
               top_celltypes_cl<-top_celltypes[get(cluster_column_name) == gr]
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == "celltype_impact_score"] <- "impact_score"
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == eval(info_to_plot_per_cluster)] <- "cell_type"
@@ -276,7 +275,7 @@ accordion_plot<-function(data,
             top_celltypes_cl<-top_celltypes_cl[order(impact_score)]
             top_celltypes_cl[,cell_type:=factor(cell_type,levels = unique(cell_type))]
 
-            if(length(top_celltypes_cl$cell_ID) > 1){
+            if(info_to_plot == "accordion" & length(top_celltypes_cl$cell_ID) > 1){
               onto_plot<-onto_plot2(cell_onto, top_celltypes_cl$cell_ID)
               onto_plot@nodes<-gsub("(.{10,}?)\\s", "\\1\n", onto_plot@nodes, perl = TRUE)
 
@@ -284,7 +283,6 @@ accordion_plot<-function(data,
               V(onto_igraph)$CL<- str_split_i(onto_plot@nodes, "CL:", i= -1)
               V(onto_igraph)[V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$cell_ID, "CL:", i= -1)]$color <- "#8B1A1A"
               V(onto_igraph)[!(V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$cell_ID, "CL:", i= -1))]$color <- "gray50"
-
 
                 pl <- ggplot(top_celltypes_cl, aes(impact_score, cell_type)) +
                   geom_vline(xintercept = 0, linetype = 2) +
@@ -316,14 +314,12 @@ accordion_plot<-function(data,
                   theme_graph()
 
                 como_plot<-plot_grid(pl, tree_plot, rel_widths = c(1, 2), nrow=1, scale = c(1, 1))
-
                 if(data_type == "seurat"){
                   data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]] <- como_plot
                 } else{
-                  data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]]<-pl
+                  data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]]<-como_plot
 
                 }
-
             } else {
               pl <- ggplot(top_celltypes_cl, aes(impact_score, cell_type)) +
                 geom_vline(xintercept = 0, linetype = 2) +
@@ -352,7 +348,6 @@ accordion_plot<-function(data,
                 data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]]<-pl
 
               }
-            }
             }
 
           }
