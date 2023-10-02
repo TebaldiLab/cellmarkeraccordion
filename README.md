@@ -18,7 +18,7 @@ library(cellmarkeraccordion)
 ```
 
 # Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
-<strong>cellmarkeraccordion</strong> allows to automatically identifies hematopoietic populations in single-cell dataset by running function ```bash accordion ```. 
+<strong>cellmarkeraccordion</strong> allows to automatically identifies hematopoietic populations in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting the for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 To perform cell types identification and obtain detailed annotation information simply run:
 ```bash
@@ -30,6 +30,8 @@ To perform custom annotation run:
 ```bash
 data<-accordion_custom(data, marker_table)
 ```
+
+
 
 
 
