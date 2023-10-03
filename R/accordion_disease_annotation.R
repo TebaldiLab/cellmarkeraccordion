@@ -285,8 +285,7 @@ accordion_disease_annotation<-function(data,
   }
 
   #load the Cell Marker Accordion database based on the disease selected
-  #load(file = "disease_accordion_marker.rda")
-  load(file = "disease_accordion_marker.rda")
+  data(disease_accordion_marker.rda)
 
   #check disease selected
   if(is.null(disease)){
@@ -358,9 +357,7 @@ accordion_disease_annotation<-function(data,
 
   if(disease_vs_healthy == T){   # compare the healthy and the disease cell types if compare is set to TRUE
     accordion_marker_disease[,cellID_healthy:= tstrsplit(cell_ID, "-", keep=2)]
-    #load(file = "accordion_marker.rda")
-    accordion_marker<-fread(file="C:/Users/emmab/Desktop/PhD/CellType_Annotation/Accordion_marker/results/Hema_Accordion_07_23.txt")
-
+    data(accordion_marker.rda)
     accordion_marker<-accordion_marker[species %in% input_species & cell_ID %in% unique(accordion_marker$cellID_healthy) & marker %in% rownames(data)]
     accordion_marker<-rbind(accordion_marker[,c("cell_type","celltype_species","cell_ID","marker","marker_type","EC_score","species")],accordion_marker_disease[,c("cell_type","celltype_species","cell_ID","marker","marker_type","EC_score","species")] )
 

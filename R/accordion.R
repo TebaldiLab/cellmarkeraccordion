@@ -280,7 +280,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
 }
 
   #load the Cell Marker Accordion database based on the condition selected
-  data("accordion_marker.rda")
+  data(accordion_marker)
 
   #select species
   #change name to the input species
