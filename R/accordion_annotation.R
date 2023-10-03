@@ -269,7 +269,7 @@ accordion_annotation<-function(data,
   }
 
   #load the Cell Marker Accordion database based on the condition selected
-  load(file = "accordion_marker.rda")
+  data(accordion_marker.rda)
 
   #select species
   #change name to the input species

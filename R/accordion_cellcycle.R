@@ -183,7 +183,7 @@ accordion_cell_cycle<-function(data,
     }
   }
 
-  load("cell_cycle_markers.rda")
+  data(cell_cycle_markers.rda)
 
   if(!(species %in% c("Human","Mouse"))){
     warning("Invalid species type")
