@@ -593,7 +593,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
           accordion_output<-append(accordion_output,info_list)
         }
       }
-    if ("cell" %in% annotation_resolution ){
+    if ("cell" %in% annotation_resolution){
 
       dt_top_ct_by_cell<-final_dt[order(-diff_score)][,head(.SD, n_top_celltypes),cell]
       dt_top_ct_per_cell<-as.data.table(dt_top_ct_by_cell)[,c("cell","cell_type","diff_score")]
@@ -641,8 +641,11 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
        } else{
          if(is_empty(info_list[[annotation_name]])){
            info_list[[annotation_name]]<-cell_res_detailed_annotation_info
+           accordion_output<-append(accordion_output,info_list)
+
          } else{
            info_list<-append(info_list,cell_res_detailed_annotation_info)
+           accordion_output<-append(accordion_output,info_list)
          }
 
      }
