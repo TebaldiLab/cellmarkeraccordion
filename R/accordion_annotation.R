@@ -582,8 +582,6 @@ accordion_annotation<-function(data,
         accordion_output<-append(accordion_output,info_list)
       }
     }
-
-  }
   if ("cell" %in% annotation_resolution ){
 
     dt_top_ct_by_cell<-final_dt[order(-diff_score)][,head(.SD, n_top_celltypes),cell]
@@ -635,6 +633,7 @@ accordion_annotation<-function(data,
           info_list<-append(info_list,cell_res_detailed_annotation_info)
         }
       }
+  }
   }
   if(data_type == "seurat"){
     return(data)

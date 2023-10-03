@@ -593,8 +593,6 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
           accordion_output<-append(accordion_output,info_list)
         }
       }
-
-    }
     if ("cell" %in% annotation_resolution ){
 
       dt_top_ct_by_cell<-final_dt[order(-diff_score)][,head(.SD, n_top_celltypes),cell]
@@ -649,6 +647,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
 
      }
     }
+  }
   if("cluster" %in% annotation_resolution & plot == T){
     if(data_type == "seurat"){
       data<-accordion_plot(data, info_to_plot = annotation_name)
