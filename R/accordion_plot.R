@@ -89,7 +89,7 @@ accordion_plot<-function(data,
 
 
     if(info_to_plot == "accordion"){
-      data(cell_onto.rda)
+      data(cell_onto)
       ontology_celltype<-as.data.frame(cell_onto[["name"]])
       colnames(ontology_celltype)<-"cell_type"
       ontology_celltype$cell_ID<-rownames(ontology_celltype)
