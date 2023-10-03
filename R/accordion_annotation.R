@@ -261,7 +261,7 @@ accordion_annotation<-function(data,
 
   #check input group_markers_by
   if("cell" %in% annotation_resolution & !("cluster" %in% annotation_resolution)){
-    if(!group_markers_by %in% c("celltype_cell","cell")){
+    if(!(group_markers_by %in% c("celltype_cell","cell"))){
       group_markers_by<-"celltype_cell"
     }
   }
