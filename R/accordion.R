@@ -147,6 +147,7 @@
 #' @export
 accordion<-function(data,
                     cluster_info = "seurat_clusters",
+                    assay = "RNA",
                     cell_types = NULL,
                     species = "Human",
                     evidence_consistency_score_threshold = NULL,
