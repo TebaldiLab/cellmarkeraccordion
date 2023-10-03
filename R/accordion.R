@@ -658,9 +658,9 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
   }
   if("cluster" %in% annotation_resolution & plot == T){
     if(data_type == "seurat"){
-      data<-accordion_plot(data, info_to_plot = annotation_name)
+      data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
     } else{
-      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name)
+      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
 
     }
   }
