@@ -21,8 +21,8 @@ All the functions of the <strong>cellmarkeraccordion</strong> accept as input ei
 As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
 Load the raw counts and create a Seurat object
 ```bash
-raw_counts<-load(file = "counts.rda")
-data <- CreateSeuratObject(counts = raw_counts, min.cells = 3, min.features = 200)
+load(file = "counts.rda")
+data <- CreateSeuratObject(counts = counts, min.cells = 3, min.features = 200)
 ```
 
 # Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
@@ -38,7 +38,7 @@ Or
 ```bash
 # Input: raw counts
 # Output: list with annotation results 
-output <- accordion(raw_counts, include_detailed_annotation_info = TRUE, plot = TRUE)
+output <- accordion(counts, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 # Cell type or pathways identification with custom genes sets
