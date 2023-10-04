@@ -329,6 +329,12 @@ accordion_disease_annotation<-function(data,
     }
   }
 
+  #check input group_markers_by
+  if("cell" %in% annotation_resolution & !("cluster" %in% annotation_resolution)){
+    if(!(group_markers_by %in% c("celltype_cell","cell"))){
+      group_markers_by<-"celltype_cell"
+    }
+  }
   #select species
   #change name to the input species
   if(!(species %in% c("Human","Mouse"))){
@@ -611,61 +617,63 @@ accordion_disease_annotation<-function(data,
         accordion_output<-append(accordion_output,info_list)
       }
     }
+    if ("cell" %in% annotation_resolution){
 
-  }
-  if ("cell" %in% annotation_resolution){
-
-    dt_top_ct_by_cell<-final_dt[order(-diff_score)][,head(.SD, n_top_celltypes),cell]
-    dt_top_ct_per_cell<-as.data.table(dt_top_ct_by_cell)[,c("cell","cell_type","diff_score")]
-
-    name<-paste0(annotation_name,"_per_cell")
-    name_score<-paste0(annotation_name,"_per_cell_score")
-
-    colnames(dt_top_ct_per_cell)<-c("cell",eval(name),eval(name_score))
-
-    cell_res_detailed_annotation_info<-list()
-    cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_celltypes"]] <- as.data.table(dt_top_ct_per_cell)
-
-    dt_top_marker<-unique(merge.data.table(dt_score,anno_dt_cell, by=c("cell_type","cell")))
-    dt_top <- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell")][,c("cell_type","marker","marker_type","quantile_score_marker","cell","score","EC_score","specificity","annotation_per_cell", "diff_score")])
-
-    if("cell" %in% group_markers_by){
-      #for each cell retrieves first N cell type and first N markers
-      dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),cell]
-
-      dt_top_marker_per_cell<-as.data.table(dt_top_marker_by_cell)[,c("cell","annotation_per_cell","diff_score","marker","marker_type","EC_score","specificity","score")]
-      colnames(dt_top_marker_per_cell)<-c("cell",eval(name),eval(name_score), "marker","marker_type","EC_score","specificity", "gene_impact_score_per_cell")
-
-      cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_cell"]] <- as.data.table(dt_top_marker_per_cell)
-
-    }
-    if("celltype_cell" %in% group_markers_by){
-      #for each cell retrieves first N cell type and first N markers
-      dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
+      dt_top_ct_by_cell<-final_dt[order(-diff_score)][,head(.SD, n_top_celltypes),cell]
+      dt_top_ct_per_cell<-as.data.table(dt_top_ct_by_cell)[,c("cell","cell_type","diff_score")]
 
       name<-paste0(annotation_name,"_per_cell")
       name_score<-paste0(annotation_name,"_per_cell_score")
 
-      dt_top_marker_per_cell<-as.data.table(dt_top_marker_by_cell)[,c("cell","annotation_per_cell","diff_score","marker","marker_type","EC_score","specificity","score","quantile_score_marker")]
-      colnames(dt_top_marker_per_cell)<-c("cell",eval(name),eval(name_score), "marker","marker_type","EC_score","specificity", "gene_impact_score_per_cell","gene_impact_score_per_celltype_cell")
+      colnames(dt_top_ct_per_cell)<-c("cell",eval(name),eval(name_score))
 
-      cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_per_cell)
+      cell_res_detailed_annotation_info<-list()
+      cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_celltypes"]] <- as.data.table(dt_top_ct_per_cell)
 
-    }
-    if(data_type == "seurat"){
-      if(is_empty(data@misc[[annotation_name]])){
-        data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
-      } else {
-        data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], cell_res_detailed_annotation_info)
+      dt_top_marker<-unique(merge.data.table(dt_score,anno_dt_cell, by=c("cell_type","cell")))
+      dt_top <- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell")][,c("cell_type","marker","marker_type","quantile_score_marker","cell","score","EC_score","specificity","annotation_per_cell", "diff_score")])
+
+      if("cell" %in% group_markers_by){
+        #for each cell retrieves first N cell type and first N markers
+        dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),cell]
+
+        dt_top_marker_per_cell<-as.data.table(dt_top_marker_by_cell)[,c("cell","annotation_per_cell","diff_score","marker","marker_type","EC_score","specificity","score")]
+        colnames(dt_top_marker_per_cell)<-c("cell",eval(name),eval(name_score), "marker","marker_type","EC_score","specificity", "gene_impact_score_per_cell")
+
+        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_cell"]] <- as.data.table(dt_top_marker_per_cell)
+
       }
-    } else{
-      if(is_empty(info_list[[annotation_name]])){
-        info_list[[annotation_name]]<-cell_res_detailed_annotation_info
+      if("celltype_cell" %in% group_markers_by){
+        #for each cell retrieves first N cell type and first N markers
+        dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
+
+        name<-paste0(annotation_name,"_per_cell")
+        name_score<-paste0(annotation_name,"_per_cell_score")
+
+        dt_top_marker_per_cell<-as.data.table(dt_top_marker_by_cell)[,c("cell","annotation_per_cell","diff_score","marker","marker_type","EC_score","specificity","score","quantile_score_marker")]
+        colnames(dt_top_marker_per_cell)<-c("cell",eval(name),eval(name_score), "marker","marker_type","EC_score","specificity", "gene_impact_score_per_cell","gene_impact_score_per_celltype_cell")
+
+        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_per_cell)
+
+      }
+      if(data_type == "seurat"){
+        if(is_empty(data@misc[[annotation_name]])){
+          data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
+        } else {
+          data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], cell_res_detailed_annotation_info)
+        }
       } else{
-        info_list<-append(info_list,cell_res_detailed_annotation_info)
+        if(is_empty(info_list[[annotation_name]])){
+          info_list[[annotation_name]]<-cell_res_detailed_annotation_info
+          accordion_output<-append(accordion_output,info_list)
+
+        } else{
+          info_list<-append(info_list,cell_res_detailed_annotation_info)
+          accordion_output<-append(accordion_output,info_list)
+        }
+
       }
     }
-
   }
 
   if(data_type == "seurat"){
