@@ -272,6 +272,12 @@ accordion_custom_annotation<-function(data,
 
   }
 
+  #check input group_markers_by
+  if("cell" %in% annotation_resolution & !("cluster" %in% annotation_resolution)){
+    if(!(group_markers_by %in% c("celltype_cell","cell"))){
+      group_markers_by<-"celltype_cell"
+    }
+  }
 
   if(sum(dim(data@assays[[assay]]@counts))!=0){
     #perform data normalization if not already performed
@@ -473,7 +479,6 @@ accordion_custom_annotation<-function(data,
 
         cluster_res_detailed_annotation_info[["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster"]] <- as.data.table(dt_top_marker_by_cl)
       }
-
       if(data_type == "seurat"){
         data@misc[[annotation_name]]<-cluster_res_detailed_annotation_info
       } else{
@@ -518,20 +523,24 @@ accordion_custom_annotation<-function(data,
         colnames(dt_top_marker_per_cell)<-c("cell",eval(name),eval(name_score), "marker","marker_type","weight","specificity", "gene_impact_score_per_cell","gene_impact_score_per_celltype_cell")
 
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_per_cell)
+      }
+      if(data_type == "seurat"){
+        if(is_empty(data@misc[[annotation_name]])){
+          data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
+        } else {
+          data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], cell_res_detailed_annotation_info)
         }
-        if(data_type == "seurat"){
-          if(is_empty(data@misc[[annotation_name]])){
-            data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
-          } else {
-            data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], cell_res_detailed_annotation_info)
-          }
+      } else{
+        if(is_empty(info_list[[annotation_name]])){
+          info_list[[annotation_name]]<-cell_res_detailed_annotation_info
+          accordion_output<-append(accordion_output,info_list)
+
         } else{
-          if(is_empty(info_list[[annotation_name]])){
-            info_list[[annotation_name]]<-cell_res_detailed_annotation_info
-          } else{
-            info_list<-append(info_list,cell_res_detailed_annotation_info)
-          }
+          info_list<-append(info_list,cell_res_detailed_annotation_info)
+          accordion_output<-append(accordion_output,info_list)
         }
+
+      }
     }
   }
     if(data_type == "seurat"){
