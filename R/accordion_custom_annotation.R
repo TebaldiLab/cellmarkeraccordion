@@ -379,13 +379,6 @@ accordion_custom_annotation<-function(data,
       names(accordion_output)<-c("scaled_matrix","cluster_annotation")
     }
 
-    anno_cluster<-merge(final_dt_cluster, anno_dt_cl[,-"quantile_score_cluster"], by=c("seurat_clusters"))
-    anno_dt_cell<-anno_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
-
-    anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
-    anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
-    anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
-
   }
 
   # annotation per cell
@@ -432,6 +425,12 @@ accordion_custom_annotation<-function(data,
       info_list<-list()
     }
     if ("cluster" %in% annotation_resolution){
+      anno_cluster<-merge(final_dt_cluster, anno_dt_cl[,-"quantile_score_cluster"], by=c("seurat_clusters"))
+      anno_dt_cell<-anno_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
+
+      anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
+      anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
+      anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
       dt_top_marker<-unique(merge.data.table(dt_score,anno_dt_cell_ptc, by=c("cell_type","cell")))
       anno_dt_cl_rank<-unique(anno_dt_cell_ptc[,-c("cell","diff_score")])[order(-quantile_score_cluster)][,head(.SD, n_top_celltypes),"seurat_clusters"][,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","ncell_tot_cluster","perc_celltype_cluster")]
       name<-paste0(annotation_name,"_per_cluster")
