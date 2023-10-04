@@ -1,0 +1,16 @@
+cell_type	marker
+Naive CD4+ T	IL7R
+Naive CD4+ T	CCR7
+CD14+ Mono	CD14
+CD14+ Mono	LYZ
+Memory CD4+	IL7R
+Memory CD4+	S100A4
+B	MS4A1
+CD8+ T	CD8A
+FCGR3A+ Mono	MS4A7
+FCGR3A+ Mono	FCGR3A
+NK	NKG7
+NK	GNLY
+DC	FCER1A
+DC	CST3
+Platelet	PPBP
