@@ -296,7 +296,7 @@ accordion_disease<-function(data,
   }
 
   #load the Cell Marker Accordion database based on the disease selected
-  data(disease_accordion_marker.rda)
+  data(disease_accordion_marker)
 
   #check disease selected
   if(is.null(disease)){
@@ -375,7 +375,7 @@ accordion_disease<-function(data,
 
     if(disease_vs_healthy == T){   # compare the healthy and the disease cell types if compare is set to TRUE
       accordion_marker_disease[,cellID_healthy:= tstrsplit(cell_ID, "-", keep=2)]
-      data(accordion_marker.rda)
+      data(accordion_marker)
       accordion_marker<-accordion_marker[species %in% input_species & cell_ID %in% unique(accordion_marker$cellID_healthy) & marker %in% rownames(data)]
       accordion_marker<-rbind(accordion_marker[,c("cell_type","celltype_species","cell_ID","marker","marker_type","EC_score","species")],accordion_marker_disease[,c("cell_type","celltype_species","cell_ID","marker","marker_type","EC_score","species")] )
 
