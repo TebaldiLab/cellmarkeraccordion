@@ -48,8 +48,8 @@ data <- accordion(data, annotation_resolution = "cluster", include_detailed_anno
 Or 
 ```bash
 # Input: raw counts and clusters id  
-raw_counts <- seurat_obj@assays[["RNA"]]@counts
-clusters<- data.table(cell = rownames(seurat_obj@meta.data), cluster = seurat_obj@meta.data$seurat_clusters)
+raw_counts <- data@assays[["RNA"]]@counts
+clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$seurat_clusters)
 # Output: list with annotation results 
 output <- accordion(counts, cluster_info = clusters, annotation_resolution= "cluster", include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
