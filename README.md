@@ -15,30 +15,44 @@ install_github("TebaldiLab/cellmarkeraccordion", dependencies = TRUE)
 To load the cellmarkeraccordion run
 ```bash
 library(cellmarkeraccordion)
+library(Seurat)
+library(data.table)
 ```
 # Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
 As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
 Load the raw counts and create a Seurat object
 ```bash
-load(file = "counts.rda")
+data(counts) #raw counts
+# Create Seurat Object
 data <- CreateSeuratObject(counts = counts, min.cells = 3, min.features = 200)
 ```
-
+Process and cluster the data
+```bash
+data <- NormalizeData(data)
+data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000)
+data <- ScaleData(data)
+data <- RunPCA(data, features = VariableFeatures(object = data))
+data <- FindNeighbors(data, dims = 1:10)
+data <- FindClusters(data, resolution = 0.8)
+data <- RunUMAP(data, dims = 1:10)
+```
 # Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
 <strong>cellmarkeraccordion</strong> allows to automatically identifies hematopoietic populations in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting the for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
-To perform cell types identification and obtain detailed annotation information simply run:
-```bash
+To perform cell types identification by cluster and obtain detailed annotation information simply run:
+```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
-data <- accordion(data, include_detailed_annotation_info = TRUE, plot = TRUE)
+data <- accordion(data, annotation_resolution = "cluster", include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 Or 
 ```bash
-# Input: raw counts
+# Input: raw counts and clusters id  
+raw_counts <- data@assays[["RNA"]]@counts
+clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$seurat_clusters)
 # Output: list with annotation results 
-output <- accordion(counts, include_detailed_annotation_info = TRUE, plot = TRUE)
+output <- accordion(counts, cluster_info = clusters, annotation_resolution= "cluster", include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 # Cell type or pathways identification with custom genes sets
@@ -47,6 +61,7 @@ To perform custom annotation run:
 ```bash
 data<-accordion_custom(data, marker_table, category_column= "cell_type", marker_column ="marker", marker_type_column = "marker_type", weight_column = "weight")
 ```
+
 # Automatically identify and interpreting cell cycle state of single-cell populations
 <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assing cell cycle state to cell populations. This function exploits the built-in collection of
 marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
