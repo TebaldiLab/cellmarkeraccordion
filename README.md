@@ -15,6 +15,7 @@ install_github("TebaldiLab/cellmarkeraccordion", dependencies = TRUE)
 To load the cellmarkeraccordion run
 ```bash
 library(cellmarkeraccordion)
+library(Seurat)
 ```
 # Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
@@ -27,13 +28,13 @@ data <- CreateSeuratObject(counts = counts, min.cells = 3, min.features = 200)
 ```
 Process and cluster the data
 ```bash
-seurat_obj <- NormalizeData(seurat_obj)
-seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 2000)
-seurat_obj <- ScaleData(seurat_obj)
-seurat_obj <- RunPCA(seurat_obj, features = VariableFeatures(object = seurat_obj))
-seurat_obj <- FindNeighbors(seurat_obj, dims = 1:10)
-seurat_obj <- FindClusters(seurat_obj, resolution = 0.8)
-seurat_obj <- RunUMAP(seurat_obj, dims = 1:10)
+data <- NormalizeData(data)
+data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000)
+data <- ScaleData(data)
+data <- RunPCA(data, features = VariableFeatures(object = data))
+data <- FindNeighbors(data, dims = 1:10)
+data <- FindClusters(data, resolution = 0.8)
+data <- RunUMAP(data, dims = 1:10)
 ```
 # Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
 <strong>cellmarkeraccordion</strong> allows to automatically identifies hematopoietic populations in single-cell dataset by running function ``` accordion ```. 
