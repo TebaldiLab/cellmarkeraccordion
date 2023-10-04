@@ -56,31 +56,56 @@ output <- accordion(counts, cluster_info = clusters, annotation_resolution= "clu
 ```
 
 # Cell type or pathways identification with custom genes sets
-<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```.It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. An example of marker table:
-
-| cell_type  | marker |
-| ------------- | ------------- |
-| Naive CD4+ T | IL7R |
-| Naive CD4+ T | CCR7 |
-| CD14+ Mono | CD14 |
-| CD14+ Mono | LYZ |
-| Memory CD4+ | IL7R |
-| Memory CD4+ | S100A4 |
-| B | MS4A1 |
-| CD8+ T | CD8A |
-| FCGR3A+ Mono | MS4A7 |
-| FCGR3A+ Mono | FCGR3A |
-| NK | NKG7 |
-| NK | GNLY |
-| DC | FCER1A |
-| DC | CST3 |
-| Platelet | PPBP |
-
-To perform custom annotation run:
+<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```.It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. An example of a marker table
+is included in the package: 
 ```bash
-data<-accordion_custom(data, marker_table, category_column= "cell_type", marker_column ="marker", marker_type_column = "marker_type", weight_column = "weight")
+data(marker_table)
 ```
+| cell_type  | marker | marker_type |                                           
+| ------------- | ------------- | ------------- |
+| Naive CD4+ T | IL7R | positive |
+| Naive CD4+ T | CCR7 | positive |
+| CD14+ Mono | CD14 | positive |
+| CD14+ Mono | LYZ | positive |
+| CD14+ Mono | BST1 | negative |
+| Memory CD4+ | IL7R | positive |
+| Memory CD4+ | S100A4 | positive |
+| B | MS4A1 | positive |
+| CD8+ T | CD8A | positive |
+| FCGR3A+ Mono | MS4A7 | positive |
+| FCGR3A+ Mono | FCGR3A | positive |
+| NK | NKG7 | positive |
+| NK | GNLY | positive |
+| DC | FCER1A | positive |
+| DC | CST3 | positive |
+| Platelet | PPBP | positive |
+| Platelet | SPN | negative |
 
+To perform the annotation with the custom marker genes run:
+```bash
+data<-accordion_custom(data, marker_table, category_column= "cell_type", marker_column ="marker", marker_type_column = "marker_type")
+```
+You can also exploit the ```accordion_custom``` function to explore the expression of group of genes associated to a specific pathway. As an example: 
+```bash
+data(marker_table_pathway)
+```
+| pathway  | genes |                                         
+| ------------- | ------------- | 
+| apoptosis | AKT3 | 
+| apoptosis | IRAK3 | 
+| apoptosis | CHP1 |
+| apoptosis | CHUK | 
+| apoptosis | CSF2RB |
+| apoptosis | DFFA |
+| apoptosis | DFFB |
+| apoptosis | ENDOG |
+| apoptosis | AKT1 |
+| apoptosis | AKT2 |
+
+And simply run: 
+```bash
+data<-accordion_custom(data, marker_table_pathway, category_column= "pathway", marker_column ="genes")
+```
 # Automatically identify and interpreting cell cycle state of single-cell populations
 <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assing cell cycle state to cell populations. This function exploits the built-in collection of
 marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
