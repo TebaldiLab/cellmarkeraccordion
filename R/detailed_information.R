@@ -1,3 +1,26 @@
+
+
+
+#' Title
+#'
+#' @param data
+#' @param data_type
+#' @param annotation_resolution
+#' @param dt_score
+#' @param anno_dt_cell_ptc
+#' @param n_top_celltypes
+#' @param n_top_markers
+#' @param annotation_name
+#' @param cluster_info
+#' @param group_markers_by
+#' @param accordion_output
+#' @param final_dt
+#' @param anno_dt_cell
+#'
+#' @return
+#' @export
+#'
+#' @examples
 detailed_annotation<-function(data,
                               data_type,
                               annotation_resolution,
