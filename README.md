@@ -58,10 +58,8 @@ output <- accordion(counts, cluster_info = clusters, annotation_resolution= "clu
 # Cell type or pathways identification with custom genes sets
 <strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```.It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. An example of marker table:
 ```bash
-| First Header  | Second Header |
-| ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
+data(marker_table)
+head(marker_table)
 ```
 
 To perform custom annotation run:
