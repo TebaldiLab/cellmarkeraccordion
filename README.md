@@ -16,6 +16,7 @@ To load the cellmarkeraccordion run
 ```bash
 library(cellmarkeraccordion)
 library(Seurat)
+library(data.table)
 ```
 # Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
