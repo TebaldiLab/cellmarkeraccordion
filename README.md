@@ -21,7 +21,7 @@ All the functions of the <strong>cellmarkeraccordion</strong> accept as input ei
 As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
 Load the raw counts and create a Seurat object
 ```bash
-load(file = "counts.rda") #raw counts
+data(counts) #raw counts
 # Create Seurat Object
 data <- CreateSeuratObject(counts = counts, min.cells = 3, min.features = 200)
 ```
