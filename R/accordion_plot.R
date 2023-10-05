@@ -126,7 +126,7 @@ accordion_plot<-function(data,
         } else if("celltype_cluster" %in% group_markers_by){
           top_dt_cl<-top_marker_dt[get(info_to_plot_per_cluster) == gr]
           colnames(top_dt_cl)[colnames(top_dt_cl) == "gene_impact_score_per_celltype_cluster"] <- "impact_score"
-          name<-paste0(gr,"_", as.vector(unique(top_dt_cl[, get(cluster_column_name)])))
+          name<-gr
 
         } else if("cell" %in% group_markers_by){
           top_dt_cl<-top_marker_dt[cell == gr]
@@ -137,7 +137,7 @@ accordion_plot<-function(data,
         } else if("celltype_cell" %in% group_markers_by){
           top_dt_cl<-top_marker_dt[get(info_to_plot_per_cell) == gr]
           colnames(top_dt_cl)[colnames(top_dt_cl) == "gene_impact_score_per_celltype_cell"] <- "impact_score"
-          name<-paste0(gr)
+          name<-gr
 
         }
 
@@ -270,6 +270,7 @@ accordion_plot<-function(data,
               top_celltypes_cl<-top_celltypes[get(cluster_column_name) == gr]
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == "celltype_impact_score"] <- "impact_score"
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == eval(info_to_plot_per_cluster)] <- "cell_type"
+              top_celltypes_cl<-top_celltypes_cl[order(impact_score)]
               name<-paste0(gr,"_", unique(top_celltypes_cl$cell_type[1]))
 
             top_celltypes_cl<-top_celltypes_cl[order(impact_score)]
