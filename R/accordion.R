@@ -346,7 +346,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
 
   #keep only marker genes with EC score above the selected threshold
   if(!is.null(evidence_consistency_score_threshold)){
-    if(!is.numeric(evidence_consistency_score_threshold) | !is.integer(evidence_consistency_score_threshold)){
+    if(!is.numeric(evidence_consistency_score_threshold) | !(evidence_consistency_score_thresholdf %in% 1 == 0)){
       warning("Invalid evidence_consistency_score_threshold type. Parameter evidence_consistency_score_threshold must be an integer value (currently in [1,7]). No filter is applied")
     } else{
     accordion_marker<-accordion_marker[EC_score >= evidence_consistency_score_threshold]
@@ -395,7 +395,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
   }
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !is.integer(max_n_marker)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
         accordion_marker<-accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="cell_type"]
