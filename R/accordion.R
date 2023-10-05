@@ -450,7 +450,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
     # annotation per cluster
     if ("cluster" %in% annotation_resolution){
       setkey(cluster_table, cell)
-
+      setkey(final_dt, cell)
       final_dt_cluster<-merge.data.table(final_dt, cluster_table, by="cell")
         final_dt_cluster[, quantile_score_cluster:= quantile(diff_score,probs = cluster_score_quantile_threshold, na.rm=TRUE), by=c("seurat_clusters","cell_type")]
           if (allow_unknown == T){
