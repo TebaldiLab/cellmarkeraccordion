@@ -425,11 +425,8 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
 
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(accordion_marker$marker))
-  scale_data_mat<-data@assays[[assay]]@scale.data
-
-  Zscaled_data<-setDT(as.data.frame(scale_data_mat))
-  Zscaled_data[,marker:=rownames(scale_data_mat)]
-
+  Zscaled_data<-data@assays[[assay]]@scale.data
+  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker") # slow step
   setkey(Zscaled_data, marker)
   Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
   colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
@@ -450,12 +447,10 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
   final_dt <- sum_dt[marker_type == "positive"
   ][, diff_score := score - sum_dt[marker_type == "negative", score]
   ][, marker_type := NULL][,score := NULL]
-
-
-
     # annotation per cluster
     if ("cluster" %in% annotation_resolution){
       setkey(cluster_table, cell)
+
       final_dt_cluster<-merge.data.table(final_dt, cluster_table, by="cell")
         final_dt_cluster[, quantile_score_cluster:= quantile(diff_score,probs = cluster_score_quantile_threshold, na.rm=TRUE), by=c("seurat_clusters","cell_type")]
           if (allow_unknown == T){
