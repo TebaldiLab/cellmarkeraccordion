@@ -270,7 +270,7 @@ accordion_plot<-function(data,
               top_celltypes_cl<-top_celltypes[get(cluster_column_name) == gr]
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == "celltype_impact_score"] <- "impact_score"
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == eval(info_to_plot_per_cluster)] <- "cell_type"
-              top_celltypes_cl<-top_celltypes_cl[order(impact_score)]
+              top_celltypes_cl<-top_celltypes_cl[order(-impact_score)]
               name<-paste0(gr,"_", unique(top_celltypes_cl$cell_type[1]))
 
             top_celltypes_cl<-top_celltypes_cl[order(impact_score)]
