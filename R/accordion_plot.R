@@ -172,7 +172,7 @@ accordion_plot<-function(data,
         top_dt_cl[specificity_ratio == 0.33, color_combo:=ifelse(marker_type=="positive", vec_pos[3], vec_neg[3])]
         top_dt_cl[specificity_ratio == 0.25, color_combo:=ifelse(marker_type=="positive", vec_pos[4], vec_neg[4])]
         top_dt_cl[specificity_ratio < 0.25, color_combo:=ifelse(marker_type=="positive", vec_pos[5], vec_neg[5])]
-
+        top_dt_cl<-top_dt_cl[order(-specificity_ratio)]
 
         vec_pos<-top_dt_cl[marker_type=="positive"]$color_combo
         names(vec_pos)<-top_dt_cl[marker_type=="positive"]$specificity_range
@@ -190,7 +190,7 @@ accordion_plot<-function(data,
             geom_point(aes(size=EC_score_range,color=specificity_range), alpha= 1, shape = 16) +
             theme_bw(base_size = bs) +
             scale_size(range=c(4,13), guide_legend(title="EC score"),breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"))+
+            scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"), limits = force)+
 
             new_scale("color") +
             new_scale("size") +
@@ -200,7 +200,7 @@ accordion_plot<-function(data,
             geom_point(aes(size=EC_score_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
             theme_bw(base_size = bs) +
             scale_size(range=c(4,13), guide_legend(title="EC score"),breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual(values=vec_neg, breaks = names(vec_neg),  guide_legend(title="Specificity\n(negative)"))+
+            scale_color_manual(values=vec_neg, breaks = names(vec_neg),  guide_legend(title="Specificity\n(negative)"), limits = force)+
             theme(panel.border = element_blank()) +
             labs(x = "Gene impact score", y = "") +
             theme(panel.grid.major.y = element_blank(),
