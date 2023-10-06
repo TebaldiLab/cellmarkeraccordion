@@ -548,7 +548,7 @@ accordion_custom<-function(data,
 
       colnames(dt_top_marker_by_cell)<-c(eval(name), "marker","marker_type","gene_impact_score_per_celltype_cell","weight","specificity")
 
-      cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_per_cell)
+      cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }
     if(data_type == "seurat"){
       if(is_empty(data@misc[[annotation_name]])){
