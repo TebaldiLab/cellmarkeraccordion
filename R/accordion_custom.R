@@ -540,13 +540,13 @@ accordion_custom<-function(data,
     }
     if("celltype_cell" %in% group_markers_by){
       #for each cell retrieves first N cell type and first N markers
-      dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
+      dt_top_marker_by_cell<-dt_top[,-"cell"][order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
 
       name<-paste0(annotation_name,"_per_cell")
       name_score<-paste0(annotation_name,"_per_cell_score")
 
-      dt_top_marker_per_cell<-as.data.table(dt_top_marker_by_cell)[,c("cell","annotation_per_cell","diff_score","marker","marker_type","weight","specificity","score","quantile_score_marker")]
-      colnames(dt_top_marker_per_cell)<-c("cell",eval(name),eval(name_score), "marker","marker_type","weight","specificity", "gene_impact_score_per_cell","gene_impact_score_per_celltype_cell")
+      dt_top_marker_per_cell<-as.data.table(dt_top_marker_by_cell)[,c("annotation_per_cell","diff_score","marker","marker_type","weight","specificity","score","quantile_score_marker")]
+      colnames(dt_top_marker_per_cell)<-c(eval(name),eval(name_score), "marker","marker_type","weight","specificity", "gene_impact_score_per_cell","gene_impact_score_per_celltype_cell")
 
       cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_per_cell)
       }
