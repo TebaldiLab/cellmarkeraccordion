@@ -44,15 +44,21 @@ To perform cell types identification by cluster and obtain detailed annotation i
 ```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
-data <- accordion(data, annotation_resolution = "cluster", include_detailed_annotation_info = TRUE, plot = TRUE)
+data <- accordion(data, annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
-Or 
+
+```bash
+DimPlot(data, group.by = "accordion_per_cluster")
+```
+![Annotation_example](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/673e5368-0014-444d-916c-873d0b522b7e)
+
+Or you can use raw counts matrix and specify cluster's id for each cell.
 ```bash
 # Input: raw counts and clusters id  
 raw_counts <- data@assays[["RNA"]]@counts
 clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$seurat_clusters)
 # Output: list with annotation results 
-output <- accordion(counts, cluster_info = clusters, annotation_resolution= "cluster", include_detailed_annotation_info = TRUE, plot = TRUE)
+output <- accordion(counts, cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 ## Cell type or pathways identification with custom genes sets
