@@ -426,7 +426,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(accordion_marker$marker))
   Zscaled_data<-data@assays[[assay]]@scale.data
-  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker") # slow step
+  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker") #slow step
   setkey(Zscaled_data, marker)
   Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
   colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
