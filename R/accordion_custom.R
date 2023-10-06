@@ -540,7 +540,8 @@ accordion_custom<-function(data,
     }
     if("celltype_cell" %in% group_markers_by){
       #for each cell retrieves first N cell type and first N markers
-      dt_top_marker_by_cell<-dt_top[,-"cell"][order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
+      dt_top_marker_by_cell<-dt_top[,-"cell"]
+      dt_top_marker_by_cell<-dt_top_marker_by_cell[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
 
       name<-paste0(annotation_name,"_per_cell")
       name_score<-paste0(annotation_name,"_per_cell_score")
