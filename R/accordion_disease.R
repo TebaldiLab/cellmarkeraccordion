@@ -715,8 +715,8 @@ accordion_disease<-function(data,
             if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
-            condition_table<-condition_table[,c("cell","condition","celltype")]
-
+            condition_table<-condition_table[,c("cell",eval(condition_group_info),eval(cell_type_group_info))]
+            colnames(condition_table)<-c("cell","condition","celltype")
           } else{
             condition_table<-as.data.table(condition_group_info)[,c("cell","condition","celltype")]
 
