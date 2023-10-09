@@ -560,7 +560,7 @@ accordion_custom<-function(data,
         if(data_type == "seurat"){
           condition_table<-data@meta.data
           condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
-          condition_table<-as.data.table(condition_info)[,c("cell","condition")]
+          condition_table<-condition_table[,c("cell","condition")]
 
         } else{
           condition_table<-as.data.table(condition_info)[,c("cell","condition")]
