@@ -710,7 +710,8 @@ accordion_disease<-function(data,
           colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
 
           cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
-        } if(!is.null(condition_group_info) & !(is.null(cell_type_group_info))){
+        }
+        if(!is.null(condition_group_info) & !(is.null(cell_type_group_info))){
             if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
