@@ -24,15 +24,22 @@
 #'   the clustering id’s for each cell. This parameter is necessary only when
 #'   the input is a count matrix and only if the \code{annotation_resolution}
 #'   parameter is set to “cluster”. Default is “seurat_clusters”.
-#'   @param condition_info in case \code{object} is a Seurat object,
-#'  \code{condition_info} should be need to be a character string specifying the
+#'   @param condition_group_info in case \code{object} is a Seurat object,
+#'  \code{condition_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains condition ids for each cell;
-#'  if \code{object} is a count matrix, \code{condition_info} should be need to be a
+#'  if \code{object} is a count matrix, \code{condition_group_info} should be need to be a
 #'   data frame or data table containing condition identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
-#'   the condition id’s for each cell. This parameter is necessary only when
-#'   the input is a count matrix. Default is NULL.
+#'   the condition id’s for each cell.  Default is NULL.
+#'  @param cell_type_group_info in case \code{object} is a Seurat object,
+#'  \code{cell_type_group_info} should be need to be a character string specifying the
+#'  name of the column in the metadata that contains cell types ids for each cell;
+#'  if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
+#'   data frame or data table containing cell types identity for each cell. The
+#'   data frame or data table should contain at least two columns, one  named
+#'   “cell”, which specifies cell id’s, and one named “cell_type”, which specifies
+#'   the cell types for each cell.  Default is NULL.
 #' @param assay Character string specifying the Assay of the Seurat object. This
 #'   parameter is necessary only  in case \code{data} is a Seurat object.
 #'   Default is “RNA”.
@@ -171,7 +178,8 @@
 accordion_disease<-function(data,
                             disease = NULL,
                             cluster_info = "seurat_clusters",
-                            condition_info = NULL,
+                            condition_group_info = NULL,
+                            cell_type_group_info = NULL,
                             assay = "RNA",
                             cell_types = NULL,
                             species = "Human",
@@ -681,14 +689,14 @@ accordion_disease<-function(data,
       }
       if("celltype_cell" %in% group_markers_by){
         #for each cell retrieves first N cell type and first N markers
-        if(!is.null(condition_info)){
+        if(!is.null(condition_group_info) & is.null(cell_type_group_info)){
           if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
             condition_table<-condition_table[,c("cell","condition")]
 
           } else{
-            condition_table<-as.data.table(condition_info)[,c("cell","condition")]
+            condition_table<-as.data.table(condition_group_info)[,c("cell","condition")]
 
           }
           dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
@@ -699,7 +707,28 @@ accordion_disease<-function(data,
           name<-paste0(annotation_name,"_per_cell")
           name_score<-paste0(annotation_name,"_per_cell_score")
 
-          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
+          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
+
+          cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
+        } if(!is.null(condition_group_info) & !(is.null(cell_type_group_info))){
+            if(data_type == "seurat"){
+            condition_table<-data@meta.data
+            condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
+            condition_table<-condition_table[,c("cell","condition","celltype")]
+
+          } else{
+            condition_table<-as.data.table(condition_group_info)[,c("cell","condition","celltype")]
+
+          }
+          dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
+          dt_top <- unique(dt_top_marker_condition[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell","condition","celltype")][,c("condition","celltype","annotation_per_cell","marker","marker_type","quantile_score_marker","EC_score","specificity")])
+          dt_top<-unique(dt_top[,c("annotation_per_cell","condition","celltype","marker","marker_type","quantile_score_marker","EC_score","specificity")])
+          dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),c("annotation_per_cell","condition","celltype")]
+
+          name<-paste0(annotation_name,"_per_cell")
+          name_score<-paste0(annotation_name,"_per_cell_score")
+
+          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),eval(cell_type_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
 
           cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
         } else {
