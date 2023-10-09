@@ -561,8 +561,7 @@ accordion_custom<-function(data,
           condition_table<-data@meta.data
           condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
         }
-          condition_table<-as.data.table(condition_info)[,c("cell","condition")]
-        }
+        condition_table<-as.data.table(condition_info)[,c("cell","condition")]
         dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
         dt_top <- unique(dt_top_marker_condition[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell","condition")][,c("cell","condition","annotation_per_cell","marker","marker_type","quantile_score_marker","weight","specificity")])
         dt_top<-unique(dt_top[,c("cell","annotation_per_cell","marker","marker_type","quantile_score_marker","weight","specificity")])
