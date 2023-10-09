@@ -559,9 +559,8 @@ accordion_custom<-function(data,
       if(!is.null(condition_info)){
         if(data_type == "seurat"){
           condition_table<-data@meta.data
-          condition_table<-as.data.table(condition_table)[,cell=rownames(condition_table)]
-
-        } else{
+          condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
+        }
           condition_table<-as.data.table(condition_info)[,c("cell","condition")]
         }
         dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
