@@ -8,7 +8,6 @@ include_detailed_annotation_info_f<-function(data,
                                             group_markers_by,
                                             dt_top_marker,
                                             cluster_info,
-                                            accordion_output = NULL,
                                             final_dt,
                                             anno_dt_cell,
                                             n_top_celltypes,
@@ -78,7 +77,7 @@ include_detailed_annotation_info_f<-function(data,
       data@misc[[annotation_name]]<-cluster_res_detailed_annotation_info
     } else{
       info_list[[annotation_name]]<-cluster_res_detailed_annotation_info
-      accordion_output<-append(accordion_output,info_list)
+      data<-append(data,info_list)
     }
   }
   if ("cell" %in% annotation_resolution ){
@@ -170,17 +169,17 @@ include_detailed_annotation_info_f<-function(data,
       } else {
         data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], cell_res_detailed_annotation_info)
       }
-      return(data)
     } else{
       if(is_empty(info_list[[annotation_name]])){
         info_list[[annotation_name]]<-cell_res_detailed_annotation_info
-        accordion_output<-append(accordion_output,info_list)
+        data<-append(data,info_list)
 
       } else{
         info_list<-append(info_list,cell_res_detailed_annotation_info)
-        accordion_output<-append(accordion_output,info_list)
+        data<-append(data,info_list)
       }
-      return(accordion_output)
     }
   }
+  return(data)
+
 }
