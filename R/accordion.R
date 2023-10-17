@@ -560,6 +560,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
                                                 anno_dt_cell,
                                                 n_top_celltypes,
                                                 n_top_markers,
+                                                top_marker_score_quantile_threshold,
                                                 condition_group_info,
                                                 cell_type_group_info)
     } else{
@@ -577,6 +578,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
                                                            anno_dt_cell,
                                                            n_top_celltypes,
                                                            n_top_markers,
+                                                           top_marker_score_quantile_threshold,
                                                            condition_group_info,
                                                            cell_type_group_info)
     }
