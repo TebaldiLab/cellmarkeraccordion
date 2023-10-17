@@ -8,6 +8,7 @@ Marker Accordion database}
 accordion_annotation(
   data,
   cluster_info = "seurat_clusters",
+  assay = "RNA",
   cell_types = NULL,
   species = "Human",
   evidence_consistency_score_threshold = NULL,
@@ -18,8 +19,10 @@ accordion_annotation(
   annotation_resolution = "cluster",
   cluster_score_quantile_threshold = 0.75,
   allow_unknown = TRUE,
-  annotation_column = "accordion",
+  annotation_name = "accordion",
   include_detailed_annotation_info = TRUE,
+  condition_group_info = NULL,
+  cell_type_group_info = NULL,
   group_markers_by = "celltype_cluster",
   n_top_celltypes = 5,
   n_top_markers = 5,
@@ -42,6 +45,10 @@ data frame or data table should contain at least two columns, one  named
 the clustering id’s for each cell. This parameter is necessary only when
 the input is a count matrix and only if the \code{annotation_resolution}
 parameter is set to “cluster”. Default is “seurat_clusters”.}
+
+\item{assay}{Character string specifying the Assay of the Seurat object. This
+parameter is necessary only  in case \code{data} is a Seurat object.
+Default is “RNA”.}
 
 \item{cell_types}{Character string or character string vector specifying the
 cell types to annotate. If this parameter is not specified, all cell types
@@ -94,23 +101,42 @@ clusters to be labeled as “unknown”. If it is set to TRUE, cells or
 clusters with negative scores are assigned to the “unknown” category.
 Default is TRUE.}
 
-\item{annotation_column}{Character string specifying the name of the column
+\item{annotation_name}{Character string specifying the name of the column
 in either the metadata of the input Seurat object or in the input
 \code{cluster_info} where the annotation will be stored. Per cluster and
 per cell annotation results will be stored in the
-\code{annotation_column}_per_cluster and \code{annotation_column}_per_cell
-columns respectively. Default is “accordion”.}
+\code{annotation_name}_per_cluster and \code{annotation_name}_per_cell
+columns respectively.
+If \code{include_detailed_annotation_info} parameter is set to TRUE, the
+detailed information the stored in a list named \code{annotation_name}.
+Default is “accordion”.}
 
 \item{include_detailed_annotation_info}{Logical value indicating whether to
 store information on the top cell types and markers in the output. If TRUE,
-a nested list named "accordion" is created. If \code{resolution_annotation}
+a nested list named \code{annotation_name} is created. If \code{resolution_annotation}
 is set to “cluster” and/or “cell, sublists named “cluster_resolution”
 and/or “cell_resolution” are then added. Inside the sublist
 “detailed_annotation_info” the \code{n_top_markers} markers, group by
 \code{group_markers_by} and the \code{n_top_celltypes} cell types are then
 included. If a Seurat object is provided as input the list is stored in the
-misc slot of the object (object@misc@accordion). If the input is a count
-matrix, the list is returned in the final output. Default is TRUE.}
+misc slot of the object (object@misc@\code{annotation_name}). If the input is a count
+matrix, the list is returned in the final output. Default is TRUE.
+@param condition_group_info in case \code{object} is a Seurat object,
+\code{condition_group_info} should be need to be a character string specifying the
+name of the column in the metadata that contains condition ids for each cell;
+if \code{object} is a count matrix, \code{condition_group_info} should be need to be a
+data frame or data table containing condition identity for each cell. The
+data frame or data table should contain at least two columns, one  named
+“cell”, which specifies cell id’s, and one named “condition”, which specifies
+the condition id’s for each cell.  Default is NULL.
+@param cell_type_group_info in case \code{object} is a Seurat object,
+\code{cell_type_group_info} should be need to be a character string specifying the
+name of the column in the metadata that contains cell types ids for each cell;
+if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
+data frame or data table containing cell types identity for each cell. The
+data frame or data table should contain at least two columns, one  named
+“cell”, which specifies cell id’s, and one named “cell_type”, which specifies
+the cell types for each cell.  Default is NULL.}
 
 \item{group_markers_by}{Character string or character string vector
 specifying the classification of marker genes. It possible to retrieve
@@ -135,10 +161,6 @@ each cell is computed. To identify the \code{n_top_markers} for a cluster
 cl or a cell type ct, the \code{top_marker_score_quantile_threshold} is
 computed across cells belonging to that cluster or labeled as ct, and the
 \code{n_top_markers} with the maximum score are reported. Default is 0.75.}
-
-\item{assay}{Character string specifying the Assay of the Seurat object. This
-parameter is necessary only  in case \code{data} is a Seurat object.
-Default is “RNA”.}
 }
 \value{
 A Seurat object or a list
@@ -154,7 +176,7 @@ If a Seurat object was provided in input, the function returns the
 Seurat object with markers-based scaled data in the scale.data slot and cell
 types annotation results in the metadata. If
 \code{include_detailed_annotation_info} was set to TRUE, a list containing
-cell types and markers information is stored in the “misc@accordion” slot. If
+cell types and markers information is stored in the “misc@\code{annotation_name}” slot. If
 a count matrix was provided in input, the function returns a list containing
 the following elements:
 \itemize{
@@ -162,14 +184,14 @@ the following elements:
 }
 If \code{annotation_resolution} is set to “cell”:
 \itemize{
-\item{"cell_annotation:"}{data table containing cell types annotation results for each cell;}
+\item{"cell_annotation":}{data table containing cell types annotation results for each cell;}
 }
 If \code{annotation_resolution} is set to “cluster”:
 \itemize{
-\item{"cluster_annotation"}{data table containing cell types annotation results for each cell;}
+\item{"cluster_annotation":}{data table containing cell types annotation results for each cell;}
 }
 If \code{include_detailed_annotation_info} is set to TRUE:
 \itemize{
-\item{"accordion:"}{list containing detailed information of cell types annotation.}
+\item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 }
 }

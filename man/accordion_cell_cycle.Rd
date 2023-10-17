@@ -11,10 +11,12 @@ accordion_cell_cycle(
   assay = "RNA",
   species = "Human",
   annotation_resolution = "cell",
-  annotation_column = "accordion_cell_cycle",
+  annotation_name = "accordion_cell_cycle",
   cluster_score_quantile_threshold = 0.75,
   allow_unknown = FALSE,
   include_detailed_annotation_info = FALSE,
+  condition_group_info = NULL,
+  cell_type_group_info = NULL,
   group_markers_by = "celltype_cell",
   n_top_celltypes = 5,
   n_top_markers = 5,
@@ -52,12 +54,15 @@ multiple species are selected, marker genes are merged together. Default is
 specifying the resolution of the annotation. Either “cluster” and/or “cell”
 are supported. Default is “cell”.}
 
-\item{annotation_column}{Character string specifying the name of the column
+\item{annotation_name}{Character string specifying the name of the column
 in either the metadata of the input Seurat object or in the input
 \code{cluster_info} where the annotation will be stored. Per cluster and
 per cell annotation results will be stored in the
-\code{annotation_column}_per_cluster and \code{annotation_column}_per_cell
-columns respectively. Default is “accordion_cell_cycle”.}
+\code{annotation_name}_per_cluster and \code{annotation_name}_per_cell
+columns respectively.
+If \code{include_detailed_annotation_info} parameter is set to TRUE, the
+detailed information the stored in a list named \code{annotation_name}.
+Default is “accordion_cell_cycle”.}
 
 \item{cluster_score_quantile_threshold}{numeric value in \link{0,1} specifying the
 cluster score quantile threshold. For each cell a score specific for each
@@ -73,15 +78,31 @@ Default is TRUE.}
 
 \item{include_detailed_annotation_info}{Logical value indicating whether to
 store information on the top cell types and markers in the output. If TRUE,
-a nested list named "accordion_cell_cycle" is created. If
+a nested list named \code{annotation_name} is created. If
 \code{resolution_annotation} is set to “cluster” and/or “cell, sublists
 named “cluster_resolution” and/or “cell_resolution” are then added. Inside
 the sublist “detailed_annotation_info” the \code{n_top_markers} markers,
 group by \code{group_markers_by} and the \code{n_top_celltypes} cell types
 are then included. If a Seurat object is provided as input the list is
-stored in the misc slot of the object (object@misc@accordion_cell_cycle).
+stored in the misc slot of the object (object@misc@\code{annotation_name}).
 If the input is a count matrix, the list is returned in the final output.
-Default is FALSE.}
+Default is FALSE.
+@param condition_group_info in case \code{object} is a Seurat object,
+\code{condition_group_info} should be need to be a character string specifying the
+name of the column in the metadata that contains condition ids for each cell;
+if \code{object} is a count matrix, \code{condition_group_info} should be need to be a
+data frame or data table containing condition identity for each cell. The
+data frame or data table should contain at least two columns, one  named
+“cell”, which specifies cell id’s, and one named “condition”, which specifies
+the condition id’s for each cell.  Default is NULL.
+@param cell_type_group_info in case \code{object} is a Seurat object,
+\code{cell_type_group_info} should be need to be a character string specifying the
+name of the column in the metadata that contains cell types ids for each cell;
+if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
+data frame or data table containing cell types identity for each cell. The
+data frame or data table should contain at least two columns, one  named
+“cell”, which specifies cell id’s, and one named “cell_type”, which specifies
+the cell types for each cell.  Default is NULL.}
 
 \item{group_markers_by}{Character string or character string vector
 specifying the classification of marker genes. It possible to retrieve
@@ -113,7 +134,7 @@ when \code{include_detailed_annotation_info} is set to TRUE. If TRUE,
 lollipop plots displaying the top \code{n_top_markers} group by
 \code{group_markers_by} and \code{n_top_celltypes} for each
 \code{annotation_resolution} together with the cell types hierarchies based
-on the cell ontology structure are stored in the "accordion_cell_cycle"
+on the cell ontology structure are stored in the \code{annotation_name}
 list. Default is FALSE.}
 }
 \value{
@@ -131,24 +152,24 @@ If a Seurat object was provided in input, the function returns the
 Seurat object with markers-based scaled data in the scale.data slot and cell
 types annotation results in the metadata. If
 \code{include_detailed_annotation_info} and \code{plot} were set to TRUE, a
-list named "accordion_cell_cycle" containing cell types and markers
+list named \code{annotation_name} containing cell types and markers
 information, together with ggplot objects, is stored in the “misc” slot. If a
 count matrix was provided in input, the function returns a list containing
 the following elements:
 
 \itemize{
-\item{"scaled_matrix"}{normalized and scaled expression matrix;}
+\item{"scaled_matrix":}{normalized and scaled expression matrix;}
 }
 If \code{annotation_resolution} is set to “cell”:
 \itemize{
-\item{"cell_annotation"}{data table containing cell types annotation results for each cell;}
+\item{"cell_annotation":}{data table containing cell types annotation results for each cell;}
 }
 If \code{annotation_resolution} is set to “cluster”:
 \itemize{
-\item{"cluster_annotation"}{data table containing cell types annotation results for each cell;}
+\item{"cluster_annotation":}{data table containing cell types annotation results for each cell;}
 }
 If \code{include_detailed_annotation_info} is set to TRUE:
 \itemize{
-\item{accordion_cell_cycle}{list containing detailed information of cell types annotation.}
+\item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 }
 }
