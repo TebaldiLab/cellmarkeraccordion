@@ -1,3 +1,27 @@
+#' Helper function to include detailed annotation information
+#' @noRd
+#' @param data
+#' @param data_type
+#' @param annotation_resolution
+#' @param final_dt_cluster
+#' @param anno_dt_cl
+#' @param dt_score
+#' @param annotation_name
+#' @param group_markers_by
+#' @param dt_top_marker
+#' @param cluster_info
+#' @param final_dt
+#' @param anno_dt_cell
+#' @param n_top_celltypes
+#' @param n_top_markers
+#' @param top_marker_score_quantile_threshold
+#' @param condition_group_info
+#' @param cell_type_group_info
+#'
+#' @return
+#' @export
+#'
+#' @examples
 include_detailed_annotation_info_helper<-function(data,
                                             data_type,
                                             annotation_resolution,
