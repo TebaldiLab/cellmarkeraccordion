@@ -1,4 +1,4 @@
-include_detailed_annotation_info_f<-function(data,
+include_detailed_annotation_info_helper<-function(data,
                                             data_type,
                                             annotation_resolution,
                                             final_dt_cluster,

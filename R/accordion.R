@@ -546,7 +546,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
 
   if(include_detailed_annotation_info == T){
     if(data_type == "seurat"){
-      data <- include_detailed_annotation_info_f(data,
+      data <- include_detailed_annotation_info_helper(data,
                                                 data_type,
                                                 annotation_resolution,
                                                 final_dt_cluster,
@@ -564,7 +564,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
                                                 condition_group_info,
                                                 cell_type_group_info)
     } else{
-      accordion_output<-include_detailed_annotation_info_f(accordion_output,
+      accordion_output<-include_detailed_annotation_info_helper(accordion_output,
                                                            data_type,
                                                            annotation_resolution,
                                                            final_dt_cluster,

@@ -564,27 +564,46 @@ accordion_disease_annotation<-function(data,
 
   }
 
-
   if(include_detailed_annotation_info == T){
-
-    include_detailed_annotation_info(data,
-                                     data_type,
-                                     annotation_resolution,
-                                     final_dt_cluster,
-                                     anno_dt_cl,
-                                     dt_score,
-                                     annotation_name,
-                                     group_markers_by,
-                                     dt_top_marker,
-                                     cluster_info,
-                                     accordion_output,
-                                     final_dt,
-                                     anno_dt_cell,
-                                     condition_group_info,
-                                     cell_type_group_info)
+    if(data_type == "seurat"){
+      data <- include_detailed_annotation_info_helper(data,
+                                                      data_type,
+                                                      annotation_resolution,
+                                                      final_dt_cluster,
+                                                      anno_dt_cl,
+                                                      dt_score,
+                                                      annotation_name,
+                                                      group_markers_by,
+                                                      dt_top_marker,
+                                                      cluster_info,
+                                                      final_dt,
+                                                      anno_dt_cell,
+                                                      n_top_celltypes,
+                                                      n_top_markers,
+                                                      top_marker_score_quantile_threshold,
+                                                      condition_group_info,
+                                                      cell_type_group_info)
+    } else{
+      accordion_output<-include_detailed_annotation_info_helper(accordion_output,
+                                                                data_type,
+                                                                annotation_resolution,
+                                                                final_dt_cluster,
+                                                                anno_dt_cl,
+                                                                dt_score,
+                                                                annotation_name,
+                                                                group_markers_by,
+                                                                dt_top_marker,
+                                                                cluster_info,
+                                                                final_dt,
+                                                                anno_dt_cell,
+                                                                n_top_celltypes,
+                                                                n_top_markers,
+                                                                top_marker_score_quantile_threshold,
+                                                                condition_group_info,
+                                                                cell_type_group_info)
+    }
 
   }
-
   if(data_type == "seurat"){
     return(data)
   } else{
