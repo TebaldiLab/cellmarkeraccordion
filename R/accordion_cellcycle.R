@@ -62,6 +62,22 @@
 #'   stored in the misc slot of the object (object@misc@\code{annotation_name}).
 #'   If the input is a count matrix, the list is returned in the final output.
 #'   Default is FALSE.
+#'   @param condition_group_info in case \code{object} is a Seurat object,
+#'  \code{condition_group_info} should be need to be a character string specifying the
+#'  name of the column in the metadata that contains condition ids for each cell;
+#'  if \code{object} is a count matrix, \code{condition_group_info} should be need to be a
+#'   data frame or data table containing condition identity for each cell. The
+#'   data frame or data table should contain at least two columns, one  named
+#'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
+#'   the condition id’s for each cell.  Default is NULL.
+#'  @param cell_type_group_info in case \code{object} is a Seurat object,
+#'  \code{cell_type_group_info} should be need to be a character string specifying the
+#'  name of the column in the metadata that contains cell types ids for each cell;
+#'  if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
+#'   data frame or data table containing cell types identity for each cell. The
+#'   data frame or data table should contain at least two columns, one  named
+#'   “cell”, which specifies cell id’s, and one named “cell_type”, which specifies
+#'   the cell types for each cell.  Default is NULL.
 #' @param group_markers_by Character string or character string vector
 #'   specifying the classification of marker genes. It possible to retrieve
 #'   \code{n_top_markers} marker genes for each cell type identified with
@@ -132,6 +148,8 @@ accordion_cell_cycle<-function(data,
                               cluster_score_quantile_threshold = 0.75,
                               allow_unknown = FALSE,
                               include_detailed_annotation_info = FALSE,
+                              condition_group_info = NULL,
+                              cell_type_group_info = NULL,
                               group_markers_by = "celltype_cell",
                               n_top_celltypes = 5,
                               n_top_markers = 5,
