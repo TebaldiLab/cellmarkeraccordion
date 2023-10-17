@@ -600,8 +600,10 @@ accordion_disease<-function(data,
                                      cluster_info,
                                      final_dt,
                                      anno_dt_cell,
+                                     n_top_celltypes,
+                                     n_top_markers,
                                      condition_group_info,
-                                     cell_type_group_info)
+                                     cell_type_group_info,)
     } else{
       accordion_output<-include_detailed_annotation_info_f(data,
                                                 data_type,
@@ -615,6 +617,8 @@ accordion_disease<-function(data,
                                                 cluster_info,
                                                 final_dt,
                                                 anno_dt_cell,
+                                                n_top_celltypes,
+                                                n_top_markers,
                                                 condition_group_info,
                                                 cell_type_group_info)
     }

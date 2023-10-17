@@ -561,7 +561,7 @@ if(sum(dim(data@assays[[assay]]@counts))!=0){
                                                 n_top_celltypes,
                                                 n_top_markers,
                                                 condition_group_info,
-                                                cell_type_group_info,)
+                                                cell_type_group_info)
     } else{
       accordion_output<-include_detailed_annotation_info_f(data,
                                                            data_type,
