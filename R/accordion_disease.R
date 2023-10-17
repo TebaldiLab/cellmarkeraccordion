@@ -402,16 +402,6 @@ accordion_disease<-function(data,
     }
 
 
-
-  # keep only the max_n_marker genes for each cell type
-  if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
-      warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
-    } else {
-      accordion_marker<-accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="cell_type"]
-    }
-  }
-
   # number of markers for each cell type
   accordion_marker[,length:= .N, by="cell_type"]
   if(!is.null(min_n_marker)){
@@ -461,9 +451,10 @@ accordion_disease<-function(data,
       accordion_marker<-accordion_marker[combined_score>quantile_combined_score]
     }
   }
+
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !is.integer(max_n_marker)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
       accordion_marker<-accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="cell_type"]
