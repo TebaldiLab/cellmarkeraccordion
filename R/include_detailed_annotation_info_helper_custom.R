@@ -104,7 +104,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
       data<-append(data,info_list)
     }
   }
-  if ("cell" %in% annotation_resolution ){
+  if ("cell" %in% annotation_resolution){
     
     dt_top_ct_by_cell<-final_dt[order(-diff_score)][,head(.SD, n_top_celltypes),cell]
     dt_top_ct_per_cell<-as.data.table(dt_top_ct_by_cell)[,c("cell","cell_type","diff_score")]
@@ -136,11 +136,15 @@ include_detailed_annotation_info_helper_custom<-function(data,
         if(data_type == "seurat"){
           condition_table<-data@meta.data
           condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
+          col_vec<-c("cell",condition_group_info)
+          condition_table<-condition_table[,..col_vec]
+          colnames(condition_table)<-c("cell","condition")
           condition_table<-condition_table[,c("cell","condition")]
           
         } else{
-          condition_table<-as.data.table(condition_group_info)[,c("cell","condition")]
-          
+          col_vec<-c("cell",condition_group_info, cell_type_group_info)
+          condition_table<-as.data.table(condition_group_info)[,..col_vec]
+          colnames(condition_table)<-c("cell","condition","celltype")          
         }
         dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
         dt_top <- unique(dt_top_marker_condition[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell","condition")][,c("condition","annotation_per_cell","marker","marker_type","quantile_score_marker","weight","specificity")])
@@ -158,10 +162,14 @@ include_detailed_annotation_info_helper_custom<-function(data,
         if(data_type == "seurat"){
           condition_table<-data@meta.data
           condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
-          condition_table<-condition_table[,c("cell","condition","celltype")]
+          col_vec<-c("cell",condition_group_info, cell_type_group_info)
+          condition_table<-condition_table[,..col_vec]
           colnames(condition_table)<-c("cell","condition","celltype")
+          condition_table<-condition_table[,c("cell","condition","celltype")]
         } else{
-          condition_table<-as.data.table(condition_group_info)[,c("cell","condition","celltype")]
+          col_vec<-c("cell",condition_group_info, cell_type_group_info)
+          condition_table<-as.data.table(condition_group_info)[,..col_vec]
+          colnames(condition_table)<-c("cell","condition","celltype")
           
         }
         dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
