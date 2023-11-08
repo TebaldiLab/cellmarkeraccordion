@@ -289,22 +289,14 @@ accordion_custom_annotation<-function(data,
     }
 
   }
-  # keep only the max_n_marker genes for each cell type
-  if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
-      warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
-    } else {
-      accordion_marker<-accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="cell_type"]
-    }
-  }
 
   # number of markers for each cell type
-  accordion_marker[,length:= .N, by="cell_type"]
+  marker_table[,length:= .N, by="cell_type"]
   if(!is.null(min_n_marker)){
     if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
       warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
     } else{
-      accordion_marker<-accordion_marker[length >= min_n_marker]
+      marker_table<-marker_table[length >= min_n_marker]
     }
   }
   #check input group_markers_by
@@ -344,7 +336,14 @@ accordion_custom_annotation<-function(data,
 
   # merge Z_scaled_dt and accordion table
   marker_table[,combined_score := specificity_scaled * weight_scaled]
-
+  # keep only the max_n_marker genes for each cell type
+  if(!is.null(max_n_marker)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
+      warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
+    } else {
+      marker_table<-marker_table[order(-combined_score)][,head(.SD, max_n_marker), by="cell_type"]
+    }
+  }
 
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(marker_table$marker))
