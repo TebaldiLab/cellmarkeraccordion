@@ -406,7 +406,7 @@ accordion_custom_annotation<-function(data,
       cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
       colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-      accordion_output<-list(GetAssayData(data, assay="RNA", slot='data', cluster_table)
+      accordion_output<-list(GetAssayData(data, assay="RNA", slot='data', cluster_table))
       names(accordion_output)<-c("scaled_matrix","cluster_annotation")
     }
 
