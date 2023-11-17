@@ -55,7 +55,7 @@ DimPlot(data, group.by = "accordion_per_cluster")
 Or you can use raw counts matrix and specify cluster's id for each cell.
 ```bash
 # Input: raw counts and clusters id  
-raw_counts <- data@assays[["RNA"]]@counts
+raw_counts <- GetAssayData(data, assay="RNA", slot='counts')
 clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$seurat_clusters)
 # Output: list with annotation results 
 output <- accordion(counts, cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
