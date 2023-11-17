@@ -242,9 +242,9 @@ accordion_custom_annotation<-function(data,
     } else{
 
       DefaultAssay(data)<-assay
-      #check that the Seurat object not contain an empty count matrix
+      #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
-        if(sum(dim(data@assays[[assay]]@counts))==0){
+        if(sum(dim(GetAssayData(data, assay="RNA", slot='counts')))==0){
           stop("Count matrix is empty")
         }
       }
@@ -306,12 +306,15 @@ accordion_custom_annotation<-function(data,
     }
   }
 
-  if(sum(dim(data@assays[[assay]]@counts))!=0){
-    #perform data normalization if not already performed
-    if(identical(data@assays[[assay]]@counts, data@assays[[assay]]@data)){
-      data <- NormalizeData(data)
+  #avoid warnings
+  suppressWarnings({
+    if(sum(dim(GetAssayData(data, assay="RNA", slot='counts')))!=0){
+      #perform data normalization if not already performed
+      if(identical(GetAssayData(data, assay="RNA", slot='counts'), GetAssayData(data, assay="RNA", slot='data')) | sum(dim(GetAssayData(data, assay="RNA", slot='data')))==0){
+        data <- NormalizeData(data)
+      }
     }
-  }
+  })
   # subselect genes only found in data
   marker_table<-marker_table[marker %in% rownames(data)]
 
@@ -347,11 +350,8 @@ accordion_custom_annotation<-function(data,
 
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(marker_table$marker))
-  scale_data_mat<-data@assays[[assay]]@scale.data
-
-  Zscaled_data<-setDT(as.data.frame(scale_data_mat))
-  Zscaled_data[,marker:=rownames(scale_data_mat)]
-
+  Zscaled_data<-GetAssayData(data, assay="RNA", slot='data')
+  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
   setkey(Zscaled_data, marker)
   Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
   colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
@@ -372,9 +372,6 @@ accordion_custom_annotation<-function(data,
   final_dt <- sum_dt[marker_type == "positive"
   ][, diff_score := score - sum_dt[marker_type == "negative", score]
   ][, marker_type := NULL][,score := NULL]
-
-
-
 
 
   # annotation per cluster
@@ -409,7 +406,7 @@ accordion_custom_annotation<-function(data,
       cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
       colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-      accordion_output<-list(data@assays[[assay]]@scale.data, cluster_table)
+      accordion_output<-list(GetAssayData(data, assay="RNA", slot='data', cluster_table)
       names(accordion_output)<-c("scaled_matrix","cluster_annotation")
     }
 
@@ -446,7 +443,7 @@ accordion_custom_annotation<-function(data,
         accordion_output<-append(accordion_output,cell_table)
         names(accordion_output)<-c(names(accordion_output), "cell_annotation")
       } else {
-        accordion_output<-list(data@assays[[assay]]@scale.data, cell_table)
+        accordion_output<-list(GetAssayData(data, assay="RNA", slot='data'), cell_table)
         names(accordion_output)<-c("scaled_matrix","cell_annotation")
       }
 
