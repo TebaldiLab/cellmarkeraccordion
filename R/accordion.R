@@ -260,7 +260,7 @@ accordion<-function(data,
       DefaultAssay(data)<-assay
       #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
-        if(sum(dim(GetAssayData(data, assay="RNA", slot='counts')))==0){
+        if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
           stop("Count matrix is empty")
         }
       }
@@ -297,9 +297,9 @@ accordion<-function(data,
 
 #avoid warnings
 suppressWarnings({
-     if(sum(dim(GetAssayData(data, assay="RNA", slot='counts')))!=0){
+     if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))!=0){
   #perform data normalization if not already performed
-  if(identical(GetAssayData(data, assay="RNA", slot='counts'), GetAssayData(data, assay="RNA", slot='data')) | sum(dim(GetAssayData(data, assay="RNA", slot='data')))==0){
+  if(identical(GetAssayData(data, assay=assay, slot='counts'), GetAssayData(data, assay=assay, slot='data')) | sum(dim(GetAssayData(data, assay=assay, slot='data')))==0){
     data <- NormalizeData(data)
   }
 }
@@ -447,15 +447,17 @@ suppressWarnings({
 
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(accordion_marker$marker))
-  Zscaled_data<-GetAssayData(data, assay="RNA", slot='data')
+  Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
   Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
   setkey(Zscaled_data, marker)
+
   Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
   colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
+  dt_score<-merge.data.table(Zscaled_m_data,accordion_marker, by="marker",allow.cartesian = TRUE)
 
   # compute the score for each cell
-  dt_score<-merge.data.table(Zscaled_m_data,accordion_marker, by="marker",allow.cartesian = TRUE)
   dt_score[,score := expr_scaled * combined_score]
+  test<-dt_score[!duplicated(dt_score$cell_type,dt_score$cell ), ]
   dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
   setkey(dt_score, cell_type, cell, marker_type)
   sum_dt <- dt_score[data.table("cell_type" = rep(dt_score_ct$cell_type, each = 2),
@@ -502,7 +504,7 @@ suppressWarnings({
           cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
           colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-          accordion_output<-list(GetAssayData(data, assay="RNA", slot='data'), cluster_table)
+          accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cluster_table)
           names(accordion_output)<-c("scaled_matrix","cluster_annotation")
         }
 
@@ -539,7 +541,7 @@ suppressWarnings({
         accordion_output<-append(accordion_output,cell_table)
         names(accordion_output)<-c(names(accordion_output), "cell_annotation")
       } else {
-        accordion_output<-list(GetAssayData(data, assay="RNA", slot='data'), cell_table)
+        accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cell_table)
         names(accordion_output)<-c("scaled_matrix","cell_annotation")
       }
 

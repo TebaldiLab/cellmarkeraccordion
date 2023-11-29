@@ -271,7 +271,7 @@ accordion_custom<-function(data,
       DefaultAssay(data)<-assay
       #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
-        if(sum(dim(GetAssayData(data, assay="RNA", slot='counts')))==0){
+        if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
           stop("Count matrix is empty")
         }
       }
@@ -337,9 +337,9 @@ accordion_custom<-function(data,
 
   #avoid warnings
   suppressWarnings({
-    if(sum(dim(GetAssayData(data, assay="RNA", slot='counts')))!=0){
+    if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))!=0){
       #perform data normalization if not already performed
-      if(identical(GetAssayData(data, assay="RNA", slot='counts'), GetAssayData(data, assay="RNA", slot='data')) | sum(dim(GetAssayData(data, assay="RNA", slot='data')))==0){
+      if(identical(GetAssayData(data, assay=assay, slot='counts'), GetAssayData(data, assay=assay, slot='data')) | sum(dim(GetAssayData(data, assay=assay, slot='data')))==0){
         data <- NormalizeData(data)
       }
     }
@@ -381,7 +381,7 @@ accordion_custom<-function(data,
 
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(marker_table$marker))
-  Zscaled_data<-GetAssayData(data, assay="RNA", slot='data')
+  Zscaled_data<-GetAssayData(data, assay=assay, slot='data')
   Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
   setkey(Zscaled_data, marker)
   Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
@@ -437,7 +437,7 @@ accordion_custom<-function(data,
       cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
       colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-      accordion_output<-list(GetAssayData(data, assay="RNA", slot='data'), cluster_table)
+      accordion_output<-list(GetAssayData(data, assay=assay, slot='data'), cluster_table)
       names(accordion_output)<-c("scaled_matrix","cluster_annotation")
     }
   }
@@ -473,7 +473,7 @@ accordion_custom<-function(data,
         accordion_output<-append(accordion_output,cell_table)
         names(accordion_output)<-c(names(accordion_output), "cell_annotation")
       } else {
-        accordion_output<-list(GetAssayData(data, assay="RNA", slot='data'), cell_table)
+        accordion_output<-list(GetAssayData(data, assay=assay, slot='data'), cell_table)
         names(accordion_output)<-c("scaled_matrix","cell_annotation")
       }
 
