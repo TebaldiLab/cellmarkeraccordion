@@ -457,7 +457,6 @@ suppressWarnings({
 
   # compute the score for each cell
   dt_score[,score := expr_scaled * combined_score]
-  test<-dt_score[!duplicated(dt_score$cell_type,dt_score$cell ), ]
   dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
   setkey(dt_score, cell_type, cell, marker_type)
   sum_dt <- dt_score[data.table("cell_type" = rep(dt_score_ct$cell_type, each = 2),
