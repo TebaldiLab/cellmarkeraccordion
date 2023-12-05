@@ -203,7 +203,7 @@ accordion_cell_cycle<-function(data,
 
   data(cell_cycle_markers)
 
-  if(!(species %in% c("Human","Mouse"))){
+  if((length(species ==1) & !(species %in% c("Human","Mouse"))) | (length(species == 2) & setequal(species, c("Human","Mouse")))){
     warning("Invalid species type")
     if(all(rownames(data)[1:10] %in% toupper(rownames(data)[1:10]))){
       cell_cycle_markers<-cell_cycle_markers[species %in% "Human"]

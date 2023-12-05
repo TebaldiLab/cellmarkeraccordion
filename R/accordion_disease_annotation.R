@@ -355,9 +355,15 @@ accordion_disease_annotation<-function(data,
   }
   #select species
   #change name to the input species
-  if(!(species %in% c("Human","Mouse"))){
-    warning("Invalid species type. Please use Human and/or Mouse. Human will be used as default")
-    accordion_marker_disease<-accordion_marker_disease[species %in% "Human"]
+  if((length(species ==1) & !(species %in% c("Human","Mouse"))) | (length(species == 2) & setequal(species, c("Human","Mouse")))){
+    warning("Invalid species type")
+    if(all(rownames(data)[1:10] %in% toupper(rownames(data)[1:10]))){
+      accordion_marker<-accordion_marker[species %in% "Human"]
+      warning("The dataset might be human. Human markers are indeed used.")
+    } else{
+      accordion_marker<-accordion_marker[species %in% "Mouse"]
+      warning("The dataset might be mouse. Mouse markers are indeed used.")
+    }
   } else{
     input_species<-species
     accordion_marker_disease<-accordion_marker_disease[species %in% input_species]
