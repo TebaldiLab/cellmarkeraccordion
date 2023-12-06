@@ -355,24 +355,30 @@ accordion_disease_annotation<-function(data,
   }
   #select species
   #change name to the input species
-  if((length(species) ==1 & !(species %in% c("Human","Mouse"))) | (length(species) == 2 & setequal(species, c("Human","Mouse")))){
-    warning("Invalid species type")
-    if(all(rownames(data)[1:10] %in% toupper(rownames(data)[1:10]))){
-      accordion_marker<-accordion_marker[species %in% "Human"]
-      warning("The dataset might be human. Human markers are indeed used.")
-    } else{
-      accordion_marker<-accordion_marker[species %in% "Mouse"]
-      warning("The dataset might be mouse. Mouse markers are indeed used.")
+  if(length(species) ==1){
+    if(!(species %in% c("Human","Mouse"))){
+      warning("Invalid species type")
+      if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){
+        accordion_marker<-accordion_marker[species %in% "Human"]
+        warning("The dataset might be human. Human markers are indeed used.")
+      } else{
+        accordion_marker<-accordion_marker[species %in% "Mouse"]
+        warning("The dataset might be mouse. Mouse markers are indeed used.")
+      }
     }
-  } else{
+  } else if (setequal(species, c("Human","Mouse"))){
     input_species<-species
-    accordion_marker_disease<-accordion_marker_disease[species %in% input_species]
+    accordion_marker<-accordion_marker[species %in% input_species]
     #if more than one species is selected aggregate genes and in case of common genes between the species the relative EC score are summed
     if(length(input_species) >=2){
-      accordion_marker_disease[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
-      accordion_marker_disease[,EC_score_sum:= sum(EC_score), by=c("cell_type","marker","marker_type")]
-      accordion_marker_disease<-unique(accordion_marker_disease[,c("cell_type","celltype_species","EC_score_sum","marker","marker_type","cell_ID")])
-      colnames(accordion_marker_disease)<-c("cell_type","celltype_species","EC_score","marker","marker_type","cell_ID")
+      if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){ #convert to human
+        accordion_marker[,marker:= toupper(marker)] # convert lower case in upper case (human symbol)
+      } else{
+        accordion_marker[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
+      }
+      accordion_marker[,EC_score_sum:= sum(EC_score), by=c("cell_type","marker","marker_type")]
+      accordion_marker<-unique(accordion_marker[,c("cell_type","celltype_species","EC_score_sum","marker","marker_type","cell_ID")])
+      colnames(accordion_marker)<-c("cell_type","celltype_species","EC_score","marker","marker_type","cell_ID")
     }
   }
 
@@ -501,9 +507,18 @@ accordion_disease_annotation<-function(data,
       final_dt_cluster[, annotation_per_cell := cell_type]
     }
     # add the annotation results in the metadata of the Seurat data
-    anno_dt_cl<-final_dt_cluster[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","diff_score")]
-    anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster")]
-    colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster")
+    anno_dt_cell<-final_dt_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
+    anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
+    anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
+    anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
+    anno_dt_cl<-anno_dt_cell_ptc[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","cell_type","diff_score","ncell_tot_cluster","ncell_celltype_cluster")]
+    anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","perc_celltype_cluster")]
+    colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster","percentage")
+
+    #if less than 10% of cells are labeled as the top cell type assigned as unknown
+    if (allow_unknown == T){
+      anno_dt_cl[percentage < 10, annotation_per_cluster:= "unknown"]
+    }
 
     name<-paste0(annotation_name,"_per_cluster")
     name_score<-paste0(annotation_name,"_per_cluster_score")

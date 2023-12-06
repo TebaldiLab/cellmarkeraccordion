@@ -416,9 +416,18 @@ accordion_custom<-function(data,
       final_dt_cluster[, annotation_per_cell := cell_type]
     }
     # add the annotation results in the metadata of the Seurat data
-    anno_dt_cl<-final_dt_cluster[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","diff_score")]
-    anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster")]
-    colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster")
+    anno_dt_cell<-final_dt_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
+    anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
+    anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
+    anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
+    anno_dt_cl<-anno_dt_cell_ptc[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","cell_type","diff_score","ncell_tot_cluster","ncell_celltype_cluster")]
+    anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","perc_celltype_cluster")]
+    colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster","percentage")
+
+    #if less than 10% of cells are labeled as the top cell type assigned as unknown
+    if (allow_unknown == T){
+      anno_dt_cl[percentage < 10, annotation_per_cluster:= "unknown"]
+    }
 
     name<-paste0(annotation_name,"_per_cluster")
     name_score<-paste0(annotation_name,"_per_cluster_score")
