@@ -268,6 +268,9 @@ accordion_plot<-function(data,
 
           }
 
+          top_marker_dt<-top_marker_dt[order(group)]
+          top_marker_dt<-top_marker_dt[,marker:=factor(marker,levels=unique(marker))]
+
           dotplot<- ggplot(top_marker_dt, aes(x=group, y = marker, color = group, size = impact_score)) +
             geom_point() +
             theme_bw(base_size = bs) +
