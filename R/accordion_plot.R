@@ -257,6 +257,46 @@ accordion_plot<-function(data,
         }
       }
 
+          #global plot
+          if("cluster" %in% group_markers_by){
+            colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_cluster"] <- "impact_score"
+            colnames(top_marker_dt)[colnames(top_marker_dt) == eval(cluster_column_name)] <- "group"
+
+          } else if("celltype_cluster" %in% group_markers_by){
+            colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_celltype_cluster"] <- "impact_score"
+            colnames(top_marker_dt)[colnames(top_marker_dt) == eval(info_to_plot_per_cluster)] <- "group"
+
+          }
+
+          dotplot<- ggplot(top_marker_dt, aes(x=group, y = marker, color = group, size = impact_score)) +
+            geom_point() +
+            theme_bw(base_size = bs) +
+            scale_size(range=c(4,10))+
+            guides(colour="none")+
+            theme(panel.border = element_blank(),
+                  axis.title.x = element_blank(),
+                  axis.title.y = element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  axis.ticks.y = element_blank(),
+                  strip.background = element_blank(),
+                  strip.text = element_text(size=bs),
+                  text = element_text(size = bs),
+                  axis.text.y = element_text(size = bs),
+                  legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
+                  legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line"),
+                  axis.text.x = element_text(angle = 45, hjust=1))+
+            scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
+                                                           width = 20))
+
+          if(data_type == "seurat"){
+            data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][["global"]]<-dotplot
+          } else {
+            data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][["global"]]<-dotplot
+
+          }
+
+
         if("cluster" %in% resolution){
           group<-as.vector(unique(top_celltypes[, get(cluster_column_name)]))
         } else if ("cell" %in% resolution){
