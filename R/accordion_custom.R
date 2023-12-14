@@ -321,7 +321,9 @@ accordion_custom<-function(data,
   marker_table[,length:= .N, by="cell_type"]
   if(!is.null(min_n_marker)){
     if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
+      if(min_n_marker != 1){
+        warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
+      }
     } else{
       marker_table<-marker_table[length >= min_n_marker]
     }

@@ -433,8 +433,10 @@ suppressWarnings({
   accordion_marker[,length:= .N, by="cell_type"]
   if(!is.null(min_n_marker)){
     if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
-    } else{
+      if(min_n_marker != 1){
+        warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
+      }
+          } else{
          accordion_marker<-accordion_marker[length >= min_n_marker]
         }
   }
