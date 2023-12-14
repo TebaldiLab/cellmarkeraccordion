@@ -381,7 +381,7 @@ accordion_custom<-function(data,
 
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(marker_table$marker))
-  Zscaled_data<-GetAssayData(data, assay=assay, slot='data')
+  Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
   Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
   setkey(Zscaled_data, marker)
   Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
@@ -446,7 +446,7 @@ accordion_custom<-function(data,
       cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
       colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-      accordion_output<-list(GetAssayData(data, assay=assay, slot='data'), cluster_table)
+      accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cluster_table)
       names(accordion_output)<-c("scaled_matrix","cluster_annotation")
     }
   }
@@ -482,7 +482,7 @@ accordion_custom<-function(data,
         accordion_output<-append(accordion_output,cell_table)
         names(accordion_output)<-c(names(accordion_output), "cell_annotation")
       } else {
-        accordion_output<-list(GetAssayData(data, assay=assay, slot='data'), cell_table)
+        accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cell_table)
         names(accordion_output)<-c("scaled_matrix","cell_annotation")
       }
 
