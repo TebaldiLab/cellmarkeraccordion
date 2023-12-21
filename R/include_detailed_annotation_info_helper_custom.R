@@ -198,20 +198,54 @@ include_detailed_annotation_info_helper_custom<-function(data,
     }
     if ("score" %in% group_markers_by){
       if(!is.null(condition_group_info) & is.null(cell_type_group_info)){
+          if(data_type == "seurat"){
+            condition_table<-data@meta.data
+            condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
+            col_vec<-c("cell",condition_group_info)
+            condition_table<-condition_table[,..col_vec]
+            colnames(condition_table)<-c("cell","condition")
+            condition_table<-condition_table[,c("cell","condition")]
+
+          } else{
+            col_vec<-c("cell",condition_group_info, cell_type_group_info)
+            condition_table<-as.data.table(condition_group_info)[,..col_vec]
+            colnames(condition_table)<-c("cell","condition","celltype")
+          }
+        dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
+        # consider only cells with a score greater than the 90 percentile (as default)
+        dt_top_marker_condition[,quantile_diff_score := quantile((unique(.SD, by = c("cell")))$diff_score, probs = top_cell_score_quantile_threshold, na.rm=TRUE),by="cell_type"]
+        dt_top_marker_condition<-dt_top_marker_condition[diff_score >= quantile_diff_score]
+
+        dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
+        dt_top <- unique(dt_top_marker_condition[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell","condition")][,c("condition","annotation_per_cell","marker","marker_type","quantile_score_marker","weight","specificity")])
+        dt_top<-unique(dt_top[,c("annotation_per_cell","condition","marker","marker_type","quantile_score_marker","weight","specificity")])
+        dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),c("annotation_per_cell","condition")]
+
+        name<-paste0(annotation_name,"_per_cell")
+        name_score<-paste0(annotation_name,"_per_cell_score")
+
+        colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),"marker","marker_type","gene_impact_score_per_score_cell","weight","specificity")
+
+        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
+      }
+      if(!is.null(condition_group_info) & !(is.null(cell_type_group_info))){
         if(data_type == "seurat"){
           condition_table<-data@meta.data
           condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
-          condition_table<-condition_table[,c("cell","condition")]
-
+          col_vec<-c("cell",condition_group_info, cell_type_group_info)
+          condition_table<-condition_table[,..col_vec]
+          colnames(condition_table)<-c("cell","condition","celltype")
+          condition_table<-condition_table[,c("cell","condition","celltype")]
         } else{
-          condition_table<-as.data.table(condition_group_info)[,c("cell","condition")]
+          col_vec<-c("cell",condition_group_info, cell_type_group_info)
+          condition_table<-as.data.table(condition_group_info)[,..col_vec]
+          colnames(condition_table)<-c("cell","condition","celltype")
 
         }
         dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
-        # consider only cells with a score greater than the 90 percentile (as default)
-        quantile_diff_score<-quantile(unique(dt_top_marker_condition$diff_score), probs = top_cell_score_quantile_threshold, na.rm=TRUE)
         dt_top_marker_condition[,quantile_diff_score := quantile((unique(.SD, by = c("cell")))$diff_score, probs = top_cell_score_quantile_threshold, na.rm=TRUE),by="cell_type"]
         dt_top_marker_condition<-dt_top_marker_condition[diff_score >= quantile_diff_score]
+
         dt_top <- unique(dt_top_marker_condition[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell","condition","celltype")][,c("condition","celltype","annotation_per_cell","marker","marker_type","quantile_score_marker","weight","specificity")])
         dt_top<-unique(dt_top[,c("annotation_per_cell","condition","celltype","marker","marker_type","quantile_score_marker","weight","specificity")])
         dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),c("annotation_per_cell","condition","celltype")]
@@ -221,7 +255,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
 
         colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),eval(cell_type_group_info),"marker","marker_type","gene_impact_score_per_score_cell","weight","specificity")
 
-        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score"]] <- as.data.table(dt_top_marker_by_cell)
+        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
       } else {
         dt_top_marker[,quantile_diff_score := quantile((unique(.SD, by = c("cell")))$diff_score, probs = top_cell_score_quantile_threshold, na.rm=TRUE),by="cell_type"]
         dt_top_marker<-dt_top_marker[diff_score >= quantile_diff_score]
@@ -231,9 +265,9 @@ include_detailed_annotation_info_helper_custom<-function(data,
         name<-paste0(annotation_name,"_per_cell")
         name_score<-paste0(annotation_name,"_per_cell_score")
 
-        colnames(dt_top_marker_by_cell)<-c(eval(name), "marker","marker_type","gene_impact_score_per_score_cell","weight","specificity")
+        colnames(dt_top_marker_by_cell)<-c(eval(name), "marker","marker_type","gene_impact_score_per_celltype_cell","weight","specificity")
 
-        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score"]] <- as.data.table(dt_top_marker_by_cell)
+        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }
     }
     if(data_type == "seurat"){
