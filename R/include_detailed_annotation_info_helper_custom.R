@@ -37,6 +37,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
                                                   n_top_celltypes,
                                                   n_top_markers,
                                                   top_marker_score_quantile_threshold,
+                                                  top_cell_score_quantile_threshold,
                                                   condition_group_info = NULL,
                                                   cell_type_group_info= NULL){
   if(data_type == "matrix"){
