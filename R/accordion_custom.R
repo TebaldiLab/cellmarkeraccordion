@@ -510,6 +510,7 @@ accordion_custom<-function(data,
                                                       n_top_celltypes,
                                                       n_top_markers,
                                                       top_marker_score_quantile_threshold,
+                                                      top_cell_score_quantile_threshold,
                                                       condition_group_info,
                                                       cell_type_group_info)
     } else{
@@ -528,6 +529,7 @@ accordion_custom<-function(data,
                                                                 n_top_celltypes,
                                                                 n_top_markers,
                                                                 top_marker_score_quantile_threshold,
+                                                                top_cell_score_quantile_threshold,
                                                                 condition_group_info,
                                                                 cell_type_group_info)
     }
