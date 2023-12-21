@@ -267,7 +267,7 @@ include_detailed_annotation_info_helper<-function(data,
 
         colnames(dt_top_marker_by_cell)<-c(eval(name), "marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
 
-        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
+        cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }
     }
     if(data_type == "seurat"){
