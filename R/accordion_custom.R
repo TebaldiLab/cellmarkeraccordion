@@ -192,6 +192,7 @@ accordion_custom<-function(data,
                            condition_group_info = NULL,
                            cell_type_group_info = NULL,
                            group_markers_by = "celltype_cluster",
+                           top_cell_score_quantile_threshold = 0.90,
                            n_top_celltypes = 5,
                            n_top_markers = 5,
                            top_marker_score_quantile_threshold = 0.75,
@@ -332,7 +333,7 @@ accordion_custom<-function(data,
 
   #check input group_markers_by
   if("cell" %in% annotation_resolution & !("cluster" %in% annotation_resolution)){
-    if(!(group_markers_by %in% c("celltype_cell","cell"))){
+    if(!(group_markers_by %in% c("celltype_cell","cell","score"))){
       group_markers_by<-"celltype_cell"
     }
   }
