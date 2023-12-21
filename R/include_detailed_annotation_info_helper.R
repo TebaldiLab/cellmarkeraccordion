@@ -227,6 +227,7 @@ include_detailed_annotation_info_helper<-function(data,
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score"]] <- as.data.table(dt_top_marker_by_cell)
       }
     }
+  }
     if(data_type == "seurat"){
       if(is_empty(data@misc[[annotation_name]])){
         data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
