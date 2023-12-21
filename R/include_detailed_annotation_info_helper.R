@@ -38,7 +38,7 @@ include_detailed_annotation_info_helper<-function(data,
                                             n_top_celltypes,
                                             n_top_markers,
                                             top_marker_score_quantile_threshold,
-                                            condition_group_info = NULL ,
+                                            condition_group_info = NULL,
                                             cell_type_group_info= NULL){
   if(data_type == "matrix"){
     info_list<-list()
