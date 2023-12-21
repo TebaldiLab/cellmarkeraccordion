@@ -265,7 +265,7 @@ include_detailed_annotation_info_helper<-function(data,
         name<-paste0(annotation_name,"_per_cell")
         name_score<-paste0(annotation_name,"_per_cell_score")
 
-        colnames(dt_top_marker_by_cell)<-c(eval(name), "marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
+        colnames(dt_top_marker_by_cell)<-c(eval(name), "marker","marker_type","gene_impact_score_per_score_cell","EC_score","specificity")
 
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }

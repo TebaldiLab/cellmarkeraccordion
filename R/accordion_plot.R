@@ -115,7 +115,7 @@ accordion_plot<-function(data,
     } else if( "celltype_cell" %in% group_markers_by){
       group<-as.vector(unique(top_marker_dt[, get(info_to_plot_per_cell)]))
     } else if("score" %in% group_markers_by){
-      group<-as.vector(unique(top_marker_dt[,get(info_to_plot_per_cell)]))
+      group<-as.vector(unique(top_marker_dt[, get(info_to_plot_per_cell)]))
     }
 
 
