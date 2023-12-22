@@ -200,16 +200,18 @@ accordion_plot<-function(data,
             scale_size(range=c(4,13), guide_legend(title="EC score"),breaks = c(1,2,3,4,5), limits=c(1,5))+
             scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"), limits = force)+
 
-            new_scale("color") +
-            new_scale("size") +
+            if(!is.na(unique(top_dt_cl$specificity_negative))){
+              pl <- pl + new_scale("color") +
+                new_scale("size") +
+                geom_vline(xintercept = 0, linetype = 2) +
+                geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),linewidth = bs/10, show.legend = F) +
+                geom_point(aes(size=weight_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
+                theme_bw(base_size = bs) +
+                scale_size(range=c(4,13), guide_legend(title="EC score"),breaks = c(1,2,3,4,5), limits=c(1,5))+
+                scale_color_manual(values=vec_neg, breaks = names(vec_neg),  guide_legend(title="Specificity\n(negative)"))
+            }
 
-            geom_vline(xintercept = 0, linetype = 2) +
-            geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),linewidth = bs/10, show.legend = F) +
-            geom_point(aes(size=EC_score_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
-            theme_bw(base_size = bs) +
-            scale_size(range=c(4,13), guide_legend(title="EC score"),breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual(values=vec_neg, breaks = names(vec_neg),  guide_legend(title="Specificity\n(negative)"), limits = force)+
-            theme(panel.border = element_blank()) +
+          pl <- pl + theme(panel.border = element_blank()) +
             labs(x = "Gene impact score", y = "") +
             theme(panel.grid.major.y = element_blank(),
                   panel.grid.minor = element_blank(),
@@ -232,18 +234,20 @@ accordion_plot<-function(data,
             geom_point(aes(size=weight_range,color=specificity_range), alpha= 1, shape = 16) +
             theme_bw(base_size = bs) +
             scale_size(range=c(4,13), guide_legend(title="Weight"),breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"))+
+            scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"))
 
-            new_scale("color") +
-            new_scale("size") +
+            if(!is.na(unique(top_dt_cl$specificity_negative))){
+            pl <- pl + new_scale("color") +
+                      new_scale("size") +
+                      geom_vline(xintercept = 0, linetype = 2) +
+                      geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),linewidth = bs/10, show.legend = F) +
+                      geom_point(aes(size=weight_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
+                      theme_bw(base_size = bs) +
+                      scale_size(range=c(4,13), guide_legend(title="Weight"),breaks = c(1,2,3,4,5), limits=c(1,5))+
+                      scale_color_manual(values=vec_neg, breaks = names(vec_neg),  guide_legend(title="Specificity\n(negative)"))
+            }
 
-            geom_vline(xintercept = 0, linetype = 2) +
-            geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),linewidth = bs/10, show.legend = F) +
-            geom_point(aes(size=weight_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
-            theme_bw(base_size = bs) +
-            scale_size(range=c(4,13), guide_legend(title="Weight"),breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual(values=vec_neg, breaks = names(vec_neg),  guide_legend(title="Specificity\n(negative)"))+
-            theme(panel.border = element_blank()) +
+            pl <- pl + theme(panel.border = element_blank()) +
             labs(x = "Gene impact score", y = "") +
             theme(panel.grid.major.y = element_blank(),
                   panel.grid.minor = element_blank(),
@@ -255,6 +259,18 @@ accordion_plot<-function(data,
             theme(legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5)) +
             theme(legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line")) +
             ggtitle(name)
+        }
+
+        if(unique(top_dt_cl$specificity_range) == 1){
+          pl <- pl + guides(color="none")
+        }
+        if(unique(top_dt_cl$weight_range == 1)){
+          pl <- pl + guides(size="none")
+        }
+
+        if("condition" %in% colnames(top_dt_cl)){
+          col<-hue_pal()(uniqueN(top_dt_cl))
+          pl<- pl + facet_grid(condition ~ .)
         }
 
         if(data_type == "seurat"){
