@@ -331,14 +331,14 @@ accordion_custom<-function(data,
   }
 
   # check group_markers_by input
-  if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
-    warning("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\", \"celltype_cell\" or \"score_cell\"")
-    if("cluster" %in% annotation_resolution){
-      group_markers_by<-"celltype_cluster"
-    } else if("cell" %in% annotation_resolution){
-      group_markers_by<-"celltype_cell"
-    }
-  }
+  # if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
+  #   warning("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\", \"celltype_cell\" or \"score_cell\"")
+  #   if("cluster" %in% annotation_resolution){
+  #     group_markers_by<-"celltype_cluster"
+  #   } else if("cell" %in% annotation_resolution){
+  #     group_markers_by<-"celltype_cell"
+  #   }
+  # }
 
   #avoid warnings
   suppressWarnings({
