@@ -280,7 +280,7 @@ accordion_plot<-function(data,
 
         }
       }
-
+        if(!cell %in% group_markers_by){
           #global plot markers
           if("cluster" %in% group_markers_by){
             colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_cluster"] <- "impact_score"
@@ -290,31 +290,64 @@ accordion_plot<-function(data,
             colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_celltype_cluster"] <- "impact_score"
             colnames(top_marker_dt)[colnames(top_marker_dt) == eval(info_to_plot_per_cluster)] <- "group"
 
-          }
+            } else if ("score_cell" %in% group_markers_by){
+              colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_score_cell"] <- "impact_score"
+              colnames(top_marker_dt)[colnames(top_marker_dt) == eval(info_to_plot_per_cell)] <- "group"
+
+            } else if ("celltype_cell" %in% group_markers_by){
+              colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_score_cell"] <- "impact_score"
+              colnames(top_marker_dt)[colnames(top_marker_dt) == eval(info_to_plot_per_cell)] <- "group"
+            }
 
           top_marker_dt<-top_marker_dt[order(group)]
           top_marker_dt<-top_marker_dt[,marker:=factor(marker,levels=unique(marker))]
 
-          dotplot<- ggplot(top_marker_dt, aes(x=group, y = marker, color = group, size = impact_score)) +
-            geom_point() +
-            theme_bw(base_size = bs) +
-            scale_size(range=c(4,10))+
-            guides(colour="none")+
-            theme(panel.border = element_blank(),
-                  axis.title.x = element_blank(),
-                  axis.title.y = element_blank(),
-                  panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  axis.ticks.y = element_blank(),
-                  strip.background = element_blank(),
-                  strip.text = element_text(size=bs),
-                  text = element_text(size = bs),
-                  axis.text.y = element_text(size = bs),
-                  legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
-                  legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line"),
-                  axis.text.x = element_text(angle = 45, hjust=1))+
-            scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
-                                                           width = 20))
+          if(! ("condition" %in% colnames(top_marker_dt))){
+
+              dotplot<- ggplot(top_marker_dt, aes(x=group, y = marker, color = group, size = impact_score)) +
+                geom_point() +
+                theme_bw(base_size = bs) +
+                scale_size(range=c(4,10))+
+                guides(colour="none")+
+                theme(panel.border = element_blank(),
+                      axis.title.x = element_blank(),
+                      axis.title.y = element_blank(),
+                      panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      axis.ticks.y = element_blank(),
+                      strip.background = element_blank(),
+                      strip.text = element_text(size=bs),
+                      text = element_text(size = bs),
+                      axis.text.y = element_text(size = bs),
+                      legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
+                      legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line"),
+                      axis.text.x = element_text(angle = 45, hjust=1))+
+                scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
+                                                               width = 20))
+          } else {
+
+            dotplot<- ggplot(top_marker_dt, aes(x=group, y = marker, color = group, alpha= condition, size = impact_score, group=condition)) +
+              geom_point(position=position_dodge(width=0.3)) +
+              scale_alpha_discrete(range = c(0.6, 1))  +
+              theme_bw(base_size = bs) +
+              scale_size(range=c(4,10))+
+              guides(colour="none")+
+              theme(panel.border = element_blank(),
+                    axis.title.x = element_blank(),
+                    axis.title.y = element_blank(),
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    axis.ticks.y = element_blank(),
+                    strip.background = element_blank(),
+                    strip.text = element_text(size=bs),
+                    text = element_text(size = bs),
+                    axis.text.y = element_text(size = bs),
+                    legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
+                    legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line"),
+                    axis.text.x = element_text(angle = 45, hjust=1))+
+              scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
+                                                             width = 20))
+          }
 
           if(data_type == "seurat"){
             data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][["global"]]<-dotplot
@@ -322,7 +355,7 @@ accordion_plot<-function(data,
             data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][["global"]]<-dotplot
 
           }
-
+        }
 
         if("cluster" %in% resolution){
           group<-as.vector(unique(top_celltypes[, get(cluster_column_name)]))
