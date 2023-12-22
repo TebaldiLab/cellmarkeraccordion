@@ -43,15 +43,6 @@
 #'   the clustering id’s for each cell. This parameter is necessary only when
 #'   the input is a count matrix and only if the \code{annotation_resolution}
 #'   parameter is set to “cluster”. Default is “seurat_clusters”.
-#'@param condition_info in case \code{object} is a Seurat object,
-#'  \code{condition_info} should be need to be a character string specifying the
-#'  name of the column in the metadata that contains condition ids for each cell;
-#'  if \code{object} is a count matrix, \code{condition_info} should be need to be a
-#'   data frame or data table containing condition identity for each cell. The
-#'   data frame or data table should contain at least two columns, one  named
-#'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
-#'   the condition id’s for each cell. This parameter is necessary only when
-#'   the input is a count matrix. Default is NULL.
 #'@param assay Character string specifying the Assay of the Seurat object. This
 #'  parameter is necessary only  in case \code{data} is a Seurat object. Default
 #'  is “RNA”.
@@ -180,7 +171,6 @@ accordion_custom<-function(data,
                            marker_type_column = "marker_type",
                            weight_column = "weight",
                            cluster_info = "seurat_clusters",
-                           condition_info = NULL,
                            assay = "RNA",
                            min_n_marker = 5,
                            max_n_marker = NULL,
