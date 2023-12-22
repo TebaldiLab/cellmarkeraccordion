@@ -59,7 +59,7 @@ accordion_plot<-function(data,
     resolution_slot <- paste0(resolution,"_resolution")
   }
   # check group_markers_by input
-  if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score"))){
+  if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
     stop("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\" or \"celltype_cell\"")
   } else{
     top_markers<-paste0("top_markers_per_",group_markers_by)
@@ -114,7 +114,7 @@ accordion_plot<-function(data,
       group<-unique(top_marker_dt$cell)
     } else if( "celltype_cell" %in% group_markers_by){
       group<-as.vector(unique(top_marker_dt[, get(info_to_plot_per_cell)]))
-    } else if("score" %in% group_markers_by){
+    } else if("score_cell" %in% group_markers_by){
       group<-as.vector(unique(top_marker_dt[, get(info_to_plot_per_cell)]))
     }
 
@@ -143,7 +143,7 @@ accordion_plot<-function(data,
           colnames(top_dt_cl)[colnames(top_dt_cl) == "gene_impact_score_per_celltype_cell"] <- "impact_score"
           name<-gr
 
-        } else if("score" %in% group_markers_by){
+        } else if("score_cell" %in% group_markers_by){
           top_dt_cl<-top_marker_dt[get(info_to_plot_per_cell) == gr]
           colnames(top_dt_cl)[colnames(top_dt_cl) == "gene_impact_score_per_score_cell"] <- "impact_score"
           name<-gr

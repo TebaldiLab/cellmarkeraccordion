@@ -196,7 +196,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }
     }
-    if ("score" %in% group_markers_by){
+    if ("score_cell" %in% group_markers_by){
       if(!is.null(condition_group_info) & is.null(cell_type_group_info)){
           if(data_type == "seurat"){
             condition_table<-data@meta.data
