@@ -301,9 +301,13 @@ accordion_custom_annotation<-function(data,
       marker_table<-marker_table[length >= min_n_marker]
     }
   }
-  #check input group_markers_by
-  if("cell" %in% annotation_resolution & !("cluster" %in% annotation_resolution)){
-    if(!(group_markers_by %in% c("celltype_cell","cell"))){
+
+  # check group_markers_by input
+  if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
+    warning("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\", \"celltype_cell\" or \"score_cell\"")
+    if("cluster" %in% annotation_resolution){
+      group_markers_by<-"celltype_cluster"
+    } else if("cell" %in% annotation_resolution){
       group_markers_by<-"celltype_cell"
     }
   }
