@@ -287,7 +287,7 @@ accordion_plot<-function(data,
 
         }
       }
-        if(!cell %in% group_markers_by){
+        if(!"cell" %in% group_markers_by){
           #global plot markers
           if("cluster" %in% group_markers_by){
             colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_cluster"] <- "impact_score"
