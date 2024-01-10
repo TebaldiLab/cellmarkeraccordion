@@ -261,11 +261,15 @@ accordion_plot<-function(data,
             ggtitle(name)
         }
 
-        if(unique(top_dt_cl$specificity_range) == 1){
-          pl <- pl + guides(color="none")
+        if(uniqueN(top_dt_cl$specificity_range) == 1){
+          if(unique(top_dt_cl$specificity_range) == 1){
+            pl <- pl + guides(color="none")
+          }
         }
-        if(unique(top_dt_cl$weight_range == 1)){
-          pl <- pl + guides(size="none")
+        if(uniqueN(top_dt_cl$weight_range) == 1){
+          if(unique(top_dt_cl$weight_range == 1)){
+            pl <- pl + guides(size="none")
+          }
         }
 
         if("condition" %in% colnames(top_dt_cl)){
