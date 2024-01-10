@@ -406,16 +406,13 @@ accordion_plot<-function(data,
 
         } else if ("cell" %in% resolution){
           group<-unique(top_celltypes$cell)
-
-
-
         }
 
         for (gr in group){
           #lolliplot with top N cell types per cluster
 
            if("cluster" %in% resolution){
-              top_celltypes_cl<-top_celltypes[get(cluster_column_name) == gr]
+              top_celltypes_cl<-top_celltypes[group == gr]
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == "celltype_impact_score"] <- "impact_score"
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == eval(info_to_plot_per_cluster)] <- "cell_type"
               top_celltypes_cl<-top_celltypes_cl[order(-impact_score)]
