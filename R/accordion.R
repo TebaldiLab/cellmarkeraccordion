@@ -103,12 +103,15 @@
 #'   \code{n_top_markers} marker genes for each cell type identified with
 #'   cluster ("celltype_cluster") or cell ("celltype_cell") resolution;
 #'   \code{n_top_markers} marker genes per cluster ("cluster") or per cell
-#'   ("cell") can be also obtained. Either "celltype_cluster", "celltype_cell",
-#'   "cluster", "cell". Default is "celltype_cluster".
+#'   ("cell") can be also obtained. Additionally, by setting \code{group_markers_by}
+#'  to "score_cell", the \code{n_top_markers} marker genes only for
+#'  cells with a score greater than \code{top_cell_score_quantile_threshold} are
+#'  retrieved. Either "celltype_cluster", "celltype_cell",
+#'  "cluster", "cell" or "score_cell". Default is "celltype_cluster".
 #'  @param top_cell_score_quantile_threshold numeric value in (0,1] specifying
-#'  the cell score quantile threshold. For each cell type a score specific for
+#'  the cell score quantile threshold. For each cell type/signature a score specific for
 #'  each cell is computed. The \code{top_cell_score_quantile_threshold} is
-#'  computed across cells belonging to the same cell type, and only
+#'  computed across cells belonging to the same cell type/signature, and only
 #'  cells with a score greater than the \code{top_cell_score_quantile_threshold}
 #'  are kept. This parameter is necessary only when \code{group_markers_by}
 #'  is set to "score_cell". Default is 0.90.
@@ -125,9 +128,6 @@
 #'   cl or a cell type ct, the \code{top_marker_score_quantile_threshold} is
 #'   computed across cells belonging to that cluster or labeled as ct, and the
 #'   \code{n_top_markers} with the maximum score are reported. Default is 0.75.
-#' @param top_cell_score_quantile_threshold numeric value in (0,1] specifying
-#'   the cell score quantile threshold. If \code{group_markers_by} is set to
-#'   "score_cell"
 #' @param plot Logical value indicating whether to store plots displaying
 #'   detailed annotation information.  This parameter can be set to TRUE only
 #'   when \code{include_detailed_annotation_info} is set to TRUE. If TRUE,
