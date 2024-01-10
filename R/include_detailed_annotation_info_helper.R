@@ -15,6 +15,7 @@
 #' @param n_top_celltypes
 #' @param n_top_markers
 #' @param top_marker_score_quantile_threshold
+#' @param top_cell_score_quantile_threshold
 #' @param condition_group_info
 #' @param cell_type_group_info
 #'
@@ -38,8 +39,8 @@ include_detailed_annotation_info_helper<-function(data,
                                             n_top_markers,
                                             top_marker_score_quantile_threshold,
                                             top_cell_score_quantile_threshold,
-                                            condition_group_info = NULL,
-                                            cell_type_group_info= NULL){
+                                            condition_group_info,
+                                            cell_type_group_info){
   if(data_type == "matrix"){
     info_list<-list()
   }
