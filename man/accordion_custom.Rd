@@ -122,16 +122,18 @@ is set to “cluster” and/or “cell, sublists named “cluster_resolution” 
 \code{group_markers_by} and the \code{n_top_celltypes} cell types are then
 included. If a Seurat object is provided as input the list is stored in the
 misc slot of the object (object@misc@\code{annotation_name}). If the input is a
-count matrix, the list is returned in the final output. Default is TRUE.
-@param condition_group_info in case \code{object} is a Seurat object,
+count matrix, the list is returned in the final output. Default is TRUE.}
+
+\item{condition_group_info}{in case \code{object} is a Seurat object,
 \code{condition_group_info} should be need to be a character string specifying the
 name of the column in the metadata that contains condition ids for each cell;
 if \code{object} is a count matrix, \code{condition_group_info} should be need to be a
 data frame or data table containing condition identity for each cell. The
 data frame or data table should contain at least two columns, one  named
 “cell”, which specifies cell id’s, and one named “condition”, which specifies
-the condition id’s for each cell.  Default is NULL.
-@param cell_type_group_info in case \code{object} is a Seurat object,
+the condition id’s for each cell.  Default is NULL.}
+
+\item{cell_type_group_info}{in case \code{object} is a Seurat object,
 \code{cell_type_group_info} should be need to be a character string specifying the
 name of the column in the metadata that contains cell types ids for each cell;
 if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
@@ -149,8 +151,9 @@ the classification of marker genes. It possible to retrieve
 to "score_cell", the \code{n_top_markers} marker genes only for
 cells with a score greater than \code{top_cell_score_quantile_threshold} are
 retrieved. Either "celltype_cluster", "celltype_cell",
-"cluster", "cell" or "score_cell". Default is "celltype_cluster".
-@param top_cell_score_quantile_threshold numeric value in (0,1] specifying
+"cluster", "cell" or "score_cell". Default is "celltype_cluster".}
+
+\item{top_cell_score_quantile_threshold}{numeric value in (0,1] specifying
 the cell score quantile threshold. For each cell type/signature a score specific for
 each cell is computed. The \code{top_cell_score_quantile_threshold} is
 computed across cells belonging to the same cell type/signature, and only
