@@ -109,9 +109,9 @@
 #'  retrieved. Either "celltype_cluster", "celltype_cell",
 #'  "cluster", "cell" or "score_cell". Default is "celltype_cluster".
 #'  @param top_cell_score_quantile_threshold numeric value in (0,1] specifying
-#'  the cell score quantile threshold. For each cell type/signature a score specific for
+#'  the cell score quantile threshold. For each cell type a score specific for
 #'  each cell is computed. The \code{top_cell_score_quantile_threshold} is
-#'  computed across cells belonging to the same cell type/signature, and only
+#'  computed across cells belonging to the same cell type, and only
 #'  cells with a score greater than the \code{top_cell_score_quantile_threshold}
 #'  are kept. This parameter is necessary only when \code{group_markers_by}
 #'  is set to "score_cell". Default is 0.90.
