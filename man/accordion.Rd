@@ -23,6 +23,7 @@ accordion(
   condition_group_info = NULL,
   cell_type_group_info = NULL,
   group_markers_by = "celltype_cluster",
+  top_cell_score_quantile_threshold = 0.9,
   n_top_celltypes = 5,
   n_top_markers = 5,
   top_marker_score_quantile_threshold = 0.75,
@@ -144,7 +145,18 @@ specifying the classification of marker genes. It possible to retrieve
 cluster ("celltype_cluster") or cell ("celltype_cell") resolution;
 \code{n_top_markers} marker genes per cluster ("cluster") or per cell
 ("cell") can be also obtained. Either "celltype_cluster", "celltype_cell",
-"cluster" and/or "cell". Default is "celltype_cluster".}
+"cluster", "cell". Default is "celltype_cluster".
+@param top_cell_score_quantile_threshold numeric value in (0,1] specifying
+the cell score quantile threshold. For each cell type a score specific for
+each cell is computed. The \code{top_cell_score_quantile_threshold} is
+computed across cells belonging to the same cell type, and only
+cells with a score greater than the \code{top_cell_score_quantile_threshold}
+are kept. This parameter is necessary only when \code{group_markers_by}
+is set to "score_cell". Default is 0.90.}
+
+\item{top_cell_score_quantile_threshold}{numeric value in (0,1] specifying
+the cell score quantile threshold. If \code{group_markers_by} is set to
+"score_cell"}
 
 \item{n_top_celltypes}{Integer value specifying the number of the top cell
 types to be included in the output for each cluster and cell depending on

@@ -31,8 +31,11 @@ specifying the classification of marker genes. It is possible to retrieve
 top marker genes for each cell type identified with cluster
 ("celltype_cluster") or cell (“celltype_cell”) resolution; top  marker
 genes per cluster ("cluster") or per cell ("cell") can be also obtained.
-Either "celltype_cluster", "celltype_cell", "cluster" and/or "cell".
-Default is "celltype_cluster".}
+Additionally, by setting \code{group_markers_by}
+to "score_cell", the \code{n_top_markers} marker genes only for
+cells with a score greater than \code{top_cell_score_quantile_threshold} are
+retrieved. Either "celltype_cluster", "celltype_cell",
+"cluster", "cell" or "score_cell". Default is "celltype_cluster".}
 }
 \value{
 A Seurat object or a list.

@@ -13,7 +13,6 @@ accordion_custom(
   marker_type_column = "marker_type",
   weight_column = "weight",
   cluster_info = "seurat_clusters",
-  condition_info = NULL,
   assay = "RNA",
   min_n_marker = 5,
   max_n_marker = NULL,
@@ -25,6 +24,7 @@ accordion_custom(
   condition_group_info = NULL,
   cell_type_group_info = NULL,
   group_markers_by = "celltype_cluster",
+  top_cell_score_quantile_threshold = 0.9,
   n_top_celltypes = 5,
   n_top_markers = 5,
   top_marker_score_quantile_threshold = 0.75,
@@ -73,16 +73,6 @@ data frame or data table should contain at least two columns, one  named
 the clustering id’s for each cell. This parameter is necessary only when
 the input is a count matrix and only if the \code{annotation_resolution}
 parameter is set to “cluster”. Default is “seurat_clusters”.}
-
-\item{condition_info}{in case \code{object} is a Seurat object,
-\code{condition_info} should be need to be a character string specifying the
-name of the column in the metadata that contains condition ids for each cell;
-if \code{object} is a count matrix, \code{condition_info} should be need to be a
-data frame or data table containing condition identity for each cell. The
-data frame or data table should contain at least two columns, one  named
-“cell”, which specifies cell id’s, and one named “condition”, which specifies
-the condition id’s for each cell. This parameter is necessary only when
-the input is a count matrix. Default is NULL.}
 
 \item{assay}{Character string specifying the Assay of the Seurat object. This
 parameter is necessary only  in case \code{data} is a Seurat object. Default
@@ -155,8 +145,18 @@ the classification of marker genes. It possible to retrieve
 \code{n_top_markers} marker genes for each cell type identified with cluster
 ("celltype_cluster") or cell ("celltype_cell") resolution;
 \code{n_top_markers} marker genes per cluster ("cluster") or per cell
-("cell") can be also obtained. Either "celltype_cluster", "celltype_cell",
-"cluster" and/or "cell". Default is "celltype_cluster".}
+("cell") can be also obtained. Additionally, by setting \code{group_markers_by}
+to "score_cell", the \code{n_top_markers} marker genes only for
+cells with a score greater than \code{top_cell_score_quantile_threshold} are
+retrieved. Either "celltype_cluster", "celltype_cell",
+"cluster", "cell" or "score_cell". Default is "celltype_cluster".
+@param top_cell_score_quantile_threshold numeric value in (0,1] specifying
+the cell score quantile threshold. For each cell type/signature a score specific for
+each cell is computed. The \code{top_cell_score_quantile_threshold} is
+computed across cells belonging to the same cell type/signature, and only
+cells with a score greater than the \code{top_cell_score_quantile_threshold}
+are kept. This parameter is necessary only when \code{group_markers_by}
+is set to "score_cell". Default is 0.90.}
 
 \item{n_top_celltypes}{Integer value specifying the number of the top cell
 types to be included in the output for each cluster and cell depending on
