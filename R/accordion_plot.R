@@ -61,12 +61,21 @@ accordion_plot<-function(data,
   } else{
     resolution_slot <- paste0(resolution,"_resolution")
   }
+
+
   # check group_markers_by input
   if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
     stop("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\" or \"celltype_cell\"")
-  } else{
+  } else if(resolution =="cell"){
+    if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
+      group_markers_by<-"celltype_cell"
+    }
+  }
+  else{
     top_markers<-paste0("top_markers_per_",group_markers_by)
   }
+
+
   # check di input data
   if(class(data) != "Seurat"){
     data_type <- "matrix"
