@@ -44,6 +44,17 @@ include_detailed_annotation_info_helper_custom<-function(data,
   if(data_type == "matrix"){
     info_list<-list()
   }
+
+  if(resolution =="cell"){
+    if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
+      group_markers_by<-"celltype_cell"
+    }
+  } else if(resolution =="cluster"){
+    if(!(group_markers_by %in% c("cluster","celltype_cluster"))){
+      group_markers_by<-"celltype_cluster"
+      }
+  }
+
   if ("cluster" %in% annotation_resolution){
     anno_cluster<-merge(final_dt_cluster, anno_dt_cl[,-"quantile_score_cluster"], by=c("seurat_clusters"))
     anno_dt_cell<-anno_cluster[order(-diff_score)][,head(.SD, 1),"cell"]

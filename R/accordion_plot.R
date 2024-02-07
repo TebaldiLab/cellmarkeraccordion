@@ -62,7 +62,6 @@ accordion_plot<-function(data,
     resolution_slot <- paste0(resolution,"_resolution")
   }
 
-
   # check group_markers_by input
   if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
     stop("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\" or \"celltype_cell\"")
@@ -71,10 +70,9 @@ accordion_plot<-function(data,
       group_markers_by<-"celltype_cell"
     }
   }
-  else{
+  # else{
     top_markers<-paste0("top_markers_per_",group_markers_by)
   }
-
 
   # check di input data
   if(class(data) != "Seurat"){
