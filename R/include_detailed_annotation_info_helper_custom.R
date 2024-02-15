@@ -41,15 +41,15 @@ include_detailed_annotation_info_helper_custom<-function(data,
                                                   top_cell_score_quantile_threshold,
                                                   condition_group_info,
                                                   cell_type_group_info){
-  if(data_type == "matrix"){
+  if(data_type %in% "matrix"){
     info_list<-list()
   }
 
-  if(resolution =="cell"){
+  if(resolution %in% "cell"){
     if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
       group_markers_by<-"celltype_cell"
     }
-  } else if(resolution =="cluster"){
+  } else if(resolution %in% "cluster"){
     if(!(group_markers_by %in% c("cluster","celltype_cluster"))){
       group_markers_by<-"celltype_cluster"
       }
