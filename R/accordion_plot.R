@@ -69,8 +69,7 @@ accordion_plot<-function(data,
     if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
       group_markers_by<-"celltype_cell"
     }
-  }
-  # else{
+  } else{
     top_markers<-paste0("top_markers_per_",group_markers_by)
   }
 
