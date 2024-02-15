@@ -65,7 +65,7 @@ accordion_plot<-function(data,
   # check group_markers_by input
   if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
     stop("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\" or \"celltype_cell\"")
-  } else if(resolution =="cell"){
+  } else if(resolution %in% "cell"){
     if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
       group_markers_by<-"celltype_cell"
     }
