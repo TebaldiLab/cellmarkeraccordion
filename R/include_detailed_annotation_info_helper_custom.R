@@ -67,7 +67,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
     name<-paste0(annotation_name,"_per_cluster")
     colnames(anno_dt_cl_rank)<-c("seurat_clusters",name,"celltype_impact_score", "ncell_tot_cluster","perc_celltype_cluster")
 
-    if(data_type == "seurat"){
+    if("seurat" %in% data_type){
       colnames(anno_dt_cl_rank)[colnames(anno_dt_cl_rank) == "seurat_clusters"] <- cluster_info
     } else{
       colnames(anno_dt_cl_rank)[colnames(anno_dt_cl_rank) == "seurat_clusters"] <- "cluster"
@@ -85,7 +85,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
       colnames(dt_top_marker_by_cl)<-c("seurat_clusters",eval(name), "marker","marker_type","weight","specificity","gene_impact_score_per_cluster")
 
       #rename seurat_clusters columns using the original name in input
-      if(data_type == "seurat"){
+      if("seurat" %in% data_type){
         colnames(dt_top_marker_by_cl)[colnames(dt_top_marker_by_cl) == "seurat_clusters"] <- cluster_info
       } else{
         colnames(dt_top_marker_by_cl)[colnames(dt_top_marker_by_cl) == "seurat_clusters"] <- "cluster"
@@ -101,7 +101,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
       colnames(dt_top_marker_by_cl)<-c("seurat_clusters",eval(name), "marker","marker_type","weight","specificity","gene_impact_score_per_celltype_cluster")
 
       #rename seurat_clusters columns using the original name in input
-      if(data_type == "seurat"){
+      if("seurat" %in% data_type){
         colnames(dt_top_marker_by_cl)[colnames(dt_top_marker_by_cl) == "seurat_clusters"] <- cluster_info
       } else{
         colnames(dt_top_marker_by_cl)[colnames(dt_top_marker_by_cl) == "seurat_clusters"] <- "cluster"
@@ -110,7 +110,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
       cluster_res_detailed_annotation_info[["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster"]] <- as.data.table(dt_top_marker_by_cl)
     }
 
-    if(data_type == "seurat"){
+    if("seurat" %in% data_type){
       data@misc[[annotation_name]]<-cluster_res_detailed_annotation_info
     } else{
       info_list[[annotation_name]]<-cluster_res_detailed_annotation_info
@@ -146,7 +146,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
     if("celltype_cell" %in% group_markers_by){
       #for each cell retrieves first N cell type and first N markers
       if(!is.null(condition_group_info) & is.null(cell_type_group_info)){
-        if(data_type == "seurat"){
+        if("seurat" %in% data_type){
           condition_table<-data@meta.data
           condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
           col_vec<-c("cell",condition_group_info)
@@ -172,7 +172,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }
       if(!is.null(condition_group_info) & !(is.null(cell_type_group_info))){
-        if(data_type == "seurat"){
+        if("seurat" %in% data_type){
           condition_table<-data@meta.data
           condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
           col_vec<-c("cell",condition_group_info, cell_type_group_info)
@@ -210,7 +210,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
     }
     if ("score_cell" %in% group_markers_by){
       if(!is.null(condition_group_info) & is.null(cell_type_group_info)){
-          if(data_type == "seurat"){
+          if("seurat" %in% data_type){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
             col_vec<-c("cell",condition_group_info)
@@ -239,7 +239,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
 
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
       } else if(!is.null(condition_group_info) & !(is.null(cell_type_group_info))){
-        if(data_type == "seurat"){
+        if("seurat" %in% data_type){
           condition_table<-data@meta.data
           condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
           col_vec<-c("cell",condition_group_info, cell_type_group_info)
@@ -280,7 +280,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }
     }
-    if(data_type == "seurat"){
+    if("seurat" %in% data_type){
       if(is_empty(data@misc[[annotation_name]])){
         data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
       } else {
