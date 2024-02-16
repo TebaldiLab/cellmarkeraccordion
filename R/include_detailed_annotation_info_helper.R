@@ -44,11 +44,11 @@ include_detailed_annotation_info_helper<-function(data,
   if(data_type == "matrix"){
     info_list<-list()
   }
-  if(resolution %in% "cell"){
+  if(annotation_resolution %in% "cell"){
     if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
       group_markers_by<-"celltype_cell"
     }
-  } else if(resolution %in% "cluster"){
+  } else if(annotation_resolution %in% "cluster"){
     if(!(group_markers_by %in% c("cluster","celltype_cluster"))){
       group_markers_by<-"celltype_cluster"
     }
