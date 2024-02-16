@@ -44,7 +44,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
   if("matrix" %in% data_type){
     info_list<-list()
   }
-
+  print("errore47")
   if("cell" %in% resolution){
     if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
       group_markers_by<-"celltype_cell"
