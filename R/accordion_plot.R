@@ -209,7 +209,7 @@ accordion_plot<-function(data,
             scale_size(range=c(4,13), guide_legend(title="EC score"),breaks = c(1,2,3,4,5), limits=c(1,5))+
             scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"), limits = force)+
 
-            if(!is.na(unique(top_dt_cl$specificity_negative))){
+            if(length(unique(top_dt_cl$specificity_negative)) > 0){
               pl <- pl + new_scale("color") +
                 new_scale("size") +
                 geom_vline(xintercept = 0, linetype = 2) +
@@ -245,7 +245,7 @@ accordion_plot<-function(data,
             scale_size(range=c(4,13), guide_legend(title="Weight"),breaks = c(1,2,3,4,5), limits=c(1,5))+
             scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"))
 
-            if(!is.na(unique(top_dt_cl$specificity_negative))){
+            if(length(unique(top_dt_cl$specificity_negative)) > 0){
             pl <- pl + new_scale("color") +
                       new_scale("size") +
                       geom_vline(xintercept = 0, linetype = 2) +
