@@ -328,7 +328,7 @@ accordion_custom<-function(data,
     } else{
       marker_table<-marker_table[length >= min_n_marker]
     }
-    if (nrow(marker_table) = 0){
+    if (nrow(marker_table) == 0){
       stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
     }
   }
