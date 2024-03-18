@@ -31,7 +31,6 @@ include_detailed_annotation_info_helper_custom<-function(data,
                                                   dt_score,
                                                   annotation_name,
                                                   group_markers_by,
-                                                  dt_top_marker,
                                                   cluster_info,
                                                   final_dt,
                                                   anno_dt_cell,
@@ -75,7 +74,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
     cluster_res_detailed_annotation_info<-list()
     cluster_res_detailed_annotation_info[["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes"]] <- as.data.table(anno_dt_cl_rank)
 
-
+    dt_top_marker<-dt_top_marker[cell_type == annotation_per_cluster]
     if("cluster" %in% group_markers_by){
 
       # for each cluster retrieves first N markers
@@ -131,6 +130,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
     cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_celltypes"]] <- as.data.table(dt_top_ct_per_cell)
 
     dt_top_marker<-unique(merge.data.table(dt_score,anno_dt_cell, by=c("cell_type","cell")))
+    dt_top_marker<-dt_top_marker[cell_type == annotation_per_cell]
 
     if("cell" %in% group_markers_by){
       dt_top <- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","cell")][,c("cell_type","marker","marker_type","quantile_score_marker","cell","score","weight","specificity","annotation_per_cell", "diff_score")])
@@ -252,6 +252,7 @@ include_detailed_annotation_info_helper_custom<-function(data,
           colnames(condition_table)<-c("cell","condition","celltype")
 
         }
+        dt_top_marker<-dt_top_marker[cell_type == annotation_per_cell]
         dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
         dt_top_marker_condition[,quantile_diff_score := quantile((unique(.SD, by = c("cell")))$diff_score, probs = top_cell_score_quantile_threshold, na.rm=TRUE),by="cell_type"]
         dt_top_marker_condition<-dt_top_marker_condition[diff_score >= quantile_diff_score]
