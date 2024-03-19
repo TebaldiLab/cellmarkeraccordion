@@ -179,8 +179,47 @@ accordion_cell_cycle<-function(data,
 
     }
     data <- CreateSeuratObject(counts = data)
+    accordion_output<-list() #set output list
     #check that cluster_info is present if cluster is in annotation_resolution
     #if both cluster and cell resolution are set if the cluster_info is not provided or is not correct, only the per cell annotation is performed
+    if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
+      if(is.null(cluster_info)){
+        warning("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation.Cell types annotation will be perform only with per cell resolution.")
+      } else {
+        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+          warning("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation. Cell types annotation will be perform only with per cell resolution.")
+        } else { #if exists check that contain columns name
+          if(!("cell" %in% colnames(cluster_info))){
+            warning("cell column not found in cluster_info. Please provide a data table or data frame with a column named cell contaning cell ids. Cell types annotation will be perform only with per cell resolution.")
+          }
+          if(!("cluster" %in% colnames(cluster_info))){
+            warning("cluster column not found in cluster_info. Please provide a data table or data frame with a column named cluster contaning cluster ids. Cell types annotation will be perform only with per cell resolution.")
+          } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
+            cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
+          }
+        }
+      }
+      #if only per cluster resolution is set if the cluster_info is not provided or is not correct stop
+    } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
+      if(is.null(cluster_info)){
+        stop("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
+      } else {
+        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+          stop("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
+        } else{ #if exists check that contain columns name
+          if(!("cell" %in% colnames(cluster_info))){
+            stop("cell column not found in cluster_info. Please provide a data table or data frame with a column named cell contaning cell ids.")
+          }
+          if(!("cluster" %in% colnames(cluster_info))){
+            stop("cluster column not found in cluster_info. Please provide a data table or data frame with a column named \"cluster\" contaning cluster ids.")
+          } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
+            cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
+            colnames(cluster_table)<-c("cell","seurat_clusters")
+          }
+        }
+      }
+    }
+
     #Seurat data
 
   } else{
@@ -196,6 +235,27 @@ accordion_cell_cycle<-function(data,
       if (assay != "integrated"){
         if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
           stop("Count matrix is empty")
+        }
+      }
+      #check that the cluster column is present in the data
+      if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
+        if(class(cluster_info) != "character"){
+          warning("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution.")
+        } else if (!cluster_info %in% colnames(data@meta.data)){
+          warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
+        } else if (cluster_info %in% colnames(data@meta.data)){
+          seurat_clusters<-cluster_info
+        }
+      } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
+        if(class(cluster_info) != "character"){
+          stop("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's.")
+        } else if (!cluster_info %in% colnames(data@meta.data)){
+          stop(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's."))
+        } else if(cluster_info %in% colnames(data@meta.data)){
+          cluster_table<-as.data.table(data@meta.data)[,cell:=rownames(data@meta.data)]
+          col<-c("cell",eval(cluster_info))
+          cluster_table<-cluster_table[, ..col]
+          colnames(cluster_table)<-c("cell","seurat_clusters")
         }
       }
     }
