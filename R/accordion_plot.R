@@ -206,9 +206,8 @@ accordion_plot<-function(data,
             geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),linewidth = bs/10, show.legend = F) +
             geom_point(aes(size=EC_score_range,color=specificity_range), alpha= 1, shape = 16) +
             theme_bw(base_size = bs) +
-            scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual(values=vec_pos, breaks = names(vec_pos), limits = force)+
-            guides(size=guide_legend(title="EC score"), color=guide_legend("Specificity\n(positive)"))
+            scale_size("EC score",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
+            scale_color_manual("Specificity\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
             if(length(unique(top_dt_cl$specificity_negative)) > 0){
               pl <- pl + new_scale("color") +
@@ -218,8 +217,8 @@ accordion_plot<-function(data,
                 geom_point(aes(size=EC_score_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
                 theme_bw(base_size = bs) +
                 scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-                scale_color_manual(values=vec_neg, breaks = names(vec_neg), limits = force)+
-                guides(size=guide_legend(title="EC score"), color=guide_legend("Specificity\n(negative)"))
+                scale_size("EC score",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
+                scale_color_manual("Specificity\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
             }
 
@@ -246,8 +245,8 @@ accordion_plot<-function(data,
             geom_point(aes(size=weight_range,color=specificity_range), alpha= 1, shape = 16) +
             theme_bw(base_size = bs) +
             scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual(values=vec_pos, breaks = names(vec_pos), limits = force)+
-            guides(size=guide_legend(title="Weight"), color=guide_legend("Specificity\n(positive)"))
+            scale_size("Weight",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
+            scale_color_manual("Specificity\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
 
             if(length(unique(top_dt_cl$specificity_negative)) > 0){
@@ -258,8 +257,8 @@ accordion_plot<-function(data,
                       geom_point(aes(size=weight_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
                       theme_bw(base_size = bs) +
               scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-              scale_color_manual(values=vec_pos, breaks = names(vec_pos), limits = force)+
-              guides(size=guide_legend(title="Weight"), color=guide_legend("Specificity\n(negative)"))
+              scale_size("Weight",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
+              scale_color_manual("Specificity\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
             }
 
             pl <- pl + theme(panel.border = element_blank()) +
