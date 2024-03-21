@@ -271,7 +271,7 @@ accordion_plot<-function(data,
                   text = element_text(size = bs),
                   axis.text.y = element_text(size = bs)) +
             theme(legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5)) +
-            theme(legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line")) +
+            theme(legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line")) +
             ggtitle(name)
         }
         })
@@ -338,7 +338,7 @@ accordion_plot<-function(data,
                       text = element_text(size = bs),
                       axis.text.y = element_text(size = bs),
                       legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
-                      legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line"),
+                      legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line"),
                       axis.text.x = element_text(angle = 45, hjust=1))+
                 scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
                                                                width = 20))
@@ -361,7 +361,7 @@ accordion_plot<-function(data,
                     text = element_text(size = bs),
                     axis.text.y = element_text(size = bs),
                     legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
-                    legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line"),
+                    legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line"),
                     axis.text.x = element_text(angle = 45, hjust=1))+
               scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
                                                              width = 20))
@@ -401,7 +401,7 @@ accordion_plot<-function(data,
                   text = element_text(size = bs),
                   axis.text.y = element_text(size = bs),
                   legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
-                  legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line"),
+                  legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line"),
                   axis.text.x = element_text(angle = 45, hjust=1))+
             scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
                                                            width = 20))
