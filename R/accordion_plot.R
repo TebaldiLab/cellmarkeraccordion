@@ -214,7 +214,7 @@ accordion_plot<-function(data,
                 new_scale("size") +
                 geom_vline(xintercept = 0, linetype = 2) +
                 geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),linewidth = bs/10, show.legend = F) +
-                geom_point(aes(size=weight_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
+                geom_point(aes(size=EC_score_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
                 theme_bw(base_size = bs) +
                 scale_size(range=c(4,13), guide_legend(title="EC score"),breaks = c(1,2,3,4,5), limits=c(1,5))+
                 scale_color_manual(values=vec_neg, breaks = names(vec_neg),  guide_legend(title="Specificity\n(negative)"))
