@@ -198,7 +198,7 @@ accordion_plot<-function(data,
         vec_neg<-top_dt_cl[marker_type=="negative"]$color_combo
         names(vec_neg)<-top_dt_cl[marker_type=="negative"]$specificity_range
         vec_neg<-vec_neg[!duplicated(vec_neg)]
-
+        suppressWarnings({
         if("accordion" %in% info_to_plot | "accordion_disease" %in% info_to_plot){
           top_dt_cl[, EC_score_range:= EC_score][EC_score > 5, EC_score_range:=5]
           pl <- ggplot(top_dt_cl, aes(impact_score, marker)) +
@@ -274,7 +274,7 @@ accordion_plot<-function(data,
             theme(legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line")) +
             ggtitle(name)
         }
-
+        })
         if(uniqueN(top_dt_cl$specificity_range) == 1){
           if(unique(top_dt_cl$specificity_range) == 1){
             pl <- pl + guides(color="none")
