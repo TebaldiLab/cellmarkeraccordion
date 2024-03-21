@@ -207,7 +207,7 @@ accordion_plot<-function(data,
             geom_point(aes(size=EC_score_range,color=specificity_range), alpha= 1, shape = 16) +
             theme_bw(base_size = bs) +
             scale_size(range=c(4,13), guide_legend(title="EC score"),breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"), limits = force)+
+            scale_color_manual(values=vec_pos, breaks = names(vec_pos),  guide_legend(title="Specificity\n(positive)"), limits = force)
 
             if(length(unique(top_dt_cl$specificity_negative)) > 0){
               pl <- pl + new_scale("color") +
