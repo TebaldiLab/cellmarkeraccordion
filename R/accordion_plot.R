@@ -232,7 +232,7 @@ accordion_plot<-function(data,
                   text = element_text(size = bs),
                   axis.text.y = element_text(size = bs)) +
             theme(legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5)) +
-            theme(legend.text = element_text(margin = margin(l = -7, unit = "pt")), legend.key.size = unit(1.2,"line")) +
+            theme(legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line")) +
             ggtitle(name)
 
 
