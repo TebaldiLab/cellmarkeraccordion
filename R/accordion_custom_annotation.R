@@ -7,7 +7,7 @@
 #' or even to pathways and return in output the cell types/pathways assignment
 #' (added to the Seurat object or as a list).
 #'
-#'@param data Either a  Seurat object (version 4.9) or a raw or normalized count
+#'@param data Either a  Seurat object (version 4 or 5) or a raw or normalized count
 #'  matrix with genes on rows and cells on columns. If raw counts are provided,
 #'  data are log-normalized exploiting the NormalizeData() function from the
 #'  Seurat package.
@@ -319,6 +319,16 @@ accordion_custom_annotation<-function(data,
     if("cluster" %in% annotation_resolution){
       group_markers_by<-"celltype_cluster"
     } else if("cell" %in% annotation_resolution){
+      group_markers_by<-"celltype_cell"
+    }
+  }
+  if("cluster" %in% annotation_resolution){
+    if(!(group_markers_by %in% c("cluster","celltype_cluster"))){
+      group_markers_by<-"celltype_cluster"
+    }
+  }
+  if("cell" %in% annotation_resolution){
+    if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
       group_markers_by<-"celltype_cell"
     }
   }
