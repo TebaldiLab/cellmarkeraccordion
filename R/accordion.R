@@ -308,6 +308,17 @@ accordion<-function(data,
       group_markers_by<-"celltype_cell"
     }
   }
+  if("cluster" %in% annotation_resolution){
+    if(!(group_markers_by %in% c("cluster","celltype_cluster"))){
+      group_markers_by<-"celltype_cluster"
+    }
+  }
+  if("cell" %in% annotation_resolution){
+    if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
+      group_markers_by<-"celltype_cell"
+    }
+  }
+
 
 #avoid warnings
 suppressWarnings({

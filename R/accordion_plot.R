@@ -313,7 +313,7 @@ accordion_plot<-function(data,
               colnames(top_marker_dt)[colnames(top_marker_dt) == eval(info_to_plot_per_cell)] <- "group"
 
             } else if ("celltype_cell" %in% group_markers_by){
-              colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_score_cell"] <- "impact_score"
+              colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_celltype_cell"] <- "impact_score"
               colnames(top_marker_dt)[colnames(top_marker_dt) == eval(info_to_plot_per_cell)] <- "group"
             }
 
