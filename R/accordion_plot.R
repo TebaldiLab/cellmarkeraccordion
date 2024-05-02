@@ -382,14 +382,18 @@ accordion_plot<-function(data,
           colnames(top_celltypes)[colnames(top_celltypes) == eval(cluster_column_name)] <- "group"
           colnames(top_celltypes)[colnames(top_celltypes) == eval(info_to_plot_per_cluster)] <- "cell_type"
 
-          top_celltypes<-top_celltypes[order(group)]
+          top_celltypes<-top_celltypes[order(group, -impact_score)]
+          top_celltypes[,win_ct:= .SD[1], by="group"]
+          top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
+
           top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
 
-          dotplot_ct<- ggplot(top_celltypes, aes(x=group, y = cell_type, color = group, size = impact_score)) +
-            geom_point() +
+          dotplot_ct<- ggplot() +
+            geom_point(data = top_celltypes[win_ct_border != "win"], aes(x=group, y = cell_type, color = group, size = impact_score)) +
+            geom_point(data = top_celltypes[win_ct_border == "win"], aes(x=group, y = cell_type,fill=group,  size = impact_score), pch=21, color = "black", stroke = 2) +
             theme_bw(base_size = bs) +
             scale_size(range=c(4,10))+
-            guides(colour="none")+
+            guides(colour="none", fill="none")+
             theme(panel.border = element_blank(),
                   axis.title.x = element_blank(),
                   axis.title.y = element_blank(),
