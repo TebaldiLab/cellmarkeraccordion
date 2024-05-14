@@ -300,7 +300,9 @@ accordion_custom<-function(data,
     }
   }
 
-  #check input tabel
+  marker_table<-as.data.table(marker_table)
+
+  #check input table
   if(nrow(marker_table) < 2){
     stop("Insufficient number of columns. The marker table must contains at least \"cell_type\"  and \"marker\" columns ")
   } else {
