@@ -411,7 +411,8 @@ accordion_disease<-function(data,
         accordion_marker<-accordion_marker[species %in% "Mouse"]
         warning("The dataset might be mouse. Mouse markers are indeed used.")
       }
-    }   input_species<-species
+    }
+    input_species<-species
 
   } else if (setequal(species, c("Human","Mouse"))){
     input_species<-species
