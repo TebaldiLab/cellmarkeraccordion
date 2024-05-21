@@ -636,6 +636,7 @@ suppressWarnings({
   }
 
   #re-assigned the original scale.data slot
+  accordion_scale.data<-list()
   accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
   data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
   GetAssayData(object = data, assay = assay, slot = "scale.data") <- orig.scale_data
