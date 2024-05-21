@@ -477,6 +477,8 @@ suppressWarnings({
     top_marker_score_quantile_threshold <- 0.75
   }
 
+  # store original scale.data slot
+  orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(accordion_marker$marker))
   Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
@@ -632,6 +634,12 @@ suppressWarnings({
     }
 
   }
+
+  #re-assigned the original scale.data slot
+  accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
+  data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
+  GetAssayData(object = data, assay = assay, slot = "scale.data") <- orig.scale_data
+
   if(include_detailed_annotation_info==T & plot == T){
     if(data_type == "seurat"){
       data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
