@@ -392,6 +392,36 @@ accordion_plot<-function(data,
             top_celltypes<-top_celltypes[order(group, -impact_score)]
             top_celltypes[,win_ct:= .SD[1], by="group"]
             top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
+            top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
+            win<-top_celltypes[win_ct_border == "win"]
+            win<-win[,cell_type:=factor(cell_type,levels=levels(top_celltypes$cell_type))]
+
+          dotplot_ct<- ggplot() +
+            geom_point(data = top_celltypes, aes(x=group, y = cell_type, color = group, size = impact_score)) +
+            geom_point(data = win, aes(x=group, y = cell_type,fill=group,  size = impact_score), pch=21, color = "black", stroke = 2) +
+            theme_bw(base_size = bs) +
+            scale_size(range=c(4,10))+
+            guides(colour="none", fill="none")+
+            theme(panel.border = element_blank(),
+                  axis.title.x = element_blank(),
+                  axis.title.y = element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  axis.ticks.y = element_blank(),
+                  strip.background = element_blank(),
+                  strip.text = element_text(size=bs),
+                  text = element_text(size = bs),
+                  axis.text.y = element_text(size = bs),
+                  legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
+                  legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line"),
+                  axis.text.x = element_text(angle = 45, hjust=1))+
+            scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
+                                                           width = 20))
+          } else if (color_by == "cell_type"){ #default
+
+            top_celltypes<-top_celltypes[order(group, -impact_score)]
+            top_celltypes[,win_ct:= .SD[1], by="group"]
+            top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
             top_celltypes<-top_celltypes[order(cell_type)]
             top_celltypes[,n_ct_per_cluster:= (perc_celltype_cluster/100)*ncell_tot_cluster]
             top_celltypes[,n_tot_ct:=sum(n_ct_per_cluster), by="cell_type"]
@@ -428,42 +458,6 @@ accordion_plot<-function(data,
               scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
                                                              width = 20))
 
-
-
-          } else if (color_by == "cell_type"){ #default
-
-            top_celltypes<-top_celltypes[order(group, -impact_score)]
-            top_celltypes[,win_ct:= .SD[1], by="group"]
-            top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
-            top_celltypes<-top_celltypes[order(cell_type)]
-            top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
-            top_celltypes<-top_celltypes[,group:=factor(group,levels=unique(group))]
-
-            win<-top_celltypes[win_ct_border == "win"]
-            win<-win[,cell_type:=factor(cell_type,levels=levels(top_celltypes$cell_type))]
-            win<-win[,group:=factor(group,levels=levels(top_celltypes$group))]
-
-            dotplot_ct<- ggplot() +
-              geom_point(data = top_celltypes, aes(x=group, y = cell_type, color = cell_type, size = impact_score)) +
-              geom_point(data = win, aes(x=group, y = cell_type,fill=cell_type,  size = impact_score), pch=21, color = "black", stroke = 2) +
-              theme_bw(base_size = bs) +
-              scale_size(range=c(4,10))+
-              guides(colour="none", fill="none")+
-              theme(panel.border = element_blank(),
-                    axis.title.x = element_blank(),
-                    axis.title.y = element_blank(),
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    axis.ticks.y = element_blank(),
-                    strip.background = element_blank(),
-                    strip.text = element_text(size=bs),
-                    text = element_text(size = bs),
-                    axis.text.y = element_text(size = bs),
-                    legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
-                    legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line"),
-                    axis.text.x = element_text(angle = 45, hjust=1))+
-              scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
-                                                             width = 20))
           }
 
           if(data_type == "seurat"){
