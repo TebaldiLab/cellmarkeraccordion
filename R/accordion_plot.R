@@ -422,12 +422,13 @@ accordion_plot<-function(data,
             top_celltypes<-top_celltypes[order(group, -impact_score)]
             top_celltypes[,win_ct:= .SD[1], by="group"]
             top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
-            top_celltypes<-top_celltypes[order(-cell_type)]
+            top_celltypes<-top_celltypes[order(cell_type)]
             top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
             top_celltypes<-top_celltypes[,group:=factor(group,levels=unique(group))]
 
             win<-top_celltypes[win_ct_border == "win"]
             win<-win[,cell_type:=factor(cell_type,levels=levels(top_celltypes$cell_type))]
+            win<-win[,group:=factor(group,levels=levels(top_celltypes$group))]
 
             dotplot_ct<- ggplot() +
               geom_point(data = top_celltypes, aes(x=group, y = cell_type, color = cell_type, size = impact_score)) +
