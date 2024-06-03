@@ -370,7 +370,7 @@ suppressWarnings({
   if(is.null(cell_types)){
     accordion_marker<-accordion_marker[marker %in% rownames(data)]
   } else {
-    input_cell_type<-cell_type
+    input_cell_type<-cell_types
     accordion_marker<-accordion_marker[cell_type %in% input_cell_type][marker %in% rownames(data)]
     input_cell_type_not_in_accordion<-input_cell_type[!(input_cell_type %in% unique(accordion_marker$cell_type))]
     if(length(input_cell_type_not_in_accordion) == 1){
