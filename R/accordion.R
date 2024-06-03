@@ -136,6 +136,9 @@
 #'   \code{annotation_resolution} together with the cell types hierarchies based
 #'   on the cell ontology structure are stored in the \code{annotation_name} list. Default
 #'   is TRUE.
+#' @param color_by Character string specifying if the plot reporting the top
+#' cell types for each cluster/cell is colored based on the assigned cell type
+#' ("cell_type") or on cluster id ("cluster"). Default is "cell_type.
 #'
 #' @return A Seurat object or a list
 #' @details If a Seurat object was provided in input, the function returns the
@@ -193,7 +196,8 @@ accordion<-function(data,
                     n_top_celltypes = 5,
                     n_top_markers = 5,
                     top_marker_score_quantile_threshold = 0.75,
-                    plot = TRUE
+                    plot = TRUE,
+                    color_by = "cell_type"
                     ){
 
   #count matrix  data
@@ -643,9 +647,9 @@ suppressWarnings({
 
   if(include_detailed_annotation_info==T & plot == T){
     if(data_type == "seurat"){
-      data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
+      data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by, color_by = color_by)
     } else{
-      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
+      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by, color_by = color_by)
 
     }
   }
