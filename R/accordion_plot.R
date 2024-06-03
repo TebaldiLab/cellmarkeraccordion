@@ -398,12 +398,11 @@ accordion_plot<-function(data,
 
             top_celltypes<-top_celltypes[order(n_tot_ct,win_ct_border)]
             top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
-            top_celltypes<-top_celltypes[order(-n_tot_ct,-win_ct_border)]
+            top_celltypes<-top_celltypes[order(-win_ct_border)]
             top_celltypes<-top_celltypes[,group:=factor(group,levels=unique(group))]
+            top_celltypes[,group:=factor(group, levels = rev(levels(top_celltypes$group)))]
 
             win<-top_celltypes[win_ct_border == "win"]
-            win<-win[,cell_type:=factor(cell_type,levels=levels(top_celltypes$cell_type))]
-            win<-win[,group:=factor(group,levels=levels(top_celltypes$group))]
             hex <- rev(hue_pal()(uniqueN(top_celltypes$cell_type)))
 
             ggplot() +
@@ -428,6 +427,8 @@ accordion_plot<-function(data,
                     axis.text.x = element_text(angle = 45, hjust=1))+
               scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
                                                              width = 20))
+
+
 
           } else if (color_by == "cell_type"){ #default
 
