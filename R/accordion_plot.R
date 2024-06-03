@@ -435,7 +435,7 @@ accordion_plot<-function(data,
             win<-top_celltypes[win_ct_border == "win"]
             hex <- rev(hue_pal()(uniqueN(top_celltypes$cell_type)))
 
-            ggplot() +
+            dotplot_ct<-ggplot() +
               geom_point(data = top_celltypes, aes(x=group, y = cell_type, color = cell_type, size = impact_score)) +
               geom_point(data = win, aes(x=group, y = cell_type,  size = impact_score), pch=21, color = "black", stroke = 2) +
               theme_bw(base_size = bs) +
