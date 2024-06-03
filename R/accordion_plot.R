@@ -32,7 +32,9 @@
 #'   cells with a score greater than \code{top_cell_score_quantile_threshold} are
 #'   retrieved. Either "celltype_cluster", "celltype_cell",
 #'   "cluster", "cell" or "score_cell". Default is "celltype_cluster".
-#'
+#' @param color_by Character string specifying if the plot reporting the top
+#' cell types for each cluster/cell is colored based on the assigned cell type
+#' ("cell_type") or on cluster id ("cluster"). Default is "cell_type.
 #' @return A Seurat object or a list.
 #' @details If a Seurat object was provided in input, the function returns the
 #' Seurat object with a list of ggplot objects added to the "misc" slot in the
@@ -50,7 +52,9 @@
 accordion_plot<-function(data,
                          info_to_plot = "accordion",
                          resolution = "cluster",
-                         group_markers_by = "celltype_cluster"
+                         group_markers_by = "celltype_cluster",
+                         color_by = "cell_type"
+
                          ){
 
 
@@ -382,14 +386,15 @@ accordion_plot<-function(data,
           colnames(top_celltypes)[colnames(top_celltypes) == eval(cluster_column_name)] <- "group"
           colnames(top_celltypes)[colnames(top_celltypes) == eval(info_to_plot_per_cluster)] <- "cell_type"
 
-          top_celltypes<-top_celltypes[order(group, -impact_score)]
-          top_celltypes[,win_ct:= .SD[1], by="group"]
-          top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
 
-          top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
+          if (color_by == "cluster"){
 
-          win<-top_celltypes[win_ct_border == "win"]
-          win<-win[,cell_type:=factor(cell_type,levels=levels(top_celltypes$cell_type))]
+            top_celltypes<-top_celltypes[order(group, -impact_score)]
+            top_celltypes[,win_ct:= .SD[1], by="group"]
+            top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
+            top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
+            win<-top_celltypes[win_ct_border == "win"]
+            win<-win[,cell_type:=factor(cell_type,levels=levels(top_celltypes$cell_type))]
 
           dotplot_ct<- ggplot() +
             geom_point(data = top_celltypes, aes(x=group, y = cell_type, color = group, size = impact_score)) +
@@ -412,6 +417,39 @@ accordion_plot<-function(data,
                   axis.text.x = element_text(angle = 45, hjust=1))+
             scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
                                                            width = 20))
+          } else if (color_by == "cell_type"){ #default
+
+            top_celltypes<-top_celltypes[order(cell_type, -impact_score)]
+            top_celltypes[,win_ct:= .SD[1], by="group"]
+            top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
+            top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
+            top_celltypes<-top_celltypes[,group:=factor(group,levels=unique(group))]
+
+            win<-top_celltypes[win_ct_border == "win"]
+            win<-win[,cell_type:=factor(cell_type,levels=levels(top_celltypes$cell_type))]
+
+            dotplot_ct<- ggplot() +
+              geom_point(data = top_celltypes, aes(x=group, y = cell_type, color = cell_type, size = impact_score)) +
+              geom_point(data = win, aes(x=group, y = cell_type,fill=cell_type,  size = impact_score), pch=21, color = "black", stroke = 2) +
+              theme_bw(base_size = bs) +
+              scale_size(range=c(4,10))+
+              guides(colour="none", fill="none")+
+              theme(panel.border = element_blank(),
+                    axis.title.x = element_blank(),
+                    axis.title.y = element_blank(),
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    axis.ticks.y = element_blank(),
+                    strip.background = element_blank(),
+                    strip.text = element_text(size=bs),
+                    text = element_text(size = bs),
+                    axis.text.y = element_text(size = bs),
+                    legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
+                    legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line"),
+                    axis.text.x = element_text(angle = 45, hjust=1))+
+              scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
+                                                             width = 20))
+          }
 
           if(data_type == "seurat"){
             data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][["global"]]<-dotplot_ct
