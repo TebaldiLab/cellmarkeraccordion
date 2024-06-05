@@ -415,7 +415,12 @@ accordion_plot<-function(data,
             top_marker_dt<-top_marker_dt[,marker:=factor(marker,levels=rev(unique(marker)))]
 
             if("celltype_cluster" %in% group_markers_by){
-              hex <- rev(hue_pal()(uniqueN(top_marker_dt$group)))
+              n_ct<-uniqueN(top_celltypes$group)
+              n_ct_marker<-uniqueN(top_marker_dt$group)
+              hex <- rev(hue_pal()(n_ct))
+
+              hex <- hex[(n_ct-n_ct_marker)+1:n_ct]
+
             } else {
               hex <- (hue_pal()(uniqueN(top_marker_dt$group)))
 
