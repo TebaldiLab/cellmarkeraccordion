@@ -53,6 +53,12 @@
 #'  keep for each cell type. For the selection, markers are ranked according to
 #'  their combined score, obtained by multiplying evidence consistency score and
 #'  specificity score. If  NULL, no filter is applied. Default is NULL.
+#' @param combined_score_quantile_threshold numeric value in (0,1] specifying
+#'   the combined score quantile threshold. For the selection, markers are
+#'   ranked according to their combined score,  obtained by multiplying weight
+#'   and specificity score. Only markers > the
+#'   quantile_threshold are kept. If  NULL, no filter is applied. Default is
+#'   NULL.
 #'@param annotation_resolution Character string or character string vector
 #'  specifying the resolution of the annotation. Either “cluster” and/or “cell”
 #'  are supported. Default is “cluster”.
@@ -184,6 +190,7 @@ accordion_custom<-function(data,
                            assay = "RNA",
                            min_n_marker = 5,
                            max_n_marker = NULL,
+                           combined_score_quantile_threshold = NULL,
                            annotation_resolution = "cluster",
                            cluster_score_quantile_threshold = 0.75,
                            allow_unknown = TRUE,
@@ -388,6 +395,16 @@ accordion_custom<-function(data,
 
   # merge Z_scaled_dt and accordion table
   marker_table[,combined_score := specificity_scaled * weight_scaled]
+
+  # filter markers according to the quantile threshold set
+  if(!is.null(combined_score_quantile_threshold)){
+    if(!is.numeric(combined_score_quantile_threshold) | combined_score_quantile_threshold > 1 | combined_score_quantile_threshold <= 0){
+      warning("Invalid combined_score_quantile_threshold type. Parameter combined_score_quantile_threshold must be a numeric value in (0,1]. No filter is applied")
+    } else{
+      marker_table[,quantile_combined_score:=quantile(combined_score, probs= combined_score_quantile_threshold), by="cell_type"]
+      marker_table<-marker_table[combined_score>quantile_combined_score]
+    }
+  }
 
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
