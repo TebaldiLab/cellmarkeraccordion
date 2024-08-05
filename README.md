@@ -148,8 +148,19 @@ data<-accordion_cellcycle(data)
 ```
 ## Annotate and interprete aberrant single-cell populations with the built-in Cell Marker Accordion disease database
 <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
-This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specific both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters.
+This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specific both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
+
+```bash
+load(bone_marrow_data)
+```
+
+
 To identify for example "leukemia stem cell" in "acute myeloid leukemia" samples run: 
 ```bash
-data<-accordion_disease(data, disease="acute myeloid leukemia", cell_types ="leukemia stem cell")
+bone_marrow_data = accordion_disease(bone_marrow_data, disease= "acute myeloid leukemia", cell_types = "leukemia stem cell",combined_score_quantile_threshold = 0.75, annotation_resolution = "cell", plot=F, annotation_name = "LSC")
+
+FeaturePlot(bone_marrow_data, features = "LSC_per_cell_score", min.cutoff = "q10",max.cutoff = "q75", cols = c("gray","red"), order = T) 
 ```
+
+![LSC](https://github.com/user-attachments/assets/b796cfa4-3d7e-4236-b9b2-73ba55959564)
+
