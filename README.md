@@ -74,6 +74,7 @@ Further insight is provided by looking at the percentage of cells assigned to th
 ```bash
 seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["2_naive B cell"]]
 ```
+![Pbmc_rank_naive](https://github.com/user-attachments/assets/1372c184-f3e1-43eb-908b-1419e7c21698)
 
 Finally the top N marker genes contributing to the annotation of each specific cell type can be explored 
 ```bash
