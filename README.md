@@ -44,13 +44,14 @@ To perform cell types identification by cluster and obtain detailed annotation i
 ```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
-data <- accordion(data, annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+data <- accordion(data, annotation_resolution = "cluster", max_n_marker = 30, allow_unknown = FALSE, annotation_name = "accordion_pbmc", include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 ```bash
-DimPlot(data, group.by = "accordion_per_cluster")
+DimPlot(data, group.by = "accordion_pbmc_per_cluster")
 ```
-![Annotation_example](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/673e5368-0014-444d-916c-873d0b522b7e)
+![Pbmc_annotation_dimplot](https://github.com/user-attachments/assets/e7f48599-2e02-4d52-9473-c37e98432165)
+
 
 Or you can use raw counts matrix and specify cluster's id for each cell.
 ```bash
