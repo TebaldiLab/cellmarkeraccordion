@@ -136,6 +136,9 @@ retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_colu
 
 FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90")
 ```
+
+![Retina_apoptosis](https://github.com/user-attachments/assets/41a887ce-e98e-48bf-98c5-2b71956e87bd)
+
 ## Automatically identify and interpreting cell cycle state of single-cell populations
 <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assing cell cycle state to cell populations. This function exploits the built-in collection of
 marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
