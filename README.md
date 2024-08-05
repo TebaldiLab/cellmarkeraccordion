@@ -90,6 +90,16 @@ read_excel("retina_markers.xlsx")
 head(retina_marker)
 ```
 
+| cell_type  | marker |                                         
+| ------------- | ------------- | 
+| Cones | ARR3 | 
+| Retinal ganglion cells	 | ATOH7 | 
+| Retinal ganglion cells	 | POU4F1 |
+| Rods | C11orf96 | 
+| Bipolar cells	 | CA10 |
+| Bipolar cells	 | CADPS |
+
+
 ```bash
 data(retinal_data)
 ```
