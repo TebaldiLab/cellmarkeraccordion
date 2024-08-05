@@ -100,17 +100,18 @@ accordion_plot<-function(data,
   marker_slot_plot<-paste0(top_markers,"_plot")
   celltype_slot_plot<-"top_celltypes_plot"
 
+  cell_type_annotation_column<-paste0(info_to_plot, "_per_", resolution)
 
-    if(info_to_plot == "accordion"){
+    if("EC_score" %in% colnames(top_marker_dt)){
       data(cell_onto)
       ontology_celltype<-as.data.frame(cell_onto[["name"]])
       colnames(ontology_celltype)<-"cell_type"
       ontology_celltype$cell_ID<-rownames(ontology_celltype)
       ontology_celltype<-as.data.table(ontology_celltype)
       if("cluster" %in% resolution){
-        top_celltypes<-merge(top_cell_type_dt,ontology_celltype,  by.x="accordion_per_cluster", by.y="cell_type")
+        top_celltypes<-merge(top_cell_type_dt,ontology_celltype,  by.x=cell_type_annotation_column, by.y="cell_type")
       } else if ("cell" %in% resolution){
-        top_celltypes<-merge(top_cell_type_dt,ontology_celltype,  by.x="accordion_per_cell", by.y="cell_type")
+        top_celltypes<-merge(top_cell_type_dt,ontology_celltype,  by.x=cell_type_annotation_column, by.y="cell_type")
       }
     } else{
       top_celltypes<-top_cell_type_dt
@@ -130,8 +131,6 @@ accordion_plot<-function(data,
     } else if("score_cell" %in% group_markers_by){
       group<-as.vector(unique(top_marker_dt[, get(info_to_plot_per_cell)]))
     }
-
-
       for (gr in group){
       #lolliplot with top N markers per cluster
         #lolliplot with top N markers per cluster
