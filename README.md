@@ -83,35 +83,26 @@ seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotatio
 ![Pbmc_top_markers](https://github.com/user-attachments/assets/282337b9-b897-4880-a422-ebfec7ecc7a5)
 
 ## Cell type or pathways identification with custom genes sets
-<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```.It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. An example of a marker table
-is included in the package: 
+<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```. It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. We used a published human retinal dataset (Lu et al., Dev Cell. 2020) and we included a table of well-known markers associated to retinal cell types.
+
 ```bash
-data(marker_table)
+read_excel("retina_markers.xlsx")
+head(retina_marker)
 ```
-| cell_type  | marker | marker_type |                                           
-| ------------- | ------------- | ------------- |
-| Naive CD4+ T | IL7R | positive |
-| Naive CD4+ T | CCR7 | positive |
-| CD14+ Mono | CD14 | positive |
-| CD14+ Mono | LYZ | positive |
-| CD14+ Mono | BST1 | negative |
-| Memory CD4+ | IL7R | positive |
-| Memory CD4+ | S100A4 | positive |
-| B | MS4A1 | positive |
-| CD8+ T | CD8A | positive |
-| FCGR3A+ Mono | MS4A7 | positive |
-| FCGR3A+ Mono | FCGR3A | positive |
-| NK | NKG7 | positive |
-| NK | GNLY | positive |
-| DC | FCER1A | positive |
-| DC | CST3 | positive |
-| Platelet | PPBP | positive |
-| Platelet | SPN | negative |
+
+```bash
+data(retinal_data)
+```
 
 To perform the annotation with the custom marker genes run:
 ```bash
-data<-accordion_custom(data, marker_table, category_column= "cell_type", marker_column ="marker", marker_type_column = "marker_type")
+retinal_data <-accordion_custom(retinal_data, annotation_resolution = "cluster", marker_table  = retina_markers, category_column = "cell_type", marker_column = "marker", min_n_marker = 2, plot=T, annotation_name = "cell_type_retina")
+
+DimPlot(retinal_data, group.by = "cell_type_retina_per_cluster", reduction = "umap.integrated", label=T) + NoLegend()
 ```
+
+![Retina_ct_accordion_custom](https://github.com/user-attachments/assets/688652ba-7066-45ab-bc25-1e697d3c6bee)
+
 You can also exploit the ```accordion_custom``` function to explore the expression of group of genes associated to a specific pathway. As an example: 
 ```bash
 data(marker_table_pathway)
@@ -131,7 +122,9 @@ data(marker_table_pathway)
 
 And simply run: 
 ```bash
-data<-accordion_custom(data, marker_table_pathway, category_column= "pathway", marker_column ="genes")
+retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
+
+FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90")
 ```
 ## Automatically identify and interpreting cell cycle state of single-cell populations
 <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assing cell cycle state to cell populations. This function exploits the built-in collection of
