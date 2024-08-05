@@ -101,7 +101,7 @@ retinal_data <-accordion_custom(retinal_data, annotation_resolution = "cluster",
 DimPlot(retinal_data, group.by = "cell_type_retina_per_cluster", reduction = "umap.integrated", label=T) + NoLegend()
 ```
 
-![Retina_ct_accordion_custom](https://github.com/user-attachments/assets/688652ba-7066-45ab-bc25-1e697d3c6bee | width=100)
+![Retina_ct_accordion_custom](https://github.com/user-attachments/assets/688652ba-7066-45ab-bc25-1e697d3c6bee) 
 
 You can also exploit the ```accordion_custom``` function to explore the expression of group of genes associated to a specific pathway. As an example: 
 ```bash
