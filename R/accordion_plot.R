@@ -202,7 +202,7 @@ accordion_plot<-function(data,
         names(vec_neg)<-top_dt_cl[marker_type=="negative"]$specificity_range
         vec_neg<-vec_neg[!duplicated(vec_neg)]
         suppressWarnings({
-        if("accordion" %in% info_to_plot | "accordion_disease" %in% info_to_plot){
+        if("EC_score" %in% colnames(top_marker_dt)){
           top_dt_cl[, EC_score_range:= EC_score][EC_score > 5, EC_score_range:=5]
           pl <- ggplot(top_dt_cl, aes(impact_score, marker)) +
             geom_vline(xintercept = 0, linetype = 2) +
@@ -499,7 +499,7 @@ accordion_plot<-function(data,
             top_celltypes_cl<-top_celltypes_cl[order(impact_score)]
             top_celltypes_cl[,cell_type:=factor(cell_type,levels = unique(cell_type))]
 
-            if(info_to_plot == "accordion" & length(top_celltypes_cl$cell_ID) > 1){
+            if("EC_score" %in% colnames(top_marker_dt) & length(top_celltypes_cl$cell_ID) > 1){
               onto_plot<-onto_plot2(cell_onto, top_celltypes_cl$cell_ID)
               onto_plot@nodes<-gsub("(.{10,}?)\\s", "\\1\n", onto_plot@nodes, perl = TRUE)
 
