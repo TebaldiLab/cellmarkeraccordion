@@ -44,14 +44,13 @@ To perform cell types identification by cluster and obtain detailed annotation i
 ```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
-data <- accordion(data, annotation_resolution = "cluster", max_n_marker = 30, allow_unknown = FALSE, annotation_name = "accordion_pbmc", include_detailed_annotation_info = TRUE, plot = TRUE)
+data <- accordion(data, annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 ```bash
-DimPlot(data, group.by = "accordion_pbmc_per_cluster")
+DimPlot(data, group.by = "accordion_per_cluster")
 ```
-![Pbmc_annotation_dimplot](https://github.com/user-attachments/assets/e7f48599-2e02-4d52-9473-c37e98432165)
-
+![Annotation_example](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/673e5368-0014-444d-916c-873d0b522b7e)
 
 Or you can use raw counts matrix and specify cluster's id for each cell.
 ```bash
@@ -61,6 +60,26 @@ clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$
 # Output: list with annotation results 
 output <- accordion(counts, cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
+
+## Improve the biological interpretation of the results
+The Cell Marker Accordion has been developed to improve the biological interpretation of the results, by returning a dot plot listing the top N cell types for each cluster. The dot size is proportional to the impact score, and the winning annotation is highlighted.
+
+```bash
+seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["global"]]
+```
+
+![Pbmc_top_cell_type](https://github.com/user-attachments/assets/29c20803-e134-44ab-ab0f-083256c266c1)
+
+Further insight is provided by looking at the percentage of cells assigned to the top scoring cell types, and their similarity based on the Cell Ontology hierarchy
+```bash
+seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["2_naive B cell"]]
+```
+
+Finally the top N marker genes contributing to the annotation of each specific cell type can be explored 
+```bash
+seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster_plot"]][["global"]]
+```
+![Pbmc_top_markers](https://github.com/user-attachments/assets/282337b9-b897-4880-a422-ebfec7ecc7a5)
 
 ## Cell type or pathways identification with custom genes sets
 <strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```.It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. An example of a marker table
@@ -127,9 +146,3 @@ To identify for example "leukemia stem cell" in "acute myeloid leukemia" samples
 ```bash
 data<-accordion_disease(data, disease="acute myeloid leukemia", cell_types ="leukemia stem cell")
 ```
-
-
-
-
-
-
