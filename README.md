@@ -146,6 +146,9 @@ To perform cell cycle identification run:
 ```bash
 data<-accordion_cellcycle(data)
 ```
+
+![CellCycle](https://github.com/user-attachments/assets/9a1f7e1d-5a48-4fbc-ade1-a29a6d7c6b2c)
+
 ## Annotate and interprete aberrant single-cell populations with the built-in Cell Marker Accordion disease database
 <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
 This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specific both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
