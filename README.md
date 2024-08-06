@@ -1,6 +1,6 @@
 ![Logo](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/f71d49b1-72c9-4c45-99d8-e682248154ab)
 # cellmarkeraccordion
-### R package for automatically annotating and interpreting single-cell populations.
+### R package for the automatic annotation of and interpretation of single-cell populations.
 ## Installation 
 To install the <strong>cellmarkeraccordion</strong> package directly from GitHub, the devtools package is required. If not already installed on your system, run:
 ```bash
@@ -70,20 +70,20 @@ seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotatio
 
 ![Pbmc_top_cell_type](https://github.com/user-attachments/assets/29c20803-e134-44ab-ab0f-083256c266c1)
 
-Further insight is provided by looking at the percentage of cells assigned to the top scoring cell types, and their similarity based on the Cell Ontology hierarchy
+Further insight is provided by displaying, for each cluster, the percentages of cells directly assigned to the top-scoring cell types and their similarity based on the Cell Ontology hierarchy
 ```bash
 seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["2_naive B cell"]]
 ```
 ![Pbmc_rank_naive](https://github.com/user-attachments/assets/1372c184-f3e1-43eb-908b-1419e7c21698)
 
-Finally the top N marker genes contributing to the annotation of each specific cell type can be explored 
+Finally, the top N marker genes contributing to the annotation of each specific cell type can be inspected 
 ```bash
 seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster_plot"]][["global"]]
 ```
 ![Pbmc_top_markers](https://github.com/user-attachments/assets/282337b9-b897-4880-a422-ebfec7ecc7a5)
 
-## Cell type or pathways identification with custom genes sets
-<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```. It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. We used a published human retinal dataset (Lu et al., Dev Cell. 2020) and we included a table of well-known markers associated to retinal cell types.
+## Cell type identification or pathway activity quantification using custom gene sets
+The <strong>cellmarkeraccordion</strong> enables the automatic identification of cell populations based on custom sets of input marker genes (bring your own markers). The function ```accordion_custom ```. requires as input: a) a Seurat object or a raw or normalized count matrix (with genes on rows and cells on columns) and b) a table of marker genes associated with cell types to pathways. This marker table should contain at least two columns: the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers. Optional columns can be used to specify the marker type (either positive or negative) and the marker weight. An example of this procedure is shown based on a published human retinal dataset (Lu et al., Dev Cell. 2020). The annotation was performed with a table of well-known markers associated with retinal cell types.
 
 ```bash
 read_excel("retina_markers.xlsx")
@@ -104,7 +104,7 @@ head(retina_marker)
 data(retinal_data)
 ```
 
-To perform the annotation with the custom marker genes run:
+To perform the annotation with custom marker genes run:
 ```bash
 retinal_data <-accordion_custom(retinal_data, annotation_resolution = "cluster", marker_table  = retina_markers, category_column = "cell_type", marker_column = "marker", min_n_marker = 2, plot=T, annotation_name = "cell_type_retina")
 
@@ -113,7 +113,7 @@ DimPlot(retinal_data, group.by = "cell_type_retina_per_cluster", reduction = "um
 
 ![Retina_ct_accordion_custom](https://github.com/user-attachments/assets/688652ba-7066-45ab-bc25-1e697d3c6bee) 
 
-You can also exploit the ```accordion_custom``` function to explore the expression of group of genes associated to a specific pathway. As an example: 
+You can also exploit the ```accordion_custom``` function to explore the expression of genes associated with a specific pathway. As an example: 
 ```bash
 data(marker_table_pathway)
 ```
