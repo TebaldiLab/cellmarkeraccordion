@@ -40,7 +40,7 @@ data <- RunUMAP(data, dims = 1:10)
 ## Annotate and interpret single-cell populations with the built-in Cell Marker Accordion database
 The <strong>cellmarkeraccordion</strong> allows the automatic identification of hematopoietic populations in single-cell datasets by running function ``` accordion ```. 
 This function requires in input only a Seurat object (v4 or v5), or a matrix with raw or normalized counts (genes/features as rows and cells as columns). By default, the annotation of cell types is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an extensive and easy interpretation of the results by reporting, for each cluster or annotated cell type, a) the top n marker genes which mostly impacted the annotation, b) the top n cell types competing for the final annotation and c) their relationship based on the cell ontology tree (these plots are activated by the *include_detailed_annotation_info* and *plot* parameters). 
-To perform cell types identification by cluster and obtain detailed annotation information simply run:
+To identify the best matching cell types for each cluster and obtain detailed annotation information, simply run:
 ```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
@@ -52,7 +52,7 @@ DimPlot(data, group.by = "accordion_per_cluster")
 ```
 ![Annotation_example](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/673e5368-0014-444d-916c-873d0b522b7e)
 
-Or you can use raw counts matrix and specify cluster's id for each cell.
+Alternatively, the raw count matrix can be used as input, together with a vector assigning each cell to a cluster.
 ```bash
 # Input: raw counts and clusters id  
 raw_counts <- GetAssayData(data, assay="RNA", slot='counts')
@@ -61,8 +61,8 @@ clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$
 output <- accordion(counts, cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
-## Improve the biological interpretation of the results
-The Cell Marker Accordion has been developed to improve the biological interpretation of the results, by returning a dot plot listing the top N cell types for each cluster. The dot size is proportional to the impact score, and the winning annotation is highlighted.
+## Enhanced biological interpretation of results
+The <strong>cellmarkeraccordion</strong> has been developed to improve the biological interpretation of results. On key output is a dot plot displaying the top N scoring cell types associated with each cluster. The dot size is proportional to the cell type impact score, and the winning annotation is highlighted.
 
 ```bash
 seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["global"]]
