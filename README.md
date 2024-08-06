@@ -2,32 +2,32 @@
 # cellmarkeraccordion
 ### R package for automatically annotating and interpreting single-cell populations.
 ## Installation 
-To install the cellmarkeraccordion package directly from GitHub the devtools package is required. If not already installed on your system, run
+To install the <strong>cellmarkeraccordion</strong> package directly from GitHub, the devtools package is required. If not already installed on your system, run:
 ```bash
 install.packages("devtools")
 ```
-Otherwise, load devtools and install the cellmarkeraccordion by
+Otherwise, load devtools and install the <strong>cellmarkeraccordion</strong> by:
 ```bash
 library(devtools)
 install_github("TebaldiLab/cellmarkeraccordion", dependencies = TRUE)
 ```
 ## Loading
-To load the cellmarkeraccordion run
+To load the <strong>cellmarkeraccordion</strong>, run:
 ```bash
 library(cellmarkeraccordion)
 library(Seurat)
 library(data.table)
 ```
 ## Input data
-All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
-As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
-Load the raw counts and create a Seurat object
+All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object (version 4 or 5 are supported) or a matrix with raw or normalized counts. 
+As an introductory example, we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
+First, load the raw counts and create a Seurat object:
 ```bash
 data(counts) #raw counts
 # Create Seurat Object
 data <- CreateSeuratObject(counts = counts, min.cells = 3, min.features = 200)
 ```
-Process and cluster the data
+Then, process and cluster the data with a standard Seurat workflow:
 ```bash
 data <- NormalizeData(data)
 data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000)
@@ -37,9 +37,9 @@ data <- FindNeighbors(data, dims = 1:10)
 data <- FindClusters(data, resolution = 0.8)
 data <- RunUMAP(data, dims = 1:10)
 ```
-## Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
-<strong>cellmarkeraccordion</strong> allows to automatically identifies hematopoietic populations in single-cell dataset by running function ``` accordion ```. 
-It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting the for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
+## Annotate and interpret single-cell populations with the built-in Cell Marker Accordion database
+The <strong>cellmarkeraccordion</strong> allows the automatic identification of hematopoietic populations in single-cell datasets by running function ``` accordion ```. 
+This function requires in input only a Seurat object (v4 or v5), or a matrix with raw or normalized counts (genes/features as rows and cells as columns). By default, the annotation of cell types is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an extensive and easy interpretation of the results by reporting, for each cluster or annotated cell type, a) the top n marker genes which mostly impacted the annotation, b) the top n cell types competing for the final annotation and c) their relationship based on the cell ontology tree (these plots are activated by the *include_detailed_annotation_info* and *plot* parameters). 
 To perform cell types identification by cluster and obtain detailed annotation information simply run:
 ```bash  
 # Input: Seurat object
