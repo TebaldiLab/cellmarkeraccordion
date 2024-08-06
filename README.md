@@ -165,5 +165,6 @@ bone_marrow_data = accordion_disease(bone_marrow_data, disease= "acute myeloid l
 FeaturePlot(bone_marrow_data, features = "LSC_per_cell_score", min.cutoff = "q10",max.cutoff = "q75", cols = c("gray","red"), order = T) 
 ```
 
-![LSC](https://github.com/user-attachments/assets/b796cfa4-3d7e-4236-b9b2-73ba55959564)
+![LSC](https://github.com/user-attachments/assets/11ed18ad-fdbb-4e6e-b7d0-ce68346ddad6)
+
 
