@@ -51,7 +51,8 @@ data <- accordion(data, include_detailed_annotation_info = T, plot=T, max_n_mark
 ```bash
 DimPlot(data, group.by = "accordion_pbmc_per_cluster")
 ```
-![Annotation_example](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/673e5368-0014-444d-916c-873d0b522b7e)
+![Pbmc_annotation_dimplot](https://github.com/user-attachments/assets/04aebd85-1226-4ecf-be6a-96a08aa04f73)
+
 
 Alternatively, the raw count matrix can be used as input, together with a vector assigning each cell to a cluster.
 ```bash
