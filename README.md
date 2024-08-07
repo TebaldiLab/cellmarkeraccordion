@@ -41,14 +41,15 @@ data <- RunUMAP(data, dims = 1:10)
 The <strong>cellmarkeraccordion</strong> allows the automatic identification of hematopoietic populations in single-cell datasets by running function ``` accordion ```. 
 This function requires in input only a Seurat object (v4 or v5), or a matrix with raw or normalized counts (genes/features as rows and cells as columns). By default, the annotation of cell types is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an extensive and easy interpretation of the results by reporting, for each cluster or annotated cell type, a) the top n marker genes which mostly impacted the annotation, b) the top n cell types competing for the final annotation and c) their relationship based on the cell ontology tree (these plots are activated by the *include_detailed_annotation_info* and *plot* parameters). 
 To identify the best matching cell types for each cluster and obtain detailed annotation information, simply run:
+
 ```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
-data <- accordion(data, annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+data <- accordion(data, include_detailed_annotation_info = T, plot=T, max_n_marker = 30, annotation_resolution = "cluster", annotation_name = "accordion_pbmc", allow_unknown = F)
 ```
 
 ```bash
-DimPlot(data, group.by = "accordion_per_cluster")
+DimPlot(data, group.by = "accordion_pbmc_per_cluster")
 ```
 ![Annotation_example](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/673e5368-0014-444d-916c-873d0b522b7e)
 
@@ -65,20 +66,20 @@ output <- accordion(counts, cluster_info = clusters, annotation_resolution= "clu
 The <strong>cellmarkeraccordion</strong> has been developed to improve the biological interpretation of results. On key output is a dot plot displaying the top N scoring cell types associated with each cluster. The dot size is proportional to the cell type impact score, and the winning annotation is highlighted.
 
 ```bash
-seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["global"]]
+data@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["global"]]
 ```
 
 ![Pbmc_top_cell_type](https://github.com/user-attachments/assets/29c20803-e134-44ab-ab0f-083256c266c1)
 
 Further insight is provided by displaying, for each cluster, the percentages of cells directly assigned to the top-scoring cell types and their similarity based on the Cell Ontology hierarchy
 ```bash
-seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["2_naive B cell"]]
+data@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["2_naive B cell"]]
 ```
 ![Pbmc_rank_naive](https://github.com/user-attachments/assets/1372c184-f3e1-43eb-908b-1419e7c21698)
 
 Finally, the top N marker genes contributing to the annotation of each specific cell type can be inspected 
 ```bash
-seurat_obj@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster_plot"]][["global"]]
+data@misc[["accordion_pbmc"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster_plot"]][["global"]]
 ```
 ![Pbmc_top_markers](https://github.com/user-attachments/assets/282337b9-b897-4880-a422-ebfec7ecc7a5)
 
@@ -134,19 +135,24 @@ Cell-specific pathway activity scores can be displayed by running:
 ```bash
 retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
 
-FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90")
+FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90", reduction = "umap.integrated")
 ```
 
-![Retina_apoptosis](https://github.com/user-attachments/assets/41a887ce-e98e-48bf-98c5-2b71956e87bd)
+![Retina_apoptosis](https://github.com/user-attachments/assets/06a87f5e-058d-4201-bd4e-4ea69e523553)
+
 
 ## Automatic identification and interpretation of single-cell cycle phases
 The <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle phases to cell populations. This function exploits the built-in collection of marker genes associated with each cell cycle phase (G0, G1, G2M, S). This function takes as input either a Seurat object or a raw or normalized count matrix. A published scRNA-seq dataset of bone marrow of Mettl3 conditional knockout mice (Cheng at al., Cell Rep, 2019).
 
-To perform cell cycle identification, run: 
 ```bash
-data<-accordion_cellcycle(data, species = "Mouse")
+data(mouse_data)
 ```
 
+To perform cell cycle identification, run: 
+```bash
+mouse_data<-accordion_cellcycle(mouse_data, species = "Mouse")
+DimPlot(mouse_data, group.by="accordion_cell_cycle_per_cell")
+```
 ![CellCycle](https://github.com/user-attachments/assets/9a1f7e1d-5a48-4fbc-ade1-a29a6d7c6b2c)
 
 ## Identification of disease-critical single-cell populations with the built-in Cell Marker Accordion disease database
