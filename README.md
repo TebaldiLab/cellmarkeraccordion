@@ -140,17 +140,18 @@ FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.
 ![Retina_apoptosis](https://github.com/user-attachments/assets/41a887ce-e98e-48bf-98c5-2b71956e87bd)
 
 ## Automatic identification and interpretation of single-cell cycle phases
-The <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle phases to cell populations. This function exploits the built-in collection of marker genes associated with each cell cycle phase (G0, G1, G2M, S). This function takes as input either a Seurat object or a raw or normalized count matrix. 
+The <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle phases to cell populations. This function exploits the built-in collection of marker genes associated with each cell cycle phase (G0, G1, G2M, S). This function takes as input either a Seurat object or a raw or normalized count matrix. A published scRNA-seq dataset of bone marrow of Mettl3 conditional knockout mice (Cheng at al., Cell Rep, 2019).
+
 To perform cell cycle identification, run: 
 ```bash
-data<-accordion_cellcycle(data)
+data<-accordion_cellcycle(data, species = "Mouse")
 ```
 
 ![CellCycle](https://github.com/user-attachments/assets/9a1f7e1d-5a48-4fbc-ade1-a29a6d7c6b2c)
 
 ## Identification of disease-critical single-cell populations with the built-in Cell Marker Accordion disease database
 The <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function, allowing the identification of aberrant or disease-related cell populations. This function exploits the built-in Accordion gene marker disease database. 
-This function requires as input either a Seurat object (v4 or v5) or a matrix with raw or normalized counts. It is possible to specify both the disease and the critical cell type to identify, thanks to the *disease* and *cell_types* parameters. A published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients is used as an example.
+This function requires as input either a Seurat object (v4 or v5) or a matrix with raw or normalized counts. It is possible to specify both the disease and the critical cell type to identify, thanks to the *disease* and *cell_types* parameters. A published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients is used as an example (Van Galen et al., Cell, 2019).
 
 ```bash
 load(bone_marrow_data)
