@@ -104,7 +104,7 @@ head(retina_marker)
 data(retinal_data)
 ```
 
-To perform the annotation with custom marker genes run:
+To perform the annotation with custom marker genes, run:
 ```bash
 retinal_data <-accordion_custom(retinal_data, annotation_resolution = "cluster", marker_table  = retina_markers, category_column = "cell_type", marker_column = "marker", min_n_marker = 2, plot=T, annotation_name = "cell_type_retina")
 
@@ -113,7 +113,7 @@ DimPlot(retinal_data, group.by = "cell_type_retina_per_cluster", reduction = "um
 
 ![Retina_ct_accordion_custom](https://github.com/user-attachments/assets/688652ba-7066-45ab-bc25-1e697d3c6bee) 
 
-You can also exploit the ```accordion_custom``` function to explore the expression of genes associated with a specific pathway. As an example: 
+You can also exploit the ```accordion_custom``` function to quantify the activity of specific pathways based on the expression of associated gene signatures or modules. As an example: 
 ```bash
 data(marker_table_pathway)
 ```
@@ -130,7 +130,7 @@ data(marker_table_pathway)
 | apoptosis | AKT1 |
 | apoptosis | AKT2 |
 
-And simply run: 
+Cell-specific pathway activity scores can be displayed by running: 
 ```bash
 retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
 
@@ -139,26 +139,25 @@ FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.
 
 ![Retina_apoptosis](https://github.com/user-attachments/assets/41a887ce-e98e-48bf-98c5-2b71956e87bd)
 
-## Automatically identify and interpreting cell cycle state of single-cell populations
-<strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assing cell cycle state to cell populations. This function exploits the built-in collection of
-marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
-To perform cell cycle identification run: 
+## Automatic identification and interpretation of single-cell cycle phases
+The <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle phases to cell populations. This function exploits the built-in collection of marker genes associated to each cell cycle phase (G0, G1, G2M, S). This function takes in input either a Seurat object or a raw or normalized count matrix. 
+To perform cell cycle identification, run: 
 ```bash
 data<-accordion_cellcycle(data)
 ```
 
 ![CellCycle](https://github.com/user-attachments/assets/9a1f7e1d-5a48-4fbc-ade1-a29a6d7c6b2c)
 
-## Annotate and interprete aberrant single-cell populations with the built-in Cell Marker Accordion disease database
-<strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
-This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specific both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
+## Identification of disease-critical single-cell populations with the built-in Cell Marker Accordion disease database
+The <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function, allowing the identification of aberrant or disease-related cell populations. This function exploits the built-in Accordion gene marker disease database. 
+This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specify both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
 
 ```bash
 load(bone_marrow_data)
 ```
 
 
-To identify for example "leukemia stem cell" in "acute myeloid leukemia" samples run: 
+To identify for example "leukemia stem cell" in "acute myeloid leukemia" samples, run: 
 ```bash
 bone_marrow_data = accordion_disease(bone_marrow_data, disease= "acute myeloid leukemia", cell_types = "leukemia stem cell",combined_score_quantile_threshold = 0.75, annotation_resolution = "cell", plot=F, annotation_name = "LSC")
 
