@@ -389,6 +389,7 @@ accordion_plot<-function(data,
             data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][["global"]]<-dotplot_ct
 
           }
+        }
 
           if(!"cell" %in% group_markers_by){
             #global plot markers
@@ -482,7 +483,8 @@ accordion_plot<-function(data,
             }
           }
 
-        } else if ("cell" %in% resolution){
+
+          if ("cell" %in% resolution){
           group<-unique(top_celltypes$cell)
         }
 
