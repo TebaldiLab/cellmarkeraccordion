@@ -530,8 +530,11 @@ accordion_disease<-function(data,
     top_marker_score_quantile_threshold <- 0.75
   }
 
-  # store original scale.data slot
-  orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  # store original scale.data slot if present
+  if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
+    orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  }
+
   # scale data based on markers used for the annotation
   data<-ScaleData(data, features = unique(accordion_marker$marker))
   Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
@@ -686,10 +689,12 @@ accordion_disease<-function(data,
   }
 
   #re-assigned the original scale.data slot
-  accordion_scale.data<-list()
-  accordion_scale.data[["accordion_disease_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
-  data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
-  data[[assay]]$scale.data <- orig.scale_data
+  if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
+    accordion_scale.data<-list()
+    accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
+    data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
+    data[[assay]]$scale.data <- orig.scale_data
+  }
 
   if(include_detailed_annotation_info==T & plot == T){
     if(data_type == "seurat"){
