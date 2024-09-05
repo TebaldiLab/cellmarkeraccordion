@@ -183,7 +183,7 @@ accordion_custom_annotation<-function(data,
 ){
   #count matrix  data
   #check the type of input (Seurat object or raw count matrix)
-  if(class(data) != "Seurat"){
+  if(!"Seurat" %in% class(data)){
 
     #check that is not an empty count matrix
     if(sum(dim(data)) == 0){
