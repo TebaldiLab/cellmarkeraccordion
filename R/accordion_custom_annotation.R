@@ -535,7 +535,7 @@ accordion_custom_annotation<-function(data,
 
   }
   #re-assigned the original scale.data slot
-  if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
+  if(exists("orig.scale_data")){
     accordion_scale.data<-list()
     accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
     data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)

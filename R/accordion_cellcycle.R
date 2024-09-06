@@ -329,6 +329,10 @@ accordion_cell_cycle<-function(data,
     # merge Z_scaled_dt and accordion table
     cell_cycle_markers[,combined_score := specificity_scaled * weight_scaled]
 
+    # store original scale.data slot if present
+    if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
+      orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
+    }
 
     # scale data based on markers used for the annotation
     data<-ScaleData(data, features = unique(cell_cycle_markers$marker))
@@ -482,7 +486,16 @@ accordion_cell_cycle<-function(data,
       }
 
     }
-    if(plot == T){
+
+    #re-assigned the original scale.data slot
+    if(exists("orig.scale_data")){
+      accordion_scale.data<-list()
+      accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
+      data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
+      data[[assay]]$scale.data <- orig.scale_data
+    }
+
+    if(include_detailed_annotation_info==T & plot == T){
       if(data_type == "seurat"){
         data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
       } else{
