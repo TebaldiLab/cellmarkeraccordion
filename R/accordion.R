@@ -216,7 +216,7 @@ accordion<-function(data,
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if("dgCMatrix" %in% class(data)){
+    if(!"dgCMatrix" %in% class(data)){
       data <- as(as.matrix(data), "sparseMatrix")
 
     }

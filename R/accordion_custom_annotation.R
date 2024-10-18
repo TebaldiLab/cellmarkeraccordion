@@ -197,11 +197,11 @@ accordion_custom_annotation<-function(data,
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if(class(data) != "dgCMatrix"){
+    if(!class(data) %in% "dgCMatrix"){
       data <- as(as.matrix(data), "sparseMatrix")
 
     }
-    data <- CreateAssaydata(counts = data)
+    data <- CreateSeuratObject(counts = data)
     #check that cluster_info is present if cluster is in annotation_resolution
     #if both cluster and cell resolution are set if the cluster_info is not provided or is not correct, only the per cell annotation is performed
     if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
