@@ -226,6 +226,7 @@ accordion_custom<-function(data,
 
     }
     data <- CreateSeuratObject(counts = data)
+    accordion_output<-list()
     #check that cluster_info is present if cluster is in annotation_resolution
     #if both cluster and cell resolution are set if the cluster_info is not provided or is not correct, only the per cell annotation is performed
     if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
