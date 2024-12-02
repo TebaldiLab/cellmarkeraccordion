@@ -13,12 +13,12 @@
 list_celltypes<-function(species = c("Human","Mouse"),
                tissue = NULL
 ){
-  data(accordion_marker_v2.0)
+  data(accordion_marker)
   input_species<-species
   if(!is.null(tissue)){
-    output_table<-accordion_marker_v2.0[species %in% input_species & Uberon_tissue %in% tissue]
+    output_table<-accordion_marker[species %in% input_species & Uberon_tissue %in% tissue]
   } else{
-    output_table<-accordion_marker_v2.0[species %in% input_species]
+    output_table<-accordion_marker[species %in% input_species]
   }
   return(unique(output_table$CL_celltype))
 }

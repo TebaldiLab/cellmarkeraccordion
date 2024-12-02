@@ -18,16 +18,16 @@ list_disease_tissues<-function(species = c("Human","Mouse"),
                                disease = NULL,
                        aberrant_celltype = NULL
 ){
-  data(accordion_disease)
+  data(disease_accordion_marker)
   input_species<-species
-  if(!is.null(celltype)){
-    output_table<-accordion_disease[species %in% input_species &  NCIT_celltype %in% aberrant_celltype]
+  if(!is.null(aberrant_celltype)){
+    output_table<-disease_accordion_marker[species %in% input_species & NCIT_celltype %in% aberrant_celltype]
   }
   if(!is.null(disease)){
-    output_table<-accordion_disease[species %in% input_species &  DO_diseasetype %in% disease]
+    output_table<-disease_accordion_marker[species %in% input_species & DO_diseasetype %in% disease]
   }
-  if(is.null(celltype) & is.null(disease)){
-    output_table<-accordion_disease[species %in% input_species]
+  if(is.null(aberrant_celltype) & is.null(disease)){
+    output_table<-disease_accordion_marker[species %in% input_species]
   }
   return(unique(output_table$Uberon_tissue))
 }

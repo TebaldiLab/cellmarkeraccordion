@@ -15,22 +15,20 @@
 #'  database
 #' @import data.table
 #' @export
-
-
 list_diseases<-function(species = c("Human","Mouse"),
                        tissue = NULL,
                        aberrant_celltype = NULL
 ){
-  data(accordion_disease)
+  data(disease_accordion_marker)
   input_species<-species
   if(!is.null(tissue)){
-    output_table<-accordion_disease[species %in% input_species & Uberon_tissue %in% tissue]
+    output_table<-disease_accordion_marker[species %in% input_species & Uberon_tissue %in% tissue]
   }
   if(!is.null(aberrant_celltype)){
-    output_table<-accordion_disease[species %in% input_species & NCIT_celltype %in% aberrant_celltype]
+    output_table<-disease_accordion_marker[species %in% input_species & NCIT_celltype %in% aberrant_celltype]
   }
-  if( is.null(tissue) & is.null(aberrant_celltype)){
-    output_table<-accordion_disease[species %in% input_species]
+  if(is.null(tissue) & is.null(aberrant_celltype)){
+    output_table<-disease_accordion_marker[species %in% input_species]
   }
 
   return(unique(output_table$DO_diseasetype))

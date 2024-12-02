@@ -13,12 +13,12 @@
 list_tissues<-function(species = c("Human","Mouse"),
                        celltype = NULL
 ){
-  data(accordion_marker_v2.0)
+  data(accordion_marker)
   input_species<-species
   if(!is.null(celltype)){
-    output_table<-accordion_marker_v2.0[species %in% input_species & CL_celltype %in% celltype]
+    output_table<-accordion_marker[species %in% input_species & CL_celltype %in% celltype]
   } else{
-    output_table<-accordion_marker_v2.0[species %in% input_species]
+    output_table<-accordion_marker[species %in% input_species]
   }
   return(unique(output_table$Uberon_tissue))
 }

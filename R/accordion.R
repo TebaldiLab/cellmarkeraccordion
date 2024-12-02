@@ -366,9 +366,7 @@ accordion<-function(data,
 
 
   #load the Cell Marker Accordion database based on the condition selected
-  data(accordion_marker_v2.0)
-  accordion_marker<-accordion_marker_v2.0
-  rm(accordion_marker_v2.0)
+  data(accordion_marker)
 
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){

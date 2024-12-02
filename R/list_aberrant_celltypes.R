@@ -14,22 +14,20 @@
 #' disease database
 #' @import data.table
 #' @export
-
 list_aberrant_celltypes<-function(species = c("Human","Mouse"),
                                   disease=NULL,
                          tissue = NULL
 ){
-  data(accordion_disease)
+  data(disease_accordion_marker)
   input_species<-species
   if(!is.null(tissue)){
-    output_table<-accordion_disease[species %in% input_species & Uberon_tissue %in% tissue]
+    output_table<-disease_accordion_marker[species %in% input_species & Uberon_tissue %in% tissue]
   }
   if(!is.null(disease)){
-    output_table<-accordion_disease[species %in% input_species & DO_diseasetype %in% disease]
+    output_table<-disease_accordion_marker[species %in% input_species & DO_diseasetype %in% disease]
   }
   if(is.null(tissue) & is.null(disease)){
-    output_table<-accordion_disease[species %in% input_species]
+    output_table<-disease_accordion_marker[species %in% input_species]
   }
   return(unique(output_table$NCIT_celltype))
 }
-
