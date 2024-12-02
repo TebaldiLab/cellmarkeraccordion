@@ -19,7 +19,7 @@ list_aberrant_celltypes<-function(species = c("Human","Mouse"),
                                   disease=NULL,
                          tissue = NULL
 ){
-  load("accordion_disease_Ncit.rda")
+  data(accordion_disease_Ncit)
   input_species<-species
   if(!is.null(tissue)){
     output_table<-accordion_disease[species %in% input_species & Uberon_tissue %in% tissue]

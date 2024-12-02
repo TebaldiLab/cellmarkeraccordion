@@ -13,7 +13,7 @@
 list_tissues<-function(species = c("Human","Mouse"),
                        celltype = NULL
 ){
-  load("accordion_marker_v2.0.rda")
+  data(accordion_marker_v2.0)
   input_species<-species
   if(!is.null(celltype)){
     output_table<-accordion_marker_v2.0[species %in% input_species & CL_celltype %in% celltype]

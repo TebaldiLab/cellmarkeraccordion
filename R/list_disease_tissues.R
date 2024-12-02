@@ -18,7 +18,7 @@ list_disease_tissues<-function(species = c("Human","Mouse"),
                                disease = NULL,
                        aberrant_celltype = NULL
 ){
-  load("accordion_disease_Ncit.rda")
+  data(accordion_disease_Ncit)
   input_species<-species
   if(!is.null(celltype)){
     output_table<-accordion_disease[species %in% input_species &  NCIT_celltype %in% aberrant_celltype]
