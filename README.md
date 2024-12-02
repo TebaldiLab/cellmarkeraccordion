@@ -38,13 +38,20 @@ data <- FindClusters(data, resolution = 0.8)
 data <- RunUMAP(data, dims = 1:10)
 ```
 ## Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
-<strong>cellmarkeraccordion</strong> allows to automatically identifies hematopoietic populations in single-cell dataset by running function ``` accordion ```. 
+<strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissue in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting the for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
+
+Run list_tissues() function to explore which tissues are available in the Cell Marker Accordion. 
+```bash  
+available_tissue<-list_tissues(species = "Human")
+available_tissue[1:20]
+```
+
 To perform cell types identification by cluster and obtain detailed annotation information simply run:
 ```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
-data <- accordion(data, annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+data <- accordion(data,tissue="blood", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 ```bash
@@ -58,7 +65,7 @@ Or you can use raw counts matrix and specify cluster's id for each cell.
 raw_counts <- GetAssayData(data, assay="RNA", slot='counts')
 clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$seurat_clusters)
 # Output: list with annotation results 
-output <- accordion(counts, cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+output <- accordion(counts, tissue="blood", cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 ## Improve the biological interpretation of the results
@@ -160,7 +167,7 @@ load(bone_marrow_data)
 
 To identify for example "leukemia stem cell" in "acute myeloid leukemia" samples run: 
 ```bash
-bone_marrow_data = accordion_disease(bone_marrow_data, disease= "acute myeloid leukemia", cell_types = "leukemia stem cell",combined_score_quantile_threshold = 0.75, annotation_resolution = "cell", plot=F, annotation_name = "LSC")
+bone_marrow_data = accordion_disease(bone_marrow_data, disease= "acute myeloid leukemia", NCIT_celltype = "Leukemia Hematopoietic Stem Cell",combined_score_quantile_threshold = 0.75, annotation_resolution = "cell", plot=F, annotation_name = "LSC")
 
 FeaturePlot(bone_marrow_data, features = "LSC_per_cell_score", min.cutoff = "q10",max.cutoff = "q75", cols = c("gray","red"), order = T) 
 ```
