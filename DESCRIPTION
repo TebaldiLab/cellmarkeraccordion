@@ -1,6 +1,6 @@
 Package: cellmarkeraccordion
 Title: Annotation of normal and aberrant hematopoietic cell types in single-cell datasets
-Version: 0.9.0
+Version: 0.9.5
 Authors@R: c(
     person("Emma", "Busarello", email = "emma.busarello@unitn.it", role = c("aut", "cre")),
     person("Toma", "Tebaldi", email = "toma.tebaldi@unitn.it", role = "aut"),
