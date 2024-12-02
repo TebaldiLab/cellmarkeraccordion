@@ -353,7 +353,7 @@ accordion_disease<-function(data,
   })
 
   #load the Cell Marker Accordion database based on the condition selected
-  data(accordion_disease_Ncit)
+  data(accordion_disease)
   accordion_marker<-accordion_disease
   rm(accordion_disease)
 
