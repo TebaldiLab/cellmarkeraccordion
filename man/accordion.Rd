@@ -8,10 +8,13 @@ accordion(
   data,
   cluster_info = "seurat_clusters",
   assay = "RNA",
-  cell_types = NULL,
+  CL_celltypes = NULL,
   species = "Human",
+  tissue = NULL,
+  include_descendants = FALSE,
   evidence_consistency_score_threshold = NULL,
   specificity_score_threshold = NULL,
+  log2FC_threshold = NULL,
   min_n_marker = 5,
   max_n_marker = NULL,
   combined_score_quantile_threshold = NULL,
@@ -21,17 +24,18 @@ accordion(
   annotation_name = "accordion",
   include_detailed_annotation_info = TRUE,
   condition_group_info = NULL,
-  cell_type_group_info = NULL,
+  CL_celltype_group_info = NULL,
   group_markers_by = "celltype_cluster",
   top_cell_score_quantile_threshold = 0.9,
   n_top_celltypes = 5,
   n_top_markers = 5,
   top_marker_score_quantile_threshold = 0.75,
-  plot = TRUE
+  plot = TRUE,
+  color_by = "cell_type"
 )
 }
 \arguments{
-\item{data}{Either a  Seurat object (version 4.9) or a raw or normalized
+\item{data}{Either a  Seurat object (version 4 or 5) or a raw or normalized
 count matrix with genes on rows and cells on columns. If raw counts are
 provided, data are log-normalized exploiting the NormalizeData() function
 from the Seurat package.}
@@ -51,15 +55,20 @@ parameter is set to “cluster”. Default is “seurat_clusters”.}
 parameter is necessary only  in case \code{data} is a Seurat object.
 Default is “RNA”.}
 
-\item{cell_types}{Character string or character string vector specifying the
-cell types to annotate. If this parameter is not specified, all cell types
-present in the Accordion database are used for the annotation. Default is
-NULL.}
+\item{CL_celltypes}{Character string or character string vector specifying the
+cell types to annotate. Run the function "list_celltypes()"
+to obtain the available cell types. If this parameter is not specified,
+all cell types present in the Accordion database are used for the annotation.
+Default is NULL.}
 
 \item{species}{Character string or character string vector specifying the
 species. Currently, either “Human” and/or “Mouse” are supported. If
 multiple species are selected, marker genes are merged together. Default is
 “Human”.}
+
+\item{tissue}{Character string or character string vector specifying the tissue.
+Run the function "list_tissues()" to obtain the available tissues.
+If NULL, all tissues information are aggregated together. Default is NULL.}
 
 \item{evidence_consistency_score_threshold}{Integer value (currently in
 \link{1,7}) specifying the minimum evidence consistency (EC) score for each
@@ -68,6 +77,11 @@ applied. Default is NULL.}
 
 \item{specificity_score_threshold}{numeric value in (0,1] specifying the
 minimum specificity score for each marker. Only markers <= this threshold
+are kept. If  NULL, no filter is applied. Default is NULL.}
+
+\item{log2FC_threshold}{numeric value specifying the
+minimum log2FC threshold for each marker reporting this information.
+Only markers <= this threshold or without any log2FC
 are kept. If  NULL, no filter is applied. Default is NULL.}
 
 \item{min_n_marker}{Integer value specifying the minimum number of markers to
@@ -132,13 +146,13 @@ data frame or data table should contain at least two columns, one  named
 “cell”, which specifies cell id’s, and one named “condition”, which specifies
 the condition id’s for each cell.  Default is NULL.}
 
-\item{cell_type_group_info}{in case \code{object} is a Seurat object,
-\code{cell_type_group_info} should be need to be a character string specifying the
+\item{CL_celltype_group_info}{in case \code{object} is a Seurat object,
+\code{CL_celltype_group_info} should be need to be a character string specifying the
 name of the column in the metadata that contains cell types ids for each cell;
-if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
+if \code{object} is a count matrix, \code{CL_celltype_group_info} should be need to be a
 data frame or data table containing cell types identity for each cell. The
 data frame or data table should contain at least two columns, one  named
-“cell”, which specifies cell id’s, and one named “cell_type”, which specifies
+“cell”, which specifies cell id’s, and one named “CL_celltype”, which specifies
 the cell types for each cell.  Default is NULL.}
 
 \item{group_markers_by}{Character string or character string vector
@@ -148,9 +162,10 @@ cluster ("celltype_cluster") or cell ("celltype_cell") resolution;
 \code{n_top_markers} marker genes per cluster ("cluster") or per cell
 ("cell") can be also obtained. Additionally, by setting \code{group_markers_by}
 to "score_cell", the \code{n_top_markers} marker genes only for
-cells with a score greater than \code{top_cell_score_quantile_threshold} are
-retrieved. Either "celltype_cluster", "celltype_cell",
-"cluster", "cell" or "score_cell". Default is "celltype_cluster".}
+cells with a score greater than
+\code{top_cell_score_quantile_threshold} are retrieved.
+Either "celltype_cluster", "celltype_cell","cluster", "cell" or "score_cell".
+Default is "celltype_cluster".}
 
 \item{top_cell_score_quantile_threshold}{numeric value in (0,1] specifying
 the cell score quantile threshold. For each cell type a score specific for
@@ -184,6 +199,10 @@ lollipop plots displaying the top \code{n_top_markers} group by
 \code{annotation_resolution} together with the cell types hierarchies based
 on the cell ontology structure are stored in the \code{annotation_name} list. Default
 is TRUE.}
+
+\item{color_by}{Character string specifying if the plot reporting the top
+cell types for each cluster/cell is colored based on the assigned cell type
+("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.}
 }
 \value{
 A Seurat object or a list
@@ -196,8 +215,9 @@ the cell types assignment and the detailed informations of the annotation result
 \details{
 If a Seurat object was provided in input, the function returns the
 Seurat object with markers-based scaled data in the scale.data slot and cell
-types annotation results in the metadata. If
-\code{include_detailed_annotation_info} and \code{plot} were set to TRUE, a
+types annotation results in the metadata.
+If \code{include_detailed_annotation_info} and
+\code{plot} were set to TRUE, a
 list containing cell types and markers information, together with ggplot
 objects, is stored in the “misc@\code{annotation_name}” slot. If a count matrix was
 provided in input, the function returns a list containing the following

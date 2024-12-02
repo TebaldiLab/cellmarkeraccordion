@@ -25,7 +25,7 @@ accordion_cell_cycle(
 )
 }
 \arguments{
-\item{data}{Either a  Seurat object (version 4.9) or a raw or normalized
+\item{data}{Either a  Seurat object (version 4 or 5) or a raw or normalized
 count matrix with genes on rows and cells on columns. If raw counts are
 provided, data are log-normalized exploiting the NormalizeData() function
 from the Seurat package.}

@@ -12,8 +12,11 @@
 #'   provided, data are log-normalized exploiting the NormalizeData() function
 #'   from the Seurat package.
 #' @param disease Character string or character string vector specifying
-#'   diseases to consider.  If NULL, the full disease Accordion database is
-#'   considered. Default is NULL.
+#'   diseases to consider. Run the function "list_diseases()" to obtain the
+#'   available diseases. If NULL, all diseases are considered. Default is NULL.
+#' @param tissue Character string or character string vector specifying the tissue.
+#'  Run the function "list_disease_tissues()" to obtain the available tissues.
+#'  If NULL, all tissues information are aggregated together. Default is NULL.
 #' @param cluster_info in case \code{object} is a Seurat object,
 #'   \code{cluster_info} should be need to be a character string specifying the
 #'   name of the column in the metadata that contains cluster ids; if
@@ -27,10 +30,10 @@
 #' @param assay Character string specifying the Assay of the Seurat object. This
 #'   parameter is necessary only  in case \code{data} is a Seurat object.
 #'   Default is “RNA”.
-#' @param cell_types Character string or character string vector specifying the
-#'   cell types to annotate. If this parameter is not specified, all cell types
-#'   present in the Accordion database are used for the annotation. Default is
-#'   NULL.
+#' @param NCIT_celltypes Character string or character string vector specifying the
+#'   cell types to annotate. Run the function "list_aberrant_celltypes()" to obtain the
+#'   available aberrant cell types. If this parameter is not specified, all aberrant
+#'   cell types are used for the annotation. Default is NULL.
 #' @param species Character string or character string vector specifying the
 #'   species. Currently, either “Human” and/or “Mouse” are supported. If
 #'   multiple species are selected, marker genes are merged together. Default is
@@ -103,13 +106,13 @@
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
 #'   the condition id’s for each cell.  Default is NULL.
-#' @param cell_type_group_info in case \code{object} is a Seurat object,
-#'  \code{cell_type_group_info} should be need to be a character string specifying the
+#' @param NCIT_celltype_group_info in case \code{object} is a Seurat object,
+#'  \code{NCIT_celltype_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains cell types ids for each cell;
-#'  if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
+#'  if \code{object} is a count matrix, \code{NCIT_celltype_group_info} should be need to be a
 #'   data frame or data table containing cell types identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
-#'   “cell”, which specifies cell id’s, and one named “cell_type”, which specifies
+#'   “cell”, which specifies cell id’s, and one named “NCIT_celltype”, which specifies
 #'   the cell types for each cell.  Default is NULL.
 #' @param group_markers_by Character string or character string vector
 #'   specifying the classification of marker genes. It possible to retrieve
@@ -187,12 +190,16 @@
 #' @export
 accordion_disease<-function(data,
                             disease = NULL,
+                            tissue = NULL,
                             cluster_info = "seurat_clusters",
                             assay = "RNA",
-                            cell_types = NULL,
+                            NCIT_celltypes = NULL,
                             species = "Human",
+                            include_descendants = FALSE,
                             evidence_consistency_score_threshold = NULL,
                             specificity_score_threshold = NULL,
+                            log2FC_threshold = NULL,
+                            malignant_quantile_threshold = 0.95,
                             min_n_marker = 5,
                             max_n_marker = NULL,
                             combined_score_quantile_threshold = NULL,
@@ -203,13 +210,14 @@ accordion_disease<-function(data,
                             annotation_name = "accordion_disease",
                             include_detailed_annotation_info = TRUE,
                             condition_group_info = NULL,
-                            cell_type_group_info = NULL,
+                            NCIT_celltype_group_info = NULL,
                             group_markers_by = "celltype_cluster",
                             top_cell_score_quantile_threshold = 0.90,
                             n_top_celltypes = 5,
                             n_top_markers = 5,
                             top_marker_score_quantile_threshold = 0.75,
-                            plot = TRUE
+                            plot = TRUE,
+                            color_by = "cell_type"
 ){
 
   #count matrix  data
@@ -228,7 +236,7 @@ accordion_disease<-function(data,
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if(!"dgCMatrix" %in% class(data)){
+    if("dgCMatrix" %in% class(data)){
       data <- as(as.matrix(data), "sparseMatrix")
 
     }
@@ -344,46 +352,160 @@ accordion_disease<-function(data,
     }
   })
 
-  #load the Cell Marker Accordion database based on the disease selected
-  data(disease_accordion_marker)
+  #load the Cell Marker Accordion database based on the condition selected
+  data(accordion_disease_Ncit)
+  accordion_marker<-accordion_disease
+  rm(accordion_disease)
+
+  #for those markers with log2FC keep only the genes with log2FC above the threshold selected
+  if(!is.null(log2FC_threshold)){
+    if(!is.numeric(log2FC_threshold)){
+      warning("Invalid log2FC_threshold type. Parameter log2FC_threshold must be a numeric value. No filter is applied")
+    } else{
+      accordion_marker<-accordion_marker[is.na(log2FC)| log2FC >= log2FC_threshold]
+    }
+  }
+
+
+  #select species
+  #change name to the input species
+  if(length(species) ==1){
+    if(!(species %in% c("Human","Mouse"))){
+      warning("Invalid species type")
+      if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){
+        accordion_marker<-accordion_marker[species %in% "Human"]
+        warning("The dataset might be human. Human markers are indeed used.")
+      } else{
+        accordion_marker<-accordion_marker[species %in% "Mouse"]
+        warning("The dataset might be mouse. Mouse markers are indeed used.")
+      }
+    } else if (species %in% c("Human","Mouse")){
+      input_species<-species
+      accordion_marker<-accordion_marker[species %in% input_species]
+    }
+    #if more than one species is selected aggregate genes and in case of common genes between the species the relative EC score are summed
+  } else if(length(species) >=2){
+    if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){ #convert to human
+      accordion_marker[,marker:= toupper(marker)] # convert lower case in upper case (human symbol)
+    } else{
+      accordion_marker[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
+    }
+    input_species<-species
+    ec_score<-unique(accordion_marker[,c("NCIT_celltype","marker","marker_type","EC_score_NCIT_global")])
+    ec_score[,EC_score_sum:= sum(EC_score_NCIT_global), by=c("NCIT_celltype","marker","marker_type")]
+    accordion_marker[,species:=paste(input_species,collapse=", ")]
+    accordion_marker<-merge(accordion_marker,ec_score, by=c("NCIT_celltype","marker","marker_type"))
+    accordion_marker<-unique(accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","EC_score_sum","resource")])
+    colnames(accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","EC_score","resource")
+  }
 
   #check disease selected
   if(is.null(disease)){
     warning("no specific disease selected. The entire disease Accordion database is considered")
-    accordion_marker_disease<-accordion_marker
   } else{
-      accordion_marker_disease<-accordion_marker[disease_type %in% disease]
-      if(nrow(accordion_marker_disease) == 0){
+      accordion_marker<-accordion_marker[toupper(DO_diseasetype) %in% toupper(disease)]
+      if(nrow(accordion_marker) == 0){
         warning("disease not found. The entire disease Accordion database is considered")
-        accordion_marker_disease<-accordion_marker
+        accordion_marker<-accordion_marker
       }
+      if(length(disease)>1){
+        accordion_marker[, DO_ID:="ALL"]
+        accordion_marker[, DO_diseasetype:="ALL"]
+      }
+  }
+  accordion_marker<-accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","EC_score_NCIT_global", "resource")]
+  colnames(accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","EC_score","resource")
+
+  #keep only tissue gives in input and in case all its descendants
+  if(!is.null(tissue)){
+    #check tissue name in input
+    tissue<-tolower(tissue)
+    tissue_not_in_accordion<-tissue[!(tissue %in% unique(accordion_marker$Uberon_tissue))]
+    accordion_tissue<-accordion_marker[Uberon_tissue %in% tissue]
+    if(length(tissue_not_in_accordion) == 1){
+      if(uniqueN(accordion_tissue$Uberon_tissue) == 0){
+        ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
+        warning(eval(ct_not_present), " tissue is not present. Annotation will be performed considering all tissues in the database")
+      } else{
+        ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
+        ct_present<-knitr::combine_words(unique(accordion_tissue$Uberon_tissue))
+        warning(eval(ct_not_present), " tissue is not present. Annotation will be performed considering only ", eval(ct_present), " tissues")
+      }
+    } else if(length(tissue_not_in_accordion) > 1) {
+      if(uniqueN(accordion_tissue$Uberon_tissue) == 0){
+        ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
+        warning(eval(ct_not_present), " tissues are not present. Annotation will be performed considering all tissues in the database")
+      } else{
+        ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
+        ct_present<-knitr::combine_words(unique(accordion_tissue$Uberon_tissue))
+        warning(eval(ct_not_present), " tissues are not present. Annotation will be performed considering only ", eval(ct_present), " tissues")
+      }
+    }
+    if(include_descendants == TRUE){
+      data(uberon_onto)
+      root_id<-unique(accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
+      desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
+      accordion_marker<-accordion_marker[Uberon_ID %in% desc$V1]
+
+      if(length(root_id) > 1){
+        accordion_marker[, Uberon_ID:=paste(root_id,collapse=", ")]
+        accordion_marker[, Uberon_tissue:=paste(tissue,collapse=", ")]
+
+      } else{
+        accordion_marker[,Uberon_ID:=eval(root_id)]
+        accordion_marker[,Uberon_tissue:=eval(tissue)]
+      }
+
+    } else{
+      accordion_marker<-accordion_marker[Uberon_tissue %in% tissue]
+      if(length(tissue) > 1){
+        ub_tissue<-unique(accordion_marker$Uberon_tissue)
+        ub_id<-unique(accordion_marker$Uberon_ID)
+
+        accordion_marker[, Uberon_ID:=paste(ub_tissue,collapse=", ")]
+        accordion_marker[, Uberon_tissue:=paste(ub_id,collapse=", ")]
+      }
+    }
+
+    #calculate EC score based on filtered tissue
+    accordion_marker<-unique(accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","resource")])
+    ec_score<-ddply(accordion_marker,.(species,DO_diseasetype,DO_ID, Uberon_tissue,Uberon_ID,NCIT_celltype,NCIT_ID,marker,marker_type),nrow)
+    colnames(ec_score)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker", "marker_type","EC_score")
+    accordion_marker<-merge(accordion_marker,ec_score,by=c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type"), all.x = TRUE)
+
+  } else{
+    accordion_marker[, Uberon_ID:="ALL"]
+    accordion_marker[, Uberon_tissue:="ALL"]
+    accordion_marker<-accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","EC_score", "resource")]
+    colnames(accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","EC_score","resource")
+
   }
 
   # keep only cell types gives in input and markers found in data
-  # assigned the parameter cell_type to the more specific "input_cell_type"
-  input_cell_type <- cell_types
+  # assigned the parameter NCIT_celltype to the more specific "input_NCIT_celltype"
+  input_NCIT_celltype <- NCIT_celltypes
 
-  if(is.null(input_cell_type)){
-    accordion_marker_disease<-accordion_marker_disease[marker %in% rownames(data)]
+  if(is.null(input_NCIT_celltype)){
+    accordion_marker<-accordion_marker[marker %in% rownames(data)]
   } else {
-    accordion_marker_disease<-accordion_marker_disease[cell_type %in% input_cell_type][marker %in% rownames(data)]
-    input_cell_type_not_in_accordion<-input_cell_type[!(input_cell_type %in% unique(accordion_marker_disease$cell_type))]
-    if(length(input_cell_type_not_in_accordion) == 1){
-      if(uniqueN(accordion_marker_disease$cell_type) == 0){
-        ct_not_present<-knitr::combine_words(input_cell_type_not_in_accordion[1:length(input_cell_type_not_in_accordion)])
+    accordion_marker<-accordion_marker[NCIT_celltype %in% input_NCIT_celltype][marker %in% rownames(data)]
+    input_NCIT_celltype_not_in_accordion<-input_NCIT_celltype[!(input_NCIT_celltype %in% unique(accordion_marker$NCIT_celltype))]
+    if(length(input_NCIT_celltype_not_in_accordion) == 1){
+      if(uniqueN(accordion_marker$NCIT_celltype) == 0){
+        ct_not_present<-knitr::combine_words(input_NCIT_celltype_not_in_accordion[1:length(input_NCIT_celltype_not_in_accordion)])
         warning(eval(ct_not_present), " cell type is not present. Annotation will be performed considering all cell types in the database")
       } else{
-        ct_not_present<-knitr::combine_words(input_cell_type_not_in_accordion[1:length(input_cell_type_not_in_accordion)])
-        ct_present<-knitr::combine_words(unique(accordion_marker_disease$cell_type))
+        ct_not_present<-knitr::combine_words(input_NCIT_celltype_not_in_accordion[1:length(input_NCIT_celltype_not_in_accordion)])
+        ct_present<-knitr::combine_words(unique(accordion_marker$NCIT_celltype))
         warning(eval(ct_not_present), " cell type are not present. Annotation will be performed considering only ", eval(ct_present), " cell types")
       }
-    } else if(length(input_cell_type_not_in_accordion) > 1) {
-      if(uniqueN(accordion_marker_disease$cell_type) == 0){
-        ct_not_present<-knitr::combine_words(input_cell_type_not_in_accordion[1:length(input_cell_type_not_in_accordion)])
+    } else if(length(input_NCIT_celltype_not_in_accordion) > 1) {
+      if(uniqueN(accordion_marker$NCIT_celltype) == 0){
+        ct_not_present<-knitr::combine_words(input_NCIT_celltype_not_in_accordion[1:length(input_NCIT_celltype_not_in_accordion)])
         warning(eval(ct_not_present), " cell types are not present. Annotation will be performed considering all cell types in the database")
       } else{
-        ct_not_present<-knitr::combine_words(input_cell_type_not_in_accordion[1:length(input_cell_type_not_in_accordion)])
-        ct_present<-knitr::combine_words(unique(accordion_marker_disease$cell_type))
+        ct_not_present<-knitr::combine_words(input_NCIT_celltype_not_in_accordion[1:length(input_NCIT_celltype_not_in_accordion)])
+        ct_present<-knitr::combine_words(unique(accordion_marker$NCIT_celltype))
         warning(eval(ct_not_present), " cell types are not present. Annotation will be performed considering only ", eval(ct_present), " cell types")
       }
     }
@@ -399,36 +521,62 @@ accordion_disease<-function(data,
     }
   }
 
-  #select species
-  #change name to the input species
-  if(length(species) ==1){
-    if(!(species %in% c("Human","Mouse"))){
-      warning("Invalid species type")
-      if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){
-        accordion_marker<-accordion_marker[species %in% "Human"]
-        warning("The dataset might be human. Human markers are indeed used.")
-      } else{
-        accordion_marker<-accordion_marker[species %in% "Mouse"]
-        warning("The dataset might be mouse. Mouse markers are indeed used.")
-      }
-    }
-    input_species<-species
 
-  } else if (setequal(species, c("Human","Mouse"))){
-    input_species<-species
-    accordion_marker<-accordion_marker[species %in% input_species]
-    #if more than one species is selected aggregate genes and in case of common genes between the species the relative EC score are summed
-    if(length(input_species) >=2){
-      if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){ #convert to human
-        accordion_marker[,marker:= toupper(marker)] # convert lower case in upper case (human symbol)
-      } else{
-        accordion_marker[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
-      }
-      accordion_marker[,EC_score_sum:= sum(EC_score), by=c("cell_type","marker","marker_type")]
-      accordion_marker<-unique(accordion_marker[,c("cell_type","celltype_species","EC_score_sum","marker","marker_type","cell_ID")])
-      colnames(accordion_marker)<-c("cell_type","celltype_species","EC_score","marker","marker_type","cell_ID")
+  #penalized discordant markers (ex. CD38 positive and CD38 negative for B cell)
+  accordion_marker[,group:=paste0(NCIT_celltype, "_", marker)]
+  dup<-unique(accordion_marker[,-"resource"])
+  discordant_marker<-dup[duplicated(dup[,c("group")])]
+
+  if(nrow(discordant_marker) > 0){
+    accordion_marker[,EC_score:=ifelse(group %in% discordant_marker$group & marker_type == "negative", -EC_score, EC_score)]
+    ec_score <- aggregate(EC_score~group,accordion_marker[group %in% discordant_marker$group], sum)
+    colnames(ec_score)<-c("group","EC_score_new")
+    ec_score<-as.data.table(ec_score)[,marker_type_new:=ifelse(EC_score_new > 0, "positive","negative")]
+    accordion_marker<-merge(accordion_marker, ec_score, by="group", all.x = T)
+    accordion_marker[,EC_score_new:=abs(EC_score_new)]
+    accordion_marker[,EC_score:=ifelse(group %in% discordant_marker$group, EC_score_new, EC_score)]
+    accordion_marker[,marker_type:=ifelse(group %in% discordant_marker$group, marker_type_new, marker_type)]
+    accordion_marker<-unique(accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type", "EC_score")])
+  }
+
+  #remove marker with EC = 0
+  accordion_marker<-accordion_marker[EC_score > 0]
+  accordion_marker<-unique(accordion_marker)
+
+  accordion_marker<-unique(accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type", "EC_score")])
+  #keep only marker genes with EC score above the selected threshold
+  if(!is.null(evidence_consistency_score_threshold)){
+    if(!is.numeric(evidence_consistency_score_threshold) | !(evidence_consistency_score_threshold %in% 1 == 0)){
+      warning("Invalid evidence_consistency_score_threshold type. Parameter evidence_consistency_score_threshold must be an integer value (currently in [1,16]). No filter is applied")
+    } else{
+      accordion_marker<-accordion_marker[EC_score >= evidence_consistency_score_threshold]
     }
   }
+
+
+  #evidence consistency score log-transformed
+  accordion_marker[,EC_score_scaled := log10(EC_score)+1]
+
+  #compute specificity for positive and negative markers
+  mark_spec<-ddply(accordion_marker,.(marker,marker_type),nrow)
+  colnames(mark_spec)<-c("marker","marker_type","specificity")
+  accordion_marker<-merge(accordion_marker,mark_spec,by=c("marker","marker_type"),all.x = TRUE)
+
+  length_ct_pos<-uniqueN(accordion_marker[marker_type=="positive"]$NCIT_celltype)
+  length_ct_neg<-uniqueN(accordion_marker[marker_type=="negative"]$NCIT_celltype)
+
+  #scale and log transforme specificity
+  accordion_marker<-accordion_marker[marker_type=="positive",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
+  ][marker_type=="negative",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
+  ][,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","marker","marker_type","specificity","specificity_scaled","EC_score_scaled","EC_score")]
+
+  accordion_marker<-accordion_marker[marker_type=="positive",specificity_scaled := scales::rescale(as.numeric(specificity_scaled), to = c(min(accordion_marker[marker_type=="positive"]$EC_score),max(accordion_marker[marker_type=="positive"]$EC_score)))
+  ][marker_type=="negative",specificity_scaled := scales::rescale(as.numeric(specificity_scaled), to = c(min(accordion_marker[marker_type=="negative"]$EC_score),max(accordion_marker[marker_type=="negative"]$EC_score)))
+  ][,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","marker","marker_type","specificity","specificity_scaled","EC_score_scaled","EC_score")]
+
+  accordion_marker[,specificity:=as.numeric(format(round(1/specificity,2), nsmall=2))]
+  accordion_marker[,specificity_scaled:=log10(specificity_scaled)+1]
+
 
   #keep only marker genes with EC score above the selected threshold
   if(!is.null(evidence_consistency_score_threshold)){
@@ -440,52 +588,22 @@ accordion_disease<-function(data,
   }
 
     if(disease_vs_healthy == T){   # compare the healthy and the disease cell types if compare is set to TRUE
-      accordion_marker_disease[,cellID_healthy:= tstrsplit(cell_ID, "-", keep=2)]
-      data(accordion_marker)
-      accordion_marker<-accordion_marker[species %in% input_species & cell_ID %in% unique(accordion_marker$cellID_healthy) & marker %in% rownames(data)]
-      accordion_marker<-rbind(accordion_marker[,c("cell_type","celltype_species","cell_ID","marker","marker_type","EC_score","species")],accordion_marker_disease[,c("cell_type","celltype_species","cell_ID","marker","marker_type","EC_score","species")] )
-
+      #accordion_marker[,cellID_healthy:= tstrsplit(NCIT_ID, "-", keep=2)]
+      data(accordion_marker_v2.0)
+      accordion_healthy<-accordion_marker_v2.0
+      accordion_healthy<-accordion_healthy[species %in% input_species & Uberon_tissue %in% tissue & CL_ID %in% unique(accordion_marker$CL_ID) & marker %in% rownames(data)]
+      accordion_healthy<-accordion_healthy[!is.na(CL_ID)]
+      accordion_healthy[,DO_diseasetype:=NA][,DO_ID:=NA][,NCIT_celltype:=CL_celltype][,NCIT_ID:=CL_ID]
+      accordion_healthy<-unique(accordion_healthy)
+      if(nrow(accordion_healthy)>0){
+        accordion_marker<-rbind(accordion_marker[,c("species","DO_diseasetype","DO_ID","NCIT_celltype","NCIT_ID","marker","marker_type","EC_score")],accordion_healthy[,c("species","DO_diseasetype","DO_ID","NCIT_celltype","NCIT_ID","marker","marker_type","EC_score")])
+      }
     } else if (disease_vs_healthy == F){
-      accordion_marker<- accordion_marker_disease
+      accordion_marker<- accordion_marker
     }
 
 
-  # number of markers for each cell type
-  accordion_marker[,length:= .N, by="cell_type"]
-  if(!is.null(min_n_marker)){
-    if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
-    } else{
-      accordion_marker<-accordion_marker[length >= min_n_marker]
-    }
-  }
-  #evidence consistency score log-transformed
-  accordion_marker[,EC_score_scaled := log10(EC_score)+1]
-
-  #compute specificity for positive and negative markers
-  mark_spec<-ddply(accordion_marker,.(marker,marker_type),nrow)
-  colnames(mark_spec)<-c("marker","marker_type","specificity")
-  accordion_marker<-merge(accordion_marker,mark_spec,by=c("marker","marker_type"),all.x = TRUE)
-
-  length_ct_pos<-uniqueN(accordion_marker[marker_type=="positive"]$cell_type)
-  length_ct_neg<-uniqueN(accordion_marker[marker_type=="negative"]$cell_type)
-
-  #scale and log transforme specificity
-  accordion_marker<-accordion_marker[marker_type=="positive",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
-  ][marker_type=="negative",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
-  ][,c("cell_type","marker","marker_type","specificity","specificity_scaled","EC_score_scaled","EC_score")]
-  accordion_marker[,specificity_scaled:=log10(specificity_scaled)+1]
-
-  #keep only marker genes with specificity score above the selected threshold
-  if(!is.null(specificity_score_threshold)){
-    if(!is.numeric(specificity_score_threshold)){
-      warning("Invalid specificity_score_threshold type. Parameter specificity_score_threshold must be a numeric value in (0,1]. No filter is applied")
-    } else{
-      accordion_marker<-accordion_marker[specificity >= specificity_score_threshold]
-    }
-  }
-
-  setkey(accordion_marker,marker,cell_type)
+  setkey(accordion_marker,marker,NCIT_celltype)
 
   # merge Z_scaled_dt and accordion table
   accordion_marker[,combined_score := specificity_scaled * EC_score_scaled]
@@ -495,7 +613,7 @@ accordion_disease<-function(data,
     if(!is.numeric(combined_score_quantile_threshold) | combined_score_quantile_threshold > 1 | combined_score_quantile_threshold <= 0){
       warning("Invalid combined_score_quantile_threshold type. Parameter combined_score_quantile_threshold must be a numeric value in (0,1]. No filter is applied")
     } else{
-      accordion_marker[,quantile_combined_score:=quantile(combined_score, probs= combined_score_quantile_threshold), by="cell_type"]
+      accordion_marker[,quantile_combined_score:=quantile(combined_score, probs= combined_score_quantile_threshold), by="NCIT_celltype"]
       accordion_marker<-accordion_marker[combined_score>quantile_combined_score]
     }
   }
@@ -505,12 +623,12 @@ accordion_disease<-function(data,
     if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
-      accordion_marker<-accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="cell_type"]
+      accordion_marker<-accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="NCIT_celltype"]
     }
   }
 
   # number of markers for each cell type
-  accordion_marker[,length:= .N, by="cell_type"]
+  accordion_marker[,length:= .N, by="NCIT_celltype"]
   if(!is.null(min_n_marker)){
     if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
       warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
@@ -546,9 +664,9 @@ accordion_disease<-function(data,
   # compute the score for each cell
   dt_score<-merge.data.table(Zscaled_m_data,accordion_marker, by="marker",allow.cartesian = TRUE)
   dt_score[,score := expr_scaled * combined_score]
-  dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
-  setkey(dt_score, cell_type, cell, marker_type)
-  sum_dt <- dt_score[data.table("cell_type" = rep(dt_score_ct$cell_type, each = 2),
+  dt_score_ct <- unique(dt_score[, c("NCIT_celltype", "cell")])
+  setkey(dt_score, NCIT_celltype, cell, marker_type)
+  sum_dt <- dt_score[data.table("NCIT_celltype" = rep(dt_score_ct$NCIT_celltype, each = 2),
                                 "cell" = rep(dt_score_ct$cell, each = 2),
                                 "marker_type" = c("positive", "negative")),
                      .(score= (sum(score)/(sqrt((sum(EC_score_scaled * specificity_scaled)))))), by = .EACHI]
@@ -564,18 +682,18 @@ accordion_disease<-function(data,
     if ("cluster" %in% annotation_resolution){
       setkey(cluster_table, cell)
       final_dt_cluster<-merge.data.table(final_dt, cluster_table, by="cell")
-        final_dt_cluster[, quantile_score_cluster:= quantile(diff_score,probs = cluster_score_quantile_threshold, na.rm=TRUE), by=c("seurat_clusters","cell_type")]
+        final_dt_cluster[, quantile_score_cluster:= quantile(diff_score,probs = cluster_score_quantile_threshold, na.rm=TRUE), by=c("seurat_clusters","NCIT_celltype")]
           if (allow_unknown == T){
-            final_dt_cluster[quantile_score_cluster < 0, annotation_per_cell:= "unknown"][quantile_score_cluster > 0, annotation_per_cell := cell_type]
+            final_dt_cluster[quantile_score_cluster < 0, annotation_per_cell:= "unknown"][quantile_score_cluster > 0, annotation_per_cell := NCIT_celltype]
           } else {
-            final_dt_cluster[, annotation_per_cell := cell_type]
+            final_dt_cluster[, annotation_per_cell := NCIT_celltype]
           }
        # add the annotation results in the metadata of the Seurat data
         anno_dt_cell<-final_dt_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
         anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
         anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
         anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
-        anno_dt_cl<-anno_dt_cell_ptc[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","cell_type","diff_score","ncell_tot_cluster","ncell_celltype_cluster")]
+        anno_dt_cl<-anno_dt_cell_ptc[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","NCIT_celltype","diff_score","ncell_tot_cluster","ncell_celltype_cluster")]
         anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","perc_celltype_cluster")]
         colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster","percentage")
 
@@ -613,13 +731,26 @@ accordion_disease<-function(data,
     data@meta.data[,name] = ""
     data@meta.data[,name_score] = ""
     anno_dt_cell<-final_dt[order(-diff_score)][,head(.SD, 1),"cell"]
-    if (allow_unknown == T){
-      anno_dt_cell[diff_score < 0, annotation_per_cell:= "unknown"][diff_score > 0, annotation_per_cell := cell_type]
 
-    } else {
-      anno_dt_cell[, annotation_per_cell := cell_type]
+    if(uniqueN(anno_dt_cell$NCIT_celltype) ==1){
+      thr_assig<-quantile(anno_dt_cell$diff_score, probs = malignant_quantile_threshold)
+      if (allow_unknown == T){
+        anno_dt_cell[diff_score < thr_assig, annotation_per_cell:= "unknown"][diff_score > thr_assig, annotation_per_cell := NCIT_celltype]
 
+      } else {
+        anno_dt_cell[, annotation_per_cell := NCIT_celltype]
+
+      }
+    } else{
+      if (allow_unknown == T){
+        anno_dt_cell[diff_score < 0, annotation_per_cell:= "unknown"][diff_score > 0, annotation_per_cell := NCIT_celltype]
+
+      } else {
+        anno_dt_cell[, annotation_per_cell := NCIT_celltype]
+
+      }
     }
+
 
     # add the annotation result to the data metadata
     if(!identical(colnames(data),anno_dt_cell$cell)){
@@ -655,7 +786,6 @@ accordion_disease<-function(data,
                                                       dt_score,
                                                       annotation_name,
                                                       group_markers_by,
-                                                      dt_top_marker,
                                                       cluster_info,
                                                       final_dt,
                                                       anno_dt_cell,
@@ -664,7 +794,7 @@ accordion_disease<-function(data,
                                                       top_marker_score_quantile_threshold,
                                                       top_cell_score_quantile_threshold,
                                                       condition_group_info,
-                                                      cell_type_group_info)
+                                                      NCIT_celltype_group_info)
     } else{
       accordion_output<-include_detailed_annotation_info_helper(accordion_output,
                                                                 data_type,
@@ -674,7 +804,6 @@ accordion_disease<-function(data,
                                                                 dt_score,
                                                                 annotation_name,
                                                                 group_markers_by,
-                                                                dt_top_marker,
                                                                 cluster_info,
                                                                 final_dt,
                                                                 anno_dt_cell,
@@ -683,7 +812,7 @@ accordion_disease<-function(data,
                                                                 top_marker_score_quantile_threshold,
                                                                 top_cell_score_quantile_threshold,
                                                                 condition_group_info,
-                                                                cell_type_group_info)
+                                                                NCIT_celltype_group_info)
     }
 
   }

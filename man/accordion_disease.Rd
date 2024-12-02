@@ -8,12 +8,16 @@ with the built-in Cell Marker Accordion disease database}
 accordion_disease(
   data,
   disease = NULL,
+  tissue = NULL,
   cluster_info = "seurat_clusters",
   assay = "RNA",
-  cell_types = NULL,
+  NCIT_celltypes = NULL,
   species = "Human",
+  include_descendants = FALSE,
   evidence_consistency_score_threshold = NULL,
   specificity_score_threshold = NULL,
+  log2FC_threshold = NULL,
+  malignant_quantile_threshold = 0.95,
   min_n_marker = 5,
   max_n_marker = NULL,
   combined_score_quantile_threshold = NULL,
@@ -24,24 +28,29 @@ accordion_disease(
   annotation_name = "accordion_disease",
   include_detailed_annotation_info = TRUE,
   condition_group_info = NULL,
-  cell_type_group_info = NULL,
+  NCIT_celltype_group_info = NULL,
   group_markers_by = "celltype_cluster",
   top_cell_score_quantile_threshold = 0.9,
   n_top_celltypes = 5,
   n_top_markers = 5,
   top_marker_score_quantile_threshold = 0.75,
-  plot = TRUE
+  plot = TRUE,
+  color_by = "cell_type"
 )
 }
 \arguments{
-\item{data}{Either a  Seurat object (version 4.9) or a raw or normalized
+\item{data}{Either a  Seurat object (version 4 or 5) or a raw or normalized
 count matrix with genes on rows and cells on columns. If raw counts are
 provided, data are log-normalized exploiting the NormalizeData() function
 from the Seurat package.}
 
 \item{disease}{Character string or character string vector specifying
-diseases to consider.  If NULL, the full disease Accordion database is
-considered. Default is NULL.}
+diseases to consider. Run the function "list_diseases()" to obtain the
+available diseases. If NULL, all diseases are considered. Default is NULL.}
+
+\item{tissue}{Character string or character string vector specifying the tissue.
+Run the function "list_disease_tissues()" to obtain the available tissues.
+If NULL, all tissues information are aggregated together. Default is NULL.}
 
 \item{cluster_info}{in case \code{object} is a Seurat object,
 \code{cluster_info} should be need to be a character string specifying the
@@ -58,10 +67,10 @@ parameter is set to “cluster”. Default is “seurat_clusters”.}
 parameter is necessary only  in case \code{data} is a Seurat object.
 Default is “RNA”.}
 
-\item{cell_types}{Character string or character string vector specifying the
-cell types to annotate. If this parameter is not specified, all cell types
-present in the Accordion database are used for the annotation. Default is
-NULL.}
+\item{NCIT_celltypes}{Character string or character string vector specifying the
+cell types to annotate. Run the function "list_aberrant_celltypes()" to obtain the
+available aberrant cell types. If this parameter is not specified, all aberrant
+cell types are used for the annotation. Default is NULL.}
 
 \item{species}{Character string or character string vector specifying the
 species. Currently, either “Human” and/or “Mouse” are supported. If
@@ -148,13 +157,13 @@ data frame or data table should contain at least two columns, one  named
 “cell”, which specifies cell id’s, and one named “condition”, which specifies
 the condition id’s for each cell.  Default is NULL.}
 
-\item{cell_type_group_info}{in case \code{object} is a Seurat object,
-\code{cell_type_group_info} should be need to be a character string specifying the
+\item{NCIT_celltype_group_info}{in case \code{object} is a Seurat object,
+\code{NCIT_celltype_group_info} should be need to be a character string specifying the
 name of the column in the metadata that contains cell types ids for each cell;
-if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
+if \code{object} is a count matrix, \code{NCIT_celltype_group_info} should be need to be a
 data frame or data table containing cell types identity for each cell. The
 data frame or data table should contain at least two columns, one  named
-“cell”, which specifies cell id’s, and one named “cell_type”, which specifies
+“cell”, which specifies cell id’s, and one named “NCIT_celltype”, which specifies
 the cell types for each cell.  Default is NULL.}
 
 \item{group_markers_by}{Character string or character string vector

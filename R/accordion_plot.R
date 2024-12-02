@@ -18,7 +18,6 @@
 #'   the list from which extract the detailed annotation information, either
 #'   “accordion”, “accordion_disease” or “accordion_custom”, for which returns
 #'   the plot, either “accordion”, “accordion_disease” or “accordion_custom”.
-#'   Default is “accordion”.
 #' @param resolution Character string or character string vector specifying the
 #'   annotation resolution for which provided the plots. Either “cluster” and/or
 #'   “cell” are supported. Default is “cluster”.
@@ -34,7 +33,7 @@
 #'   "cluster", "cell" or "score_cell". Default is "celltype_cluster".
 #' @param color_by Character string specifying if the plot reporting the top
 #' cell types for each cluster/cell is colored based on the assigned cell type
-#' ("cell_type") or on cluster id ("cluster"). Default is "cell_type.
+#' ("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.
 #' @return A Seurat object or a list.
 #' @details If a Seurat object was provided in input, the function returns the
 #' Seurat object with a list of ggplot objects added to the "misc" slot in the
@@ -53,7 +52,7 @@ accordion_plot<-function(data,
                          info_to_plot = "accordion",
                          resolution = "cluster",
                          group_markers_by = "celltype_cluster",
-                         color_by = "cell_type"
+                         color_by = "CL_celltype"
 
                          ){
 
@@ -84,7 +83,7 @@ accordion_plot<-function(data,
     if(is_empty(data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]])){
       stop(paste0("detailed annotation info list for ", resolution, " resolution is empty"))
     } else {
-      top_cell_type_dt<-data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][["top_celltypes"]]
+      top_CL_celltype_dt<-data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][["top_celltypes"]]
       top_marker_dt<-data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[top_markers]]
     }
   } else {
@@ -92,31 +91,39 @@ accordion_plot<-function(data,
     if(is_empty(data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]])){
       stop(paste0("detailed annotation info slot for ", resolution_slot, " resolution is empty"))
     } else{
-      top_cell_type_dt<-data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][["top_celltypes"]]
+      top_CL_celltype_dt<-data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][["top_celltypes"]]
       top_marker_dt<-data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[top_markers]]
     }
+  }
+
+  if("NCIT_celltype" %in% colnames(top_CL_celltype_dt)){
+    func<-"disease"
+    names(top_CL_celltype_dt)[names(top_CL_celltype_dt) == 'NCIT_celltype'] <- 'CL_celltype'
+    names(top_marker_dt)[names(top_marker_dt) == 'NCIT_celltype'] <- 'CL_celltype'
+  } else{
+    func<-"healthy"
   }
 
   marker_slot_plot<-paste0(top_markers,"_plot")
   celltype_slot_plot<-"top_celltypes_plot"
 
-  cell_type_annotation_column<-paste0(info_to_plot, "_per_", resolution)
+  CL_celltype_annotation_column<-paste0(info_to_plot, "_per_", resolution)
 
     if("EC_score" %in% colnames(top_marker_dt)){
       data(cell_onto)
       ontology_celltype<-as.data.frame(cell_onto[["name"]])
-      colnames(ontology_celltype)<-"cell_type"
-      ontology_celltype$cell_ID<-rownames(ontology_celltype)
+      colnames(ontology_celltype)<-"CL_celltype"
+      ontology_celltype$CL_ID<-rownames(ontology_celltype)
       ontology_celltype<-as.data.table(ontology_celltype)
       if("cluster" %in% resolution){
-        top_celltypes<-merge(top_cell_type_dt,ontology_celltype,  by.x=cell_type_annotation_column, by.y="cell_type")
+        top_celltypes<-merge(top_CL_celltype_dt,ontology_celltype,  by.x=CL_celltype_annotation_column, by.y="CL_celltype")
       } else if ("cell" %in% resolution){
-        top_celltypes<-merge(top_cell_type_dt,ontology_celltype,  by.x=cell_type_annotation_column, by.y="cell_type")
+        top_celltypes<-merge(top_CL_celltype_dt,ontology_celltype,  by.x=CL_celltype_annotation_column, by.y="CL_celltype")
       }
     } else{
-      top_celltypes<-top_cell_type_dt
+      top_celltypes<-top_CL_celltype_dt
     }
-  cluster_column_name<-colnames(top_cell_type_dt)[1]
+  cluster_column_name<-colnames(top_CL_celltype_dt)[1]
   info_to_plot_per_cluster<-paste0(info_to_plot, "_per_cluster")
   info_to_plot_per_cell<-paste0(info_to_plot, "_per_cell")
 
@@ -175,7 +182,7 @@ accordion_plot<-function(data,
         colfunc_neg <- colorRampPalette(c("#104E8B", "#cfdbe7"))
         vec_neg<-colfunc_neg(5)
 
-        top_dt_cl[,specificity_ratio:=as.character(round(1/specificity, digits = 2))]
+        top_dt_cl[,specificity_ratio:=(specificity)]
 
         top_dt_cl[specificity_ratio == 1,specificity_range:= "1"]
         top_dt_cl[specificity_ratio == 0.50,specificity_range:= "0.50"]
@@ -307,21 +314,19 @@ accordion_plot<-function(data,
           #global cell types
           colnames(top_celltypes)[colnames(top_celltypes) == "celltype_impact_score"] <- "impact_score"
           colnames(top_celltypes)[colnames(top_celltypes) == eval(cluster_column_name)] <- "group"
-          colnames(top_celltypes)[colnames(top_celltypes) == eval(info_to_plot_per_cluster)] <- "cell_type"
-
-
+          colnames(top_celltypes)[colnames(top_celltypes) == eval(info_to_plot_per_cluster)] <- "CL_celltype"
           if (color_by == "cluster"){
 
             top_celltypes<-top_celltypes[order(group, -impact_score)]
             top_celltypes[,win_ct:= .SD[1], by="group"]
-            top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
-            top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=unique(cell_type))]
+            top_celltypes[,win_ct_border:= ifelse(win_ct == CL_celltype, "win","no")]
+            top_celltypes<-top_celltypes[,CL_celltype:=factor(CL_celltype,levels=unique(CL_celltype))]
             win<-top_celltypes[win_ct_border == "win"]
-            win<-win[,cell_type:=factor(cell_type,levels=levels(top_celltypes$cell_type))]
+            win<-win[,CL_celltype:=factor(CL_celltype,levels=levels(top_celltypes$CL_celltype))]
 
           dotplot_ct<- ggplot() +
-            geom_point(data = top_celltypes, aes(x=group, y = cell_type, color = group, size = impact_score)) +
-            geom_point(data = win, aes(x=group, y = cell_type,fill=group,  size = impact_score), pch=21, color = "black", stroke = 2) +
+            geom_point(data = top_celltypes, aes(x=group, y = CL_celltype, color = group, size = impact_score)) +
+            geom_point(data = win, aes(x=group, y = CL_celltype,fill=group,  size = impact_score), pch=21, color = "black", stroke = 2) +
             theme_bw(base_size = bs) +
             scale_size(range=c(4,10))+
             guides(colour="none", fill="none")+
@@ -344,23 +349,22 @@ accordion_plot<-function(data,
 
             top_celltypes<-top_celltypes[order(group, -impact_score)]
             top_celltypes[,win_ct:= .SD[1], by="group"]
-            top_celltypes[,win_ct_border:= ifelse(win_ct == cell_type, "win","no")]
-            top_celltypes<-top_celltypes[order(cell_type)]
+            top_celltypes[,win_ct_border:= ifelse(win_ct == CL_celltype, "win","no")]
+            top_celltypes<-top_celltypes[order(CL_celltype)]
             top_celltypes<-top_celltypes[,tot_cell_ct_cluster:=ifelse(win_ct_border == "win",ncell_tot_cluster, 0)]
-            top_celltypes[,freq:=sum(tot_cell_ct_cluster), by=c("cell_type", "win_ct_border")]
+            top_celltypes[,freq:=sum(tot_cell_ct_cluster), by=c("CL_celltype", "win_ct_border")]
 
             top_celltypes<-top_celltypes[order(-freq)]
-            top_celltypes<-top_celltypes[,cell_type:=factor(cell_type,levels=rev(unique(cell_type)))]
+            top_celltypes<-top_celltypes[,CL_celltype:=factor(CL_celltype,levels=rev(unique(CL_celltype)))]
             top_celltypes<-top_celltypes[order(-win_ct_border)]
             top_celltypes<-top_celltypes[,group:=factor(group,levels=unique(group))]
             top_celltypes[,group:=factor(group, levels = (levels(top_celltypes$group)))]
 
             win<-top_celltypes[win_ct_border == "win"]
-            hex <- rev(hue_pal()(uniqueN(top_celltypes$cell_type)))
-
+            hex <- rev(hue_pal()(uniqueN(top_celltypes$CL_celltype)))
             dotplot_ct<-ggplot() +
-              geom_point(data = top_celltypes, aes(x=group, y = cell_type, color = cell_type, size = impact_score)) +
-              geom_point(data = win, aes(x=group, y = cell_type,  size = impact_score), pch=21, color = "black", stroke = 2) +
+              geom_point(data = top_celltypes, aes(x=group, y = CL_celltype, color = CL_celltype, size = impact_score)) +
+              geom_point(data = win, aes(x=group, y = CL_celltype,  size = impact_score), pch=21, color = "black", stroke = 2) +
               theme_bw(base_size = bs) +
               scale_size(range=c(4,10))+
               guides(colour="none", fill="none")+
@@ -400,7 +404,7 @@ accordion_plot<-function(data,
             } else if("celltype_cluster" %in% group_markers_by){
               colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_celltype_cluster"] <- "impact_score"
               colnames(top_marker_dt)[colnames(top_marker_dt) == eval(info_to_plot_per_cluster)] <- "group"
-              top_marker_dt<-top_marker_dt[, group:=factor(group, levels=levels(top_celltypes$cell_type))]
+              top_marker_dt<-top_marker_dt[, group:=factor(group, levels=levels(top_celltypes$CL_celltype))]
 
             } else if ("score_cell" %in% group_markers_by){
               colnames(top_marker_dt)[colnames(top_marker_dt) == "gene_impact_score_per_score_cell"] <- "impact_score"
@@ -426,7 +430,7 @@ accordion_plot<-function(data,
 
             }
 
-            if(! ("condition" %in% colnames(top_marker_dt))){
+            if(func =="healthy"){
 
               dotplot<- ggplot(top_marker_dt, aes(x=marker, y = group, color = group, size = impact_score)) +
                 geom_point() +
@@ -475,6 +479,8 @@ accordion_plot<-function(data,
                                                                width = 20))
             }
 
+
+
             if(data_type == "seurat"){
               data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][["global"]]<-dotplot
             } else {
@@ -494,25 +500,25 @@ accordion_plot<-function(data,
            if("cluster" %in% resolution){
               top_celltypes_cl<-top_celltypes[group == gr]
               colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == "celltype_impact_score"] <- "impact_score"
-              colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == eval(info_to_plot_per_cluster)] <- "cell_type"
+              colnames(top_celltypes_cl)[colnames(top_celltypes_cl) == eval(info_to_plot_per_cluster)] <- "CL_celltype"
               top_celltypes_cl<-top_celltypes_cl[order(-impact_score)]
-              name<-paste0(gr,"_", unique(top_celltypes_cl$cell_type[1]))
+              name<-paste0(gr,"_", unique(top_celltypes_cl$CL_celltype[1]))
 
             top_celltypes_cl<-top_celltypes_cl[order(impact_score)]
-            top_celltypes_cl[,cell_type:=factor(cell_type,levels = unique(cell_type))]
+            top_celltypes_cl[,CL_celltype:=factor(CL_celltype,levels = unique(CL_celltype))]
 
-            if("EC_score" %in% colnames(top_marker_dt) & length(top_celltypes_cl$cell_ID) > 1){
-              onto_plot<-onto_plot2(cell_onto, top_celltypes_cl$cell_ID)
+            if("EC_score" %in% colnames(top_marker_dt) & length(top_celltypes_cl$CL_ID) > 1){
+              onto_plot<-onto_plot2(cell_onto, top_celltypes_cl$CL_ID)
               onto_plot@nodes<-gsub("(.{10,}?)\\s", "\\1\n", onto_plot@nodes, perl = TRUE)
 
               onto_igraph<-graph_from_graphnel(onto_plot, name = TRUE, weight = TRUE, unlist.attrs = TRUE)
               V(onto_igraph)$CL<- str_split_i(onto_plot@nodes, "CL:", i= -1)
-              V(onto_igraph)[V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$cell_ID, "CL:", i= -1)]$color <- "#8B1A1A"
-              V(onto_igraph)[!(V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$cell_ID, "CL:", i= -1))]$color <- "gray50"
+              V(onto_igraph)[V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1)]$color <- "#8B1A1A"
+              V(onto_igraph)[!(V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1))]$color <- "gray50"
 
-                pl <- ggplot(top_celltypes_cl, aes(impact_score, cell_type)) +
+                pl <- ggplot(top_celltypes_cl, aes(impact_score, CL_celltype)) +
                   geom_vline(xintercept = 0, linetype = 2) +
-                  geom_segment(aes(x = 0, xend = impact_score, y = cell_type, yend = cell_type),color = "#8B1A1A",linewidth = bs/10, show.legend = F) +
+                  geom_segment(aes(x = 0, xend = impact_score, y = CL_celltype, yend = CL_celltype),color = "#8B1A1A",linewidth = bs/10, show.legend = F) +
                   geom_point(aes(size=perc_celltype_cluster), color="#8B1A1A" , alpha = 1, shape = 16) +
                   geom_text(aes(label = paste0(perc_celltype_cluster, "%")), size= bs*0.3, color="#8B1A1A", position = position_dodge(width = .9), vjust = 0.5,hjust= -0.3,show.legend = FALSE)+
                   theme_bw(base_size = bs) +
@@ -547,9 +553,9 @@ accordion_plot<-function(data,
 
                 }
             } else {
-              pl <- ggplot(top_celltypes_cl, aes(impact_score, cell_type)) +
+              pl <- ggplot(top_celltypes_cl, aes(impact_score, CL_celltype)) +
                 geom_vline(xintercept = 0, linetype = 2) +
-                geom_segment(aes(x = 0, xend = impact_score, y = cell_type, yend = cell_type),color = "#8B1A1A",linewidth = bs/10, show.legend = F) +
+                geom_segment(aes(x = 0, xend = impact_score, y = CL_celltype, yend = CL_celltype),color = "#8B1A1A",linewidth = bs/10, show.legend = F) +
                 geom_point(aes(size=perc_celltype_cluster), color="#8B1A1A" , alpha = 1, shape = 16) +
                 geom_text(aes(label = paste0(perc_celltype_cluster, "%")), size= bs*0.3, color="#8B1A1A", position = position_dodge(width = .9), vjust = 0.5,hjust= -0.3,show.legend = FALSE)+
                 theme_bw(base_size = bs) +

@@ -16,6 +16,7 @@ accordion_custom(
   assay = "RNA",
   min_n_marker = 5,
   max_n_marker = NULL,
+  combined_score_quantile_threshold = NULL,
   annotation_resolution = "cluster",
   cluster_score_quantile_threshold = 0.75,
   allow_unknown = TRUE,
@@ -32,7 +33,7 @@ accordion_custom(
 )
 }
 \arguments{
-\item{data}{Either a  Seurat object (version 4.9) or a raw or normalized count
+\item{data}{Either a  Seurat object (version 4 or 5) or a raw or normalized count
 matrix with genes on rows and cells on columns. If raw counts are provided,
 data are log-normalized exploiting the NormalizeData() function from the
 Seurat package.}
@@ -86,6 +87,13 @@ threshold are kept.  Default is 5.}
 keep for each cell type. For the selection, markers are ranked according to
 their combined score, obtained by multiplying evidence consistency score and
 specificity score. If  NULL, no filter is applied. Default is NULL.}
+
+\item{combined_score_quantile_threshold}{numeric value in (0,1] specifying
+the combined score quantile threshold. For the selection, markers are
+ranked according to their combined score,  obtained by multiplying weight
+and specificity score. Only markers > the
+quantile_threshold are kept. If  NULL, no filter is applied. Default is
+NULL.}
 
 \item{annotation_resolution}{Character string or character string vector
 specifying the resolution of the annotation. Either “cluster” and/or “cell”

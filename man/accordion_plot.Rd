@@ -8,7 +8,8 @@ accordion_plot(
   data,
   info_to_plot = "accordion",
   resolution = "cluster",
-  group_markers_by = "celltype_cluster"
+  group_markers_by = "celltype_cluster",
+  color_by = "CL_celltype"
 )
 }
 \arguments{
@@ -19,8 +20,7 @@ functions, run with include_detailed_annotation_info parameter set to TRUE.}
 \item{info_to_plot}{Character string or character string vector specifying
 the list from which extract the detailed annotation information, either
 “accordion”, “accordion_disease” or “accordion_custom”, for which returns
-the plot, either “accordion”, “accordion_disease” or “accordion_custom”.
-Default is “accordion”.}
+the plot, either “accordion”, “accordion_disease” or “accordion_custom”.}
 
 \item{resolution}{Character string or character string vector specifying the
 annotation resolution for which provided the plots. Either “cluster” and/or
@@ -36,6 +36,10 @@ to "score_cell", the \code{n_top_markers} marker genes only for
 cells with a score greater than \code{top_cell_score_quantile_threshold} are
 retrieved. Either "celltype_cluster", "celltype_cell",
 "cluster", "cell" or "score_cell". Default is "celltype_cluster".}
+
+\item{color_by}{Character string specifying if the plot reporting the top
+cell types for each cluster/cell is colored based on the assigned cell type
+("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.}
 }
 \value{
 A Seurat object or a list.
