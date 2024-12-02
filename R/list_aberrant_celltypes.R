@@ -12,6 +12,8 @@
 #'    If NULL, information from all tissues are retrieved.
 #' @return List of aberrant cell types available in the Cell Marker Accordion
 #' disease database
+#' @import data.table
+#' @export
 
 list_aberrant_celltypes<-function(species = c("Human","Mouse"),
                                   disease=NULL,

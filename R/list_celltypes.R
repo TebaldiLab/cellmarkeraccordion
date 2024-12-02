@@ -8,7 +8,8 @@
 #'   for which to extract the associate list of available cell types.
 #'    If NULL, information from all tissues are retrieved.
 #' @return List of cell types available in the Cell Marker Accordion database
-
+#' @import data.table
+#' @export
 list_celltypes<-function(species = c("Human","Mouse"),
                tissue = NULL
 ){

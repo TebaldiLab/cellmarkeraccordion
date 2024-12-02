@@ -13,6 +13,8 @@
 #'  retrieved.
 #'  @return List of diseases available in the Cell Marker Accordion disease
 #'  database
+#' @import data.table
+#' @export
 
 
 list_diseases<-function(species = c("Human","Mouse"),
