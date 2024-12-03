@@ -33,7 +33,7 @@
 #'   "cluster", "cell" or "score_cell". Default is "celltype_cluster".
 #' @param color_by Character string specifying if the plot reporting the top
 #' cell types for each cluster/cell is colored based on the assigned cell type
-#' ("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.
+#' ("cell_type") or on cluster id ("cluster"). Default is "cell_type.
 #' @return A Seurat object or a list.
 #' @details If a Seurat object was provided in input, the function returns the
 #' Seurat object with a list of ggplot objects added to the "misc" slot in the
@@ -47,12 +47,14 @@
 #' @import cowplot
 #' @import ggnewscale
 #' @import purrr
+#' @import data.table
+#' @import scales
 #' @export
 accordion_plot<-function(data,
                          info_to_plot = "accordion",
                          resolution = "cluster",
                          group_markers_by = "celltype_cluster",
-                         color_by = "CL_celltype"
+                         color_by = "cell_type"
 
                          ){
 
@@ -109,7 +111,7 @@ accordion_plot<-function(data,
 
   CL_celltype_annotation_column<-paste0(info_to_plot, "_per_", resolution)
 
-    if("EC_score" %in% colnames(top_marker_dt)){
+    if("EC_score" %in% colnames(top_marker_dt) & func == "healthy"){
       data(cell_onto)
       ontology_celltype<-as.data.frame(cell_onto[["name"]])
       colnames(ontology_celltype)<-"CL_celltype"
@@ -318,7 +320,7 @@ accordion_plot<-function(data,
           if (color_by == "cluster"){
 
             top_celltypes<-top_celltypes[order(group, -impact_score)]
-            top_celltypes[,win_ct:= .SD[1], by="group"]
+            top_celltypes[,win_ct:= rep(.SD[1]), by="group"]
             top_celltypes[,win_ct_border:= ifelse(win_ct == CL_celltype, "win","no")]
             top_celltypes<-top_celltypes[,CL_celltype:=factor(CL_celltype,levels=unique(CL_celltype))]
             win<-top_celltypes[win_ct_border == "win"]
@@ -348,7 +350,7 @@ accordion_plot<-function(data,
           } else if (color_by == "cell_type"){ #default
 
             top_celltypes<-top_celltypes[order(group, -impact_score)]
-            top_celltypes[,win_ct:= .SD[1], by="group"]
+            top_celltypes[,win_ct:= rep(.SD[1]), by="group"]
             top_celltypes[,win_ct_border:= ifelse(win_ct == CL_celltype, "win","no")]
             top_celltypes<-top_celltypes[order(CL_celltype)]
             top_celltypes<-top_celltypes[,tot_cell_ct_cluster:=ifelse(win_ct_border == "win",ncell_tot_cluster, 0)]
