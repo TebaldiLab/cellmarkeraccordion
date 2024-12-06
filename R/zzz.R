@@ -1,15 +1,5 @@
+owlready2 <- NULL
 .onLoad <- function(libname, pkgname) {
-  library(reticulate)
-    print("ciao")
-  # Suppress reticulate prompt
-  options(reticulate.miniconda.prompt = FALSE)
-
-  # Check or configure Python environment
-  if (!py_available(initialize = FALSE)) {
-    if (!miniconda_exists()) {
-      install_miniconda()
-    }
-    use_miniconda(required = TRUE)
-  }
-
+  # use superassignment to update global reference to scipy
+  owlready2 <<- reticulate::import("owlready2", delay_load = TRUE)
 }
