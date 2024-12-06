@@ -542,20 +542,6 @@ accordion_plot<-function(data,
                #V(onto_igraph)[V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1)]$color <- "#8B1A1A"
                #V(onto_igraph)[!(V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1))]$color <- "gray50"
 
-
-              new_color<-attr$color
-              names(new_color)<-names(p[["node_attributes"]][["color"]])
-              p[["node_attributes"]]$color<-new_color
-              new_label<-attr$label
-              names(new_label)<-names(p[["node_attributes"]][["label"]])
-              p[["node_attributes"]]$label<-new_label
-              p[["node_attributes"]][["label"]]<-paste0(p[["node_attributes"]][["label"]], "\n", names(p[["node_attributes"]][["label"]]))
-
-              plot<-par(mfrow = c(1,2))
-              p<-onto_plot(cell_onto, term_sets  = top_celltypes_cl$CL_ID, width = 0,fontsize = 50,
-                        color = "white",label = p[["node_attributes"]][["label"]], fillcolor=p[["node_attributes"]]$color)
-
-
                 pl <- ggplot(top_celltypes_cl, aes(impact_score, CL_celltype)) +
                   geom_vline(xintercept = 0, linetype = 2) +
                   geom_segment(aes(x = 0, xend = impact_score, y = CL_celltype, yend = CL_celltype),color = "#8B1A1A",linewidth = bs/10, show.legend = F) +
