@@ -558,7 +558,9 @@ accordion_plot<-function(data,
                 #   geom_label(aes(x = x, y = y, label = name), nudge_y = 0.1, label.size = NA,size = bs*0.28, colour=V(onto_igraph)$color, label.padding = unit(0.1, "lines")) +
                 #   theme_graph()
 
-                como_plot<-plot_grid(pl, p, rel_widths = c(1, 2), nrow=1, scale = c(1, 1))
+                #como_plot<-plot_grid(pl, p, rel_widths = c(1, 2), nrow=1, scale = c(1, 1))
+                como_plot<-p
+
                 if(data_type == "seurat"){
                   data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]] <- como_plot
                 } else{
