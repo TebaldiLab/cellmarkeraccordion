@@ -1,6 +1,6 @@
 .onLoad <- function(libname, pkgname) {
   library(reticulate)
-
+    print("ciao")
   # Suppress reticulate prompt
   options(reticulate.miniconda.prompt = FALSE)
 
