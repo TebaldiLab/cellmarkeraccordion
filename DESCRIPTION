@@ -29,7 +29,6 @@ Imports:
 	Seurat (>= 4.0.0),
 	ggplot2 (>= 3.0.0),
 	stringr (>= 1.5.0),
-	ontoProc (>= 1.20.0),
 	ontologyIndex (>= 2.10),
 	igraph (>= 1.4.2),
 	ontologyPlot (>= 1.6),

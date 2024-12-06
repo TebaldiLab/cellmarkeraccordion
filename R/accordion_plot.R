@@ -42,7 +42,6 @@
 #' @import ontologyIndex
 #' @import igraph
 #' @import ontologyPlot
-#' @import ontoProc
 #' @import ggraph
 #' @import cowplot
 #' @import ggnewscale
@@ -510,13 +509,25 @@ accordion_plot<-function(data,
             top_celltypes_cl[,CL_celltype:=factor(CL_celltype,levels = unique(CL_celltype))]
 
             if("EC_score" %in% colnames(top_marker_dt) & length(top_celltypes_cl$CL_ID) > 1){
-              onto_plot<-onto_plot2(cell_onto, top_celltypes_cl$CL_ID)
-              onto_plot@nodes<-gsub("(.{10,}?)\\s", "\\1\n", onto_plot@nodes, perl = TRUE)
+              # onto_plot<-onto_plot2(cell_onto, top_celltypes_cl$CL_ID)
+              # onto_plot@nodes<-gsub("(.{10,}?)\\s", "\\1\n", onto_plot@nodes, perl = TRUE)
+              #
+              # onto_igraph<-graph_from_graphnel(onto_plot, name = TRUE, weight = TRUE, unlist.attrs = TRUE)
+              # V(onto_igraph)$CL<- str_split_i(onto_plot@nodes, "CL:", i= -1)
+              # V(onto_igraph)[V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1)]$color <- "#8B1A1A"
+              # V(onto_igraph)[!(V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1))]$color <- "gray50"
 
-              onto_igraph<-graph_from_graphnel(onto_plot, name = TRUE, weight = TRUE, unlist.attrs = TRUE)
-              V(onto_igraph)$CL<- str_split_i(onto_plot@nodes, "CL:", i= -1)
-              V(onto_igraph)[V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1)]$color <- "#8B1A1A"
-              V(onto_igraph)[!(V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1))]$color <- "gray50"
+              p<-onto_plot(cell_onto, term_sets  = top_celltypes_cl$CL_ID)
+              attr<-as.data.table(p[["node_attributes"]])
+              attr[,color:=ifelse(label %in% top_celltypes$CL_celltype,"#d0a3a3","gray")]
+              new_color<-attr$color
+              names(new_color)<-names(p[["node_attributes"]][["color"]])
+              p[["node_attributes"]]$color<-new_color
+              p[["node_attributes"]][["label"]]<-paste0(p[["node_attributes"]][["label"]], "\n", names(p[["node_attributes"]][["label"]]))
+
+              p<-onto_plot(cell_onto, term_sets  = top_celltypes_cl$CL_ID, width = 0,fontsize = 50,
+                        color = "white",label = p[["node_attributes"]][["label"]], fillcolor=p[["node_attributes"]]$color)
+
 
                 pl <- ggplot(top_celltypes_cl, aes(impact_score, CL_celltype)) +
                   geom_vline(xintercept = 0, linetype = 2) +
@@ -541,13 +552,13 @@ accordion_plot<-function(data,
                   scale_x_continuous(limits = c(0, round_any(max(top_celltypes_cl$impact_score)*1.25+2, 1, f = ceiling)))
 
 
-                tree_plot <- ggraph(onto_igraph,layout = 'tree') +
-                  geom_edge_link(aes(start_cap = label_rect(node1.name), end_cap = label_rect(node2.name,padding = margin(10, 10, 10, 10, "mm"))),
-                                 arrow = arrow(type = "closed", length = unit(3, 'mm')))+
-                  geom_label(aes(x = x, y = y, label = name), nudge_y = 0.1, label.size = NA,size = bs*0.28, colour=V(onto_igraph)$color, label.padding = unit(0.1, "lines")) +
-                  theme_graph()
+                # tree_plot <- ggraph(onto_igraph,layout = 'tree') +
+                #   geom_edge_link(aes(start_cap = label_rect(node1.name), end_cap = label_rect(node2.name,padding = margin(10, 10, 10, 10, "mm"))),
+                #                  arrow = arrow(type = "closed", length = unit(3, 'mm')))+
+                #   geom_label(aes(x = x, y = y, label = name), nudge_y = 0.1, label.size = NA,size = bs*0.28, colour=V(onto_igraph)$color, label.padding = unit(0.1, "lines")) +
+                #   theme_graph()
 
-                como_plot<-plot_grid(pl, tree_plot, rel_widths = c(1, 2), nrow=1, scale = c(1, 1))
+                como_plot<-plot_grid(pl, p, rel_widths = c(1, 2), nrow=1, scale = c(1, 1))
                 if(data_type == "seurat"){
                   data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][[name]] <- como_plot
                 } else{

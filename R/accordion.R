@@ -182,7 +182,6 @@
 #' @import Seurat
 #' @import ggplot2
 #' @import stringr
-#' @import ontoProc
 #' @import ontologyIndex
 #' @export
 accordion<-function(data,

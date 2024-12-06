@@ -186,7 +186,6 @@
 #' @import Seurat
 #' @import ggplot2
 #' @import stringr
-#' @import ontoProc
 #' @export
 accordion_disease<-function(data,
                             disease = NULL,
