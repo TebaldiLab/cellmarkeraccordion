@@ -40,12 +40,12 @@
 #' \code{info_to_plot} list. If a list was provided in input, the function
 #' returns the same list with the addition of the ggplot objects.
 #' @import ontologyIndex
-#' @import igraph
+#' @rawNamespace import(igraph, except = components)
 #' @import ontologyPlot
 #' @import ggraph
 #' @import cowplot
 #' @import ggnewscale
-#' @import purrr
+#' @rawNamespace import(purrr, except = c(transpose,discard, simplify, compose, compact))
 #' @import data.table
 #' @import scales
 #' @export
