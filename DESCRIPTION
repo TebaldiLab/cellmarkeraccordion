@@ -36,6 +36,8 @@ Imports:
 	cowplot(>= 1.1.0),
 	ggnewscale (>= 0.4.0),
 	purrr (>= 1.0.0)
+	Rgraphviz (>=2.42.0)
+
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
