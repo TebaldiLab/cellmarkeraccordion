@@ -133,7 +133,7 @@
 #' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
 #' @import scales
-#' @import plyr
+#' @rawNamespace import(plyr, except = compact)
 #' @import data.table
 #' @import Seurat
 #' @import ggplot2
