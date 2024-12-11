@@ -117,7 +117,6 @@ accordion_plot<-function(data,
   CL_celltype_annotation_column<-paste0(info_to_plot, "_per_", resolution)
 
     if("EC_score" %in% colnames(top_marker_dt) & func == "healthy"){
-      cell_onto<-cellmarkeraccordion::cell_onto
       ontology_celltype<-as.data.frame(cell_onto[["name"]])
       colnames(ontology_celltype)<-"CL_celltype"
       ontology_celltype$CL_ID<-rownames(ontology_celltype)
