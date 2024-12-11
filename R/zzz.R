@@ -8,4 +8,4 @@ utils::globalVariables(c("include_detailed_annotation_info_helper","include_deta
                          "ncell_celltype_cluster","perc_celltype_cluster","quantile_score_cluster","annotation_per_cluster","quantile_score_marker","quantile_diff_score",
                          "quantile_combined_score","perc_celltype_cluster","annotation_per_cluster",
                          "weight_scaled","dt_top_marker","EC_score_NCIT_global","DO_diseasetype","specificity_ratio","specificity_range","specificity_positive","specificity_negative",
-                         "tot_cell_ct_cluster","disease_accordion_marker",""))
+                         "tot_cell_ct_cluster","disease_accordion_marker", "cell_onto","uberon_onto"))
