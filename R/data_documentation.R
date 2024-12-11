@@ -23,6 +23,21 @@ NULL
 #' @format Cell ontology
 NULL
 
+#' cell_cycle_markers: Collection of markers assiciated to cell cycle
+#'
+#' @docType data
+#' @name cell_cycle_markers
+#' @usage data(cell_cycle_markers)
+#' @format A data table
+NULL
+
+#'
+#' @docType data
+#' @name cell_onto
+#' @usage data(cell_onto)
+#' @format Cell ontology
+NULL
+
 
 #' counts: PBMC raw counts
 #'
