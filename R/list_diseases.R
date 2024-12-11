@@ -19,7 +19,7 @@ list_diseases<-function(species = c("Human","Mouse"),
                        tissue = NULL,
                        aberrant_celltype = NULL
 ){
-  data(disease_accordion_marker, package = "cellmarkeraccordion")
+  disease_accordion_marker<-cellmarkeraccordion::disease_accordion_marker
   input_species<-species
   if(!is.null(tissue)){
     output_table<-disease_accordion_marker[species %in% input_species & Uberon_tissue %in% tissue]

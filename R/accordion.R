@@ -372,7 +372,7 @@ accordion<-function(data,
 
 
   #load the Cell Marker Accordion database based on the condition selected
-  data(accordion_marker, package = "cellmarkeraccordion")
+  accordion_marker<-cellmarkeraccordion::accordion_marker
 
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){
@@ -443,7 +443,7 @@ accordion<-function(data,
       }
     }
     if(include_descendants == TRUE){
-      data(uberon_onto, package = "cellmarkeraccordion")
+      uberon_onto<-cellmarkeraccordion::uberon_onto
       root_id<-unique(accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
       desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
       accordion_marker<-accordion_marker[Uberon_ID %in% desc$V1]

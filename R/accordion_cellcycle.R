@@ -263,7 +263,7 @@ accordion_cellcycle<-function(data,
     }
   }
 
-  data(cell_cycle_markers, package = "cellmarkeraccordion")
+  cell_cycle_markers<-cellmarkeraccordion::cell_cycle_markers
 
   if((length(species) ==1 & !(species %in% c("Human","Mouse"))) | (length(species) == 2 & setequal(species, c("Human","Mouse")))){
     warning("Invalid species type")

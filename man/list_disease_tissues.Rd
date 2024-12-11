@@ -20,9 +20,10 @@ c("Mouse",“Human”).}
 diseases to consider. If NULL, information from all diseases are considered.
 Default is NULL.}
 
-\item{celltype}{Character string or character string vector specifying the
-celltype for which to extract the associate list of available tissues.
-If NULL, information from all cell types are retrieved.}
+\item{aberrant_celltype}{Character string or character string vector specifying
+the aberrant celltype for which to extract the associate
+list of available tissues. f NULL,
+information from all cell types are retrieved.}
 }
 \value{
 List of tissues available in the Cell Marker Accordion disease
