@@ -15,8 +15,13 @@
 #'   diseases to consider. Run the function "list_diseases()" to obtain the
 #'   available diseases. If NULL, all diseases are considered. Default is NULL.
 #' @param tissue Character string or character string vector specifying the tissue.
-#'  Run the function "list_disease_tissues()" to obtain the available tissues.
-#'  If NULL, all tissues information are aggregated together. Default is NULL.
+#'  Run the function "list_tissues()" to obtain the available tissues. If multiple
+#'  tissues are selected cell types and markers from the selected tissues
+#'  are aggregated. If NULL, all tissues are considered. Default is NULL.
+#' @param include_descendants  Logical value indicating whether include all the
+#'  tissues that are descendants of the selected tissue(s) according to the uberon
+#'  ontology. If TRUE,cell types and markers from the selected tissues and their
+#'  descendants are aggregated. Default is FALSE
 #' @param cluster_info in case \code{object} is a Seurat object,
 #'   \code{cluster_info} should be need to be a character string specifying the
 #'   name of the column in the metadata that contains cluster ids; if
@@ -45,6 +50,17 @@
 #' @param specificity_score_threshold numeric value in (0,1] specifying the
 #'   minimum specificity score for each marker. Only markers <= this threshold
 #'   are kept. If  NULL, no filter is applied. Default is NULL.
+#' @param log2FC_threshold numeric value specifying the
+#'   minimum log2FC threshold for each marker reporting this information.
+#'   Only markers <= this threshold or without any log2FC
+#'   are kept. If  NULL, no filter is applied. Default is NULL.
+#' @malignant_quantile_threshold numeric value in (0,1] specifying the malignant
+#'  quantile threshold. If an aberant cell type is provide in input,
+#'  a malignant score specific for each cell is computed.
+#'  The \code{malignant_quantile_threshold} is
+#'  computed across cells, and only cells with a score greater than
+#'  the \code{top_cell_score_quantile_threshold} are labeled as malignant.
+#'  If \code{annotation_resolution} is set to "cell", a cell
 #' @param min_n_marker Integer value specifying the minimum number of markers to
 #'   keep for each cell type. Only cell types with a number of markers >= this
 #'   threshold are kept.  Default is 5.
@@ -152,6 +168,10 @@
 #'   \code{annotation_resolution} together with the cell types hierarchies based
 #'   on the cell ontology structure are stored in the "accordion" list. Default
 #'   is TRUE.
+#' @param color_by Character string specifying if the plot reporting the top
+#' cell types for each cluster/cell is colored based on the assigned cell type
+#' ("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.
+#'
 #'
 #' @return A Seurat object or a list
 #' @details
@@ -224,7 +244,7 @@ accordion_disease<-function(data,
 
   #count matrix  data
   #check the type of input (Seurat data or raw count matrix)
-  if(!"Seurat" %in% class(data)){
+  if(!(inherits(data, "Seurat"))){
 
     #check that is not an empty count matrix
     if(sum(dim(data)) == 0){
@@ -232,13 +252,13 @@ accordion_disease<-function(data,
     }
     data_type<-"matrix"
     #check if the first column is the gene columns
-    if(class(data[,1]) == "character"){
+    if(inherits(data[,1],"character")){
       setDF(data)
       # Set the barcodes as the row names
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if("dgCMatrix" %in% class(data)){
+    if(inherits(data,"dgCMatrix")){
       data <- as(as.matrix(data), "sparseMatrix")
 
     }
@@ -250,7 +270,7 @@ accordion_disease<-function(data,
       if(is.null(cluster_info)){
         warning("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation.Cell types annotation will be perform only with per cell resolution.")
       } else {
-        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           warning("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation. Cell types annotation will be perform only with per cell resolution.")
         } else { #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -268,7 +288,7 @@ accordion_disease<-function(data,
       if(is.null(cluster_info)){
         stop("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
       } else {
-        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           stop("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
         } else{ #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -303,7 +323,7 @@ accordion_disease<-function(data,
       }
       #check that the cluster column is present in the data
       if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           warning("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
@@ -311,7 +331,7 @@ accordion_disease<-function(data,
           seurat_clusters<-cluster_info
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           stop("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           stop(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's."))
@@ -355,9 +375,7 @@ accordion_disease<-function(data,
   })
 
   #load the Cell Marker Accordion database based on the condition selected
-  data(disease_disease_accordion_marker)
-  disease_accordion_marker<-disease_disease_accordion_marker
-  rm(disease_disease_accordion_marker)
+  data(disease_accordion_marker, package = "cellmarkeraccordion")
 
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){
@@ -444,7 +462,7 @@ accordion_disease<-function(data,
       }
     }
     if(include_descendants == TRUE){
-      data(uberon_onto)
+      data(uberon_onto, package = "cellmarkeraccordion")
       root_id<-unique(disease_accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
       desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
       disease_accordion_marker<-disease_accordion_marker[Uberon_ID %in% desc$V1]
@@ -592,7 +610,7 @@ accordion_disease<-function(data,
     if(disease_vs_healthy == T){   # compare the healthy and the disease cell types if compare is set to TRUE
       #disease_accordion_marker[,cellID_healthy:= tstrsplit(NCIT_ID, "-", keep=2)]
 
-      data(accordion_marker)
+      data(accordion_marker, package = "cellmarkeraccordion")
       accordion_healthy<-accordion_marker
       accordion_healthy<-accordion_healthy[species %in% input_species & Uberon_tissue %in% tissue & CL_ID %in% unique(disease_accordion_marker$CL_ID) & marker %in% rownames(data)]
       accordion_healthy<-accordion_healthy[!is.na(CL_ID)]

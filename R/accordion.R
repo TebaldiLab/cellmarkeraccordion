@@ -32,8 +32,13 @@
 #'   multiple species are selected, marker genes are merged together. Default is
 #'   “Human”.
 #' @param tissue Character string or character string vector specifying the tissue.
-#'  Run the function "list_tissues()" to obtain the available tissues.
-#'  If NULL, all tissues information are aggregated together. Default is NULL.
+#'  Run the function "list_tissues()" to obtain the available tissues. If multiple
+#'  tissues are selected cell types and markers from the selected tissues
+#'  are aggregated. If NULL, all tissues are considered. Default is NULL.
+#' @param include_descendants  Logical value indicating whether include all the
+#'  tissues that are descendants of the selected tissue(s) according to the uberon
+#'  ontology. If TRUE,cell types and markers from the selected tissues and their
+#'  descendants are aggregated. Default is FALSE
 #' @param evidence_consistency_score_threshold Integer value (currently in
 #'   [1,7]) specifying the minimum evidence consistency (EC) score for each
 #'   marker. Only markers >= this threshold are kept. If NULL, no filter is
@@ -218,7 +223,7 @@ accordion<-function(data,
 
   #count matrix  data
   #check the type of input (Seurat data or raw count matrix)
-  if(!"Seurat" %in% class(data)){
+  if(!inherits(data,"Seurat")){
 
     #check that is not an empty count matrix
     if(sum(dim(data)) == 0){
@@ -226,13 +231,13 @@ accordion<-function(data,
     }
     data_type<-"matrix"
     #check if the first column is the gene columns
-    if(class(data[,1]) == "character"){
+    if(inherits(data[,1],"character")){
       setDF(data)
       # Set the barcodes as the row names
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if("dgCMatrix" %in% class(data)){
+    if(inherits(data,"dgCMatrix")){
       data <- as(as.matrix(data), "sparseMatrix")
 
     }
@@ -244,7 +249,7 @@ accordion<-function(data,
       if(is.null(cluster_info)){
         warning("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation.Cell types annotation will be perform only with per cell resolution.")
       } else {
-        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           warning("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation. Cell types annotation will be perform only with per cell resolution.")
         } else { #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -262,7 +267,7 @@ accordion<-function(data,
       if(is.null(cluster_info)){
         stop("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
       } else {
-        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           stop("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
         } else{ #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -297,7 +302,7 @@ accordion<-function(data,
       }
       #check that the cluster column is present in the data
       if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           warning("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
@@ -314,7 +319,7 @@ accordion<-function(data,
           }
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           stop("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           stop(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's."))
@@ -368,7 +373,7 @@ accordion<-function(data,
 
 
   #load the Cell Marker Accordion database based on the condition selected
-  data(accordion_marker)
+  data(accordion_marker, package = "cellmarkeraccordion")
 
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){
@@ -439,7 +444,7 @@ accordion<-function(data,
       }
     }
     if(include_descendants == TRUE){
-      data(uberon_onto)
+      data(uberon_onto, package = "cellmarkeraccordion")
       root_id<-unique(accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
       desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
       accordion_marker<-accordion_marker[Uberon_ID %in% desc$V1]

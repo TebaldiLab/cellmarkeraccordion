@@ -4,7 +4,7 @@
 #'   species for which to extract the associate list of available tissues.
 #'   Currently, either “Human” and/or “Mouse” are supported. Default is
 #'   c("Mouse",“Human”).
-#'  @param celltype Character string or character string vector specifying the
+#' @param celltype Character string or character string vector specifying the
 #'   celltype for which to extract the associate list of available tissues.
 #'    If NULL, information from all cell types are retrieved.
 #' @return List of tissues available in the Cell Marker Accordion database
@@ -13,7 +13,7 @@
 list_tissues<-function(species = c("Human","Mouse"),
                        celltype = NULL
 ){
-  data(accordion_marker)
+  data(accordion_marker, package = "cellmarkeraccordion")
   input_species<-species
   if(!is.null(celltype)){
     output_table<-accordion_marker[species %in% input_species & CL_celltype %in% celltype]

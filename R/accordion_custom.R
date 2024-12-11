@@ -211,7 +211,7 @@ accordion_custom<-function(data,
 ){
   #count matrix  data
   #check the type of input (Seurat object or raw count matrix)
-  if(!"Seurat" %in% class(data)){
+  if(!(inherits(data, "Seurat"))){
 
     #check that is not an empty count matrix
     if(sum(dim(data)) == 0){
@@ -219,13 +219,13 @@ accordion_custom<-function(data,
     }
     data_type<-"matrix"
     #check if the first column is the gene columns
-    if(class(data[,1]) == "character"){
+    if(inherits(data[,1],"character")){
       setDF(data)
       # Set the barcodes as the row names
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if(class(data) != "dgCMatrix"){
+    if(inherits(data,"dgCMatrix")){
       data <- as(as.matrix(data), "sparseMatrix")
 
     }
@@ -236,7 +236,7 @@ accordion_custom<-function(data,
       if(is.null(cluster_info)){
         warning("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation.Cell types annotation will be perform only with per cell resolution.")
       } else {
-        if(class(cluster_info) != "data.table" | class(cluster_info) != "data.frame"){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           warning("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation. Cell types annotation will be perform only with per cell resolution.")
         } else { #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -254,7 +254,7 @@ accordion_custom<-function(data,
       if(is.null(cluster_info)){
         stop("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
       } else {
-        if(class(cluster_info) != "data.table" | class(cluster_info) != "data.frame"){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           stop("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
         } else{ #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -289,7 +289,7 @@ accordion_custom<-function(data,
       }
       #check that the cluster column is present in the data
       if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           warning("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
@@ -297,7 +297,7 @@ accordion_custom<-function(data,
           seurat_clusters<-cluster_info
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           stop("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           stop(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's."))

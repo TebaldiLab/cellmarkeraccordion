@@ -84,7 +84,7 @@ accordion_plot<-function(data,
 
 
   # check di input data
-  if(class(data) != "Seurat"){
+  if(!(inherits(data, "Seurat"))){
     data_type <- "matrix"
 
     if(is_empty(data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]])){
@@ -117,7 +117,7 @@ accordion_plot<-function(data,
   CL_celltype_annotation_column<-paste0(info_to_plot, "_per_", resolution)
 
     if("EC_score" %in% colnames(top_marker_dt) & func == "healthy"){
-      data(cell_onto)
+      data(cell_onto, package = "cellmarkeraccordion")
       ontology_celltype<-as.data.frame(cell_onto[["name"]])
       colnames(ontology_celltype)<-"CL_celltype"
       ontology_celltype$CL_ID<-rownames(ontology_celltype)
