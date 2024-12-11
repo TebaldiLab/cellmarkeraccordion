@@ -40,10 +40,10 @@ count matrix with genes on rows and cells on columns. If raw counts are
 provided, data are log-normalized exploiting the NormalizeData() function
 from the Seurat package.}
 
-\item{cluster_info}{in case \code{object} is a Seurat object,
+\item{cluster_info}{in case \code{data} is a Seurat object,
 \code{cluster_info} should be need to be a character string specifying the
 name of the column in the metadata that contains cluster ids; if
-\code{object} is a count matrix, \code{cluster_info} should be need to be a
+\code{data} is a count matrix, \code{cluster_info} should be need to be a
 data frame or data table containing cluster identity for each cell. The
 data frame or data table should contain at least two columns, one  named
 “cell”, which specifies cell id’s, and one named “cluster”, which specifies
@@ -143,19 +143,19 @@ included. If a Seurat object is provided as input the list is stored in the
 misc slot of the object (object@misc@\code{annotation_name}). If the input is a count
 matrix, the list is returned in the final output. Default is TRUE.}
 
-\item{condition_group_info}{in case \code{object} is a Seurat object,
+\item{condition_group_info}{in case \code{data} is a Seurat object,
 \code{condition_group_info} should be need to be a character string specifying the
 name of the column in the metadata that contains condition ids for each cell;
-if \code{object} is a count matrix, \code{condition_group_info} should be need to be a
+if \code{data} is a count matrix, \code{condition_group_info} should be need to be a
 data frame or data table containing condition identity for each cell. The
 data frame or data table should contain at least two columns, one  named
 “cell”, which specifies cell id’s, and one named “condition”, which specifies
 the condition id’s for each cell.  Default is NULL.}
 
-\item{CL_celltype_group_info}{in case \code{object} is a Seurat object,
+\item{CL_celltype_group_info}{in case \code{data} is a Seurat object,
 \code{CL_celltype_group_info} should be need to be a character string specifying the
 name of the column in the metadata that contains cell types ids for each cell;
-if \code{object} is a count matrix, \code{CL_celltype_group_info} should be need to be a
+if \code{data} is a count matrix, \code{CL_celltype_group_info} should be need to be a
 data frame or data table containing cell types identity for each cell. The
 data frame or data table should contain at least two columns, one  named
 “cell”, which specifies cell id’s, and one named “CL_celltype”, which specifies
