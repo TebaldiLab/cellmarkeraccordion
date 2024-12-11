@@ -19,8 +19,6 @@
 #' @param CL_celltype_group_info
 #'
 #' @return
-#' @export
-#'
 .include_detailed_annotation_info_helper_custom<-function(data,
                                                   data_type,
                                                   annotation_resolution,
