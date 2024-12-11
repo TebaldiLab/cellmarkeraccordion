@@ -76,12 +76,12 @@ tissues that are descendants of the selected tissue(s) according to the uberon
 ontology. If TRUE,cell types and markers from the selected tissues and their
 descendants are aggregated. Default is FALSE}
 
-\item{evidence_consistency_score_threshold}{Integer value (currently in
-\link{1,7}) specifying the minimum evidence consistency (EC) score for each
+\item{evidence_consistency_score_threshold}{Integer value (currently in (1,17))
+specifying the minimum evidence consistency (EC) score for each
 marker. Only markers >= this threshold are kept. If NULL, no filter is
 applied. Default is NULL.}
 
-\item{specificity_score_threshold}{numeric value in (0,1] specifying the
+\item{specificity_score_threshold}{numeric value in (0,1) specifying the
 minimum specificity score for each marker. Only markers <= this threshold
 are kept. If  NULL, no filter is applied. Default is NULL.}
 
@@ -99,7 +99,7 @@ keep for each cell type. For the selection, markers are ranked according to
 their combined score, obtained by multiplying evidence consistency score
 and specificity score. If  NULL, no filter is applied. Default is NULL.}
 
-\item{combined_score_quantile_threshold}{numeric value in (0,1] specifying
+\item{combined_score_quantile_threshold}{numeric value in (0,1) specifying
 the combined score quantile threshold. For the selection, markers are
 ranked according to their combined score,  obtained by multiplying evidence
 consistency score and specificity score. Only markers >  the
@@ -110,7 +110,7 @@ NULL.}
 specifying the resolution of the annotation. Either “cluster” and/or “cell”
 are supported. Default is “cluster”.}
 
-\item{cluster_score_quantile_threshold}{numeric value in \link{0,1} specifying the
+\item{cluster_score_quantile_threshold}{numeric value in (0,1) specifying the
 cluster score quantile threshold. For each cell a score specific for each
 cell type is computed. To annotate a cluster cl, for each cell type the
 \code{cluster_score_quantile_threshold} is computed across cells belonging
@@ -173,7 +173,7 @@ cells with a score greater than
 Either "celltype_cluster", "celltype_cell","cluster", "cell" or "score_cell".
 Default is "celltype_cluster".}
 
-\item{top_cell_score_quantile_threshold}{numeric value in (0,1] specifying
+\item{top_cell_score_quantile_threshold}{numeric value in (0,1) specifying
 the cell score quantile threshold. For each cell type a score specific for
 each cell is computed. The \code{top_cell_score_quantile_threshold} is
 computed across cells belonging to the same cell type, and only
@@ -190,7 +190,7 @@ to be included in the output for each cell type, cluster or cell depending
 on the selected \code{annotation_resolution} and \code{group_markers_by}
 parameters. Default is 5.}
 
-\item{top_marker_score_quantile_threshold}{numeric value in (0,1] specifying
+\item{top_marker_score_quantile_threshold}{numeric value in (0,1) specifying
 the marker score quantile threshold. For each marker a score specific for
 each cell is computed. To identify the \code{n_top_markers} for a cluster
 cl or a cell type ct, the \code{top_marker_score_quantile_threshold} is
