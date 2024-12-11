@@ -38,8 +38,8 @@ Imports:
 	purrr (>= 1.0.0),
 	Rgraphviz (>= 2.42.0),
 	knitr (>= 1.45),
-	methods (>=4.2.3),
-	stats (>=4.2.3)
+	methods (>= 4.2.3),
+	stats (>= 4.2.3)
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
