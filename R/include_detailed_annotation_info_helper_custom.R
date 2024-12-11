@@ -21,8 +21,7 @@
 #' @return
 #' @export
 #'
-#' @examples
-include_detailed_annotation_info_helper_custom<-function(data,
+.include_detailed_annotation_info_helper_custom<-function(data,
                                                   data_type,
                                                   annotation_resolution,
                                                   final_dt_cluster,

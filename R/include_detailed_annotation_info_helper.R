@@ -19,10 +19,9 @@
 #' @param CL_celltype_group_info
 #'
 #' @return
-#' @export
+#' @noRd
 #'
-#' @examples
-include_detailed_annotation_info_helper<-function(data,
+.include_detailed_annotation_info_helper<-function(data,
                                             data_type,
                                             annotation_resolution,
                                             final_dt_cluster,
