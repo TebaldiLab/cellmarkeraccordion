@@ -1,6 +1,6 @@
 #' Helper function to include detailed annotation information
 #' @noRd
-.include_detailed_annotation_info_helper<-function(data,
+include_detailed_annotation_info_helper<-function(data,
                                             data_type,
                                             annotation_resolution,
                                             final_dt_cluster,
