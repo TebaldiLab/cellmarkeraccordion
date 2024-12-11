@@ -4,6 +4,8 @@
 #' It takes in input either a Seurat object or a raw or normalized count matrix and return in output
 #' the cell types assignment and the detailed informations of the annotation results (added to the Seurat object or as a list).
 #'
+#' @docType function
+#' @name accordion
 #'
 #' @param data Either a  Seurat object (version 4 or 5) or a raw or normalized
 #'   count matrix with genes on rows and cells on columns. If raw counts are
