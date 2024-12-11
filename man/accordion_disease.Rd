@@ -49,8 +49,9 @@ diseases to consider. Run the function "list_diseases()" to obtain the
 available diseases. If NULL, all diseases are considered. Default is NULL.}
 
 \item{tissue}{Character string or character string vector specifying the tissue.
-Run the function "list_disease_tissues()" to obtain the available tissues.
-If NULL, all tissues information are aggregated together. Default is NULL.}
+Run the function "list_tissues()" to obtain the available tissues. If multiple
+tissues are selected cell types and markers from the selected tissues
+are aggregated. If NULL, all tissues are considered. Default is NULL.}
 
 \item{cluster_info}{in case \code{object} is a Seurat object,
 \code{cluster_info} should be need to be a character string specifying the
@@ -77,6 +78,11 @@ species. Currently, either “Human” and/or “Mouse” are supported. If
 multiple species are selected, marker genes are merged together. Default is
 “Human”.}
 
+\item{include_descendants}{Logical value indicating whether include all the
+tissues that are descendants of the selected tissue(s) according to the uberon
+ontology. If TRUE,cell types and markers from the selected tissues and their
+descendants are aggregated. Default is FALSE}
+
 \item{evidence_consistency_score_threshold}{Integer value (currently in
 \link{1,7}) specifying the minimum evidence consistency (EC) score for each
 marker. Only markers >= this threshold are kept. If NULL, no filter is
@@ -85,6 +91,19 @@ applied. Default is NULL.}
 \item{specificity_score_threshold}{numeric value in (0,1] specifying the
 minimum specificity score for each marker. Only markers <= this threshold
 are kept. If  NULL, no filter is applied. Default is NULL.}
+
+\item{log2FC_threshold}{numeric value specifying the
+minimum log2FC threshold for each marker reporting this information.
+Only markers <= this threshold or without any log2FC
+are kept. If  NULL, no filter is applied. Default is NULL.}
+
+\item{malignant_quantile_threshold}{numeric value in (0,1] specifying the malignant
+quantile threshold. If an aberant cell type is provide in input,
+a malignant score specific for each cell is computed.
+The \code{malignant_quantile_threshold} is
+computed across cells, and only cells with a score greater than
+the \code{top_cell_score_quantile_threshold} are labeled as malignant.
+If \code{annotation_resolution} is set to "cell", a cell}
 
 \item{min_n_marker}{Integer value specifying the minimum number of markers to
 keep for each cell type. Only cell types with a number of markers >= this
@@ -209,6 +228,10 @@ lollipop plots displaying the top \code{n_top_markers} group by
 \code{annotation_resolution} together with the cell types hierarchies based
 on the cell ontology structure are stored in the "accordion" list. Default
 is TRUE.}
+
+\item{color_by}{Character string specifying if the plot reporting the top
+cell types for each cluster/cell is colored based on the assigned cell type
+("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.}
 }
 \value{
 A Seurat object or a list

@@ -1,5 +1,6 @@
 #' List tissues available in the Cell Marker Accordion database
-#'
+#' @docType function
+#' @name list_tissues
 #' @param species Character string or character string vector specifying the
 #'   species for which to extract the associate list of available tissues.
 #'   Currently, either “Human” and/or “Mouse” are supported. Default is

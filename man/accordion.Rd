@@ -67,8 +67,14 @@ multiple species are selected, marker genes are merged together. Default is
 “Human”.}
 
 \item{tissue}{Character string or character string vector specifying the tissue.
-Run the function "list_tissues()" to obtain the available tissues.
-If NULL, all tissues information are aggregated together. Default is NULL.}
+Run the function "list_tissues()" to obtain the available tissues. If multiple
+tissues are selected cell types and markers from the selected tissues
+are aggregated. If NULL, all tissues are considered. Default is NULL.}
+
+\item{include_descendants}{Logical value indicating whether include all the
+tissues that are descendants of the selected tissue(s) according to the uberon
+ontology. If TRUE,cell types and markers from the selected tissues and their
+descendants are aggregated. Default is FALSE}
 
 \item{evidence_consistency_score_threshold}{Integer value (currently in
 \link{1,7}) specifying the minimum evidence consistency (EC) score for each

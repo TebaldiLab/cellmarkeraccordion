@@ -7,6 +7,9 @@
 #' types assignment and the detailed informations of the annotation results
 #' (added to the Seurat object or as a list).
 #'
+#' @docType function
+#' @name accordion_disease
+#'
 #' @param data Either a  Seurat object (version 4 or 5) or a raw or normalized
 #'   count matrix with genes on rows and cells on columns. If raw counts are
 #'   provided, data are log-normalized exploiting the NormalizeData() function
@@ -54,7 +57,7 @@
 #'   minimum log2FC threshold for each marker reporting this information.
 #'   Only markers <= this threshold or without any log2FC
 #'   are kept. If  NULL, no filter is applied. Default is NULL.
-#' @malignant_quantile_threshold numeric value in (0,1] specifying the malignant
+#' @param malignant_quantile_threshold numeric value in (0,1] specifying the malignant
 #'  quantile threshold. If an aberant cell type is provide in input,
 #'  a malignant score specific for each cell is computed.
 #'  The \code{malignant_quantile_threshold} is

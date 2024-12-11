@@ -14,11 +14,13 @@ list_disease_tissues(
 \item{species}{Character string or character string vector specifying the
 species for which to extract the associate list of available tissues.
 Currently, either “Human” and/or “Mouse” are supported. Default is
-c("Mouse",“Human”).
-@param disease Character string or character string vector specifying
+c("Mouse",“Human”).}
+
+\item{disease}{Character string or character string vector specifying
 diseases to consider. If NULL, information from all diseases are considered.
-Default is NULL.
-@param celltype Character string or character string vector specifying the
+Default is NULL.}
+
+\item{celltype}{Character string or character string vector specifying the
 celltype for which to extract the associate list of available tissues.
 If NULL, information from all cell types are retrieved.}
 }

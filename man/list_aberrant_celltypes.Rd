@@ -14,11 +14,13 @@ list_aberrant_celltypes(
 \item{species}{Character string or character string vector specifying the
 species for which to extract the associate list of available cell types.
 Currently, either “Human” and/or “Mouse” are supported. Default is
-c("Mouse",“Human”).
-@param disease Character string or character string vector specifying
+c("Mouse",“Human”).}
+
+\item{disease}{Character string or character string vector specifying
 diseases to consider. If NULL, information from all diseases are considered.
-Default is NULL.
-@param tissue Character string or character string vector specifying the tissue
+Default is NULL.}
+
+\item{tissue}{Character string or character string vector specifying the tissue
 for which to extract the associate list of available cell types.
 If NULL, information from all tissues are retrieved.}
 }

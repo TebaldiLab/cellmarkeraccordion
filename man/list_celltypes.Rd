@@ -10,8 +10,9 @@ list_celltypes(species = c("Human", "Mouse"), tissue = NULL)
 \item{species}{Character string or character string vector specifying the
 species for which to extract the associate list of available cell types.
 Currently, either “Human” and/or “Mouse” are supported. Default is
-c("Mouse",“Human”).
-@param tissue Character string or character string vector specifying the tissue
+c("Mouse",“Human”).}
+
+\item{tissue}{Character string or character string vector specifying the tissue
 for which to extract the associate list of available cell types.
 If NULL, information from all tissues are retrieved.}
 }
