@@ -175,7 +175,6 @@
 #' \itemize{
 #' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
-#'
 #' @import scales
 #' @import plyr
 #' @import data.table
@@ -184,6 +183,9 @@
 #' @import stringr
 #' @import ontologyIndex
 #' @import knitr
+#' @importFrom stats aggregate
+#' @importFrom methods as
+#' @importFrom stats quantile
 #' @export
 accordion<-function(data,
                     cluster_info = "seurat_clusters",

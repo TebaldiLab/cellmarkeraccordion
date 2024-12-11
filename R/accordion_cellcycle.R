@@ -139,6 +139,8 @@
 #' @import ggplot2
 #' @import stringr
 #' @import knitr
+#' @importFrom methods as
+#' @importFrom stats quantile
 #' @export
 accordion_cellcycle<-function(data,
                               cluster_info = "seurat_clusters",

@@ -50,6 +50,7 @@
 #' @import scales
 #' @import Rgraphviz
 #' @import knitr
+#' @importFrom grDevices colorRampPalette
 #' @export
 accordion_plot<-function(data,
                          info_to_plot = "accordion",
