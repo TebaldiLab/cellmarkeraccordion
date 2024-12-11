@@ -15,14 +15,6 @@ NULL
 #' @format A Seurat object
 NULL
 
-#' cell_cycle_markers: Collection of markers assiciated to cell cycle
-#'
-#' @docType data
-#' @name cell_cycle_markers
-#' @usage data(cell_cycle_markers)
-#' @format A data table
-#' @export
-NULL
 
 #' cell_onto: Cell ontology
 #'
