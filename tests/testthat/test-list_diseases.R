@@ -4,10 +4,10 @@
 #'   species for which to extract the associate list of available diseases
 #'   Currently, either “Human” and/or “Mouse” are supported. Default is
 #'   c("Mouse",“Human”).
-#'  @param tissue Character string or character string vector specifying the tissue
+#' @param tissue Character string or character string vector specifying the tissue
 #'   for which to extract the associate list of available diseases.
 #'    If NULL, information from all tissues are retrieved.
-#'  @param aberrant_celltype Character string or character string vector
+#' @param aberrant_celltype Character string or character string vector
 #'  specifying the aberrant celltype for which to extract the associate list of
 #'  available tissues. If NULL, information from all aberrant cell types are
 #'  retrieved.
@@ -19,7 +19,6 @@ list_diseases<-function(species = c("Human","Mouse"),
                        tissue = NULL,
                        aberrant_celltype = NULL
 ){
-  data(disease_accordion_marker)
   input_species<-species
   if(!is.null(tissue)){
     output_table<-disease_accordion_marker[species %in% input_species & Uberon_tissue %in% tissue]

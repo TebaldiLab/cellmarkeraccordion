@@ -7,15 +7,14 @@
 #' cell cycle assignment and the detailed informations of the annotation results
 #' (added to the Seurat object or as a list).
 #'
-#'
 #' @param data Either a  Seurat object (version 4 or 5) or a raw or normalized
 #'   count matrix with genes on rows and cells on columns. If raw counts are
 #'   provided, data are log-normalized exploiting the NormalizeData() function
 #'   from the Seurat package.
-#' @param cluster_info in case \code{object} is a Seurat object,
+#' @param cluster_info in case \code{data} is a Seurat object,
 #'   \code{cluster_info} should be need to be a character string specifying the
 #'   name of the column in the metadata that contains cluster ids; if
-#'   \code{object} is a count matrix, \code{cluster_info} should be need to be a
+#'   \code{data} is a count matrix, \code{cluster_info} should be need to be a
 #'   data frame or data table containing cluster identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “cluster”, which specifies
@@ -41,7 +40,7 @@
 #'   If \code{include_detailed_annotation_info} parameter is set to TRUE, the
 #'   detailed information the stored in a list named \code{annotation_name}.
 #'   Default is “accordion_cell_cycle”.
-#' @param cluster_score_quantile_threshold numeric value in [0,1] specifying the
+#' @param cluster_score_quantile_threshold numeric value in (0,1) specifying the
 #'   cluster score quantile threshold. For each cell a score specific for each
 #'   cell type is computed. To annotate a cluster cl, for each cell type the
 #'   \code{cluster_score_quantile_threshold} is computed across cells belonging
@@ -62,18 +61,18 @@
 #'   stored in the misc slot of the object (object@misc@\code{annotation_name}).
 #'   If the input is a count matrix, the list is returned in the final output.
 #'   Default is FALSE.
-#'   @param condition_group_info in case \code{object} is a Seurat object,
+#' @param condition_group_info in case \code{data} is a Seurat object,
 #'  \code{condition_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains condition ids for each cell;
-#'  if \code{object} is a count matrix, \code{condition_group_info} should be need to be a
+#'  if \code{data} is a count matrix, \code{condition_group_info} should be need to be a
 #'   data frame or data table containing condition identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
 #'   the condition id’s for each cell.  Default is NULL.
-#'  @param cell_type_group_info in case \code{object} is a Seurat object,
+#' @param cell_type_group_info in case \code{data} is a Seurat object,
 #'  \code{cell_type_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains cell types ids for each cell;
-#'  if \code{object} is a count matrix, \code{cell_type_group_info} should be need to be a
+#'  if \code{data} is a count matrix, \code{cell_type_group_info} should be need to be a
 #'   data frame or data table containing cell types identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “cell_type”, which specifies
@@ -133,12 +132,14 @@
 #' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
 #' @import scales
-#' @rawNamespace import(plyr, except = compact)
+#' @import plyr
 #' @import data.table
 #' @import Seurat
 #' @import ggplot2
 #' @import stringr
 #' @import knitr
+#' @importFrom methods as
+#' @importFrom stats quantile
 #' @export
 accordion_cellcycle<-function(data,
                               cluster_info = "seurat_clusters",
@@ -161,7 +162,7 @@ accordion_cellcycle<-function(data,
 
   #count matrix  data
   #check the type of input (Seurat data or raw count matrix)
-  if(!"Seurat" %in% class(data)){
+  if(!(inherits(data, "Seurat"))){
 
     #check that is not an empty count matrix
     if(sum(dim(data)) == 0){
@@ -169,13 +170,13 @@ accordion_cellcycle<-function(data,
     }
     data_type<-"matrix"
     #check if the first column is the gene columns
-    if(class(data[,1]) == "character"){
+    if(inherits(data[,1],"character")){
       setDF(data)
       # Set the barcodes as the row names
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if("dgCMatrix" %in% class(data)){
+    if(inherits(data,"dgCMatrix")){
       data <- as(as.matrix(data), "sparseMatrix")
 
     }
@@ -187,7 +188,7 @@ accordion_cellcycle<-function(data,
       if(is.null(cluster_info)){
         warning("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation.Cell types annotation will be perform only with per cell resolution.")
       } else {
-        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           warning("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation. Cell types annotation will be perform only with per cell resolution.")
         } else { #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -205,7 +206,7 @@ accordion_cellcycle<-function(data,
       if(is.null(cluster_info)){
         stop("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
       } else {
-        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           stop("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
         } else{ #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -240,7 +241,7 @@ accordion_cellcycle<-function(data,
       }
       #check that the cluster column is present in the data
       if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           warning("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
@@ -248,7 +249,7 @@ accordion_cellcycle<-function(data,
           seurat_clusters<-cluster_info
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           stop("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           stop(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's."))
@@ -261,8 +262,6 @@ accordion_cellcycle<-function(data,
       }
     }
   }
-
-  data(cell_cycle_markers)
 
   if((length(species) ==1 & !(species %in% c("Human","Mouse"))) | (length(species) == 2 & setequal(species, c("Human","Mouse")))){
     warning("Invalid species type")

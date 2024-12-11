@@ -48,6 +48,12 @@
 #' @rawNamespace import(purrr, except = c(transpose,discard, simplify, compose, compact))
 #' @import data.table
 #' @import scales
+#' @import Rgraphviz
+#' @import knitr
+#' @importFrom stats aggregate
+#' @importFrom methods as
+#' @importFrom stats quantile
+#' @importFrom grDevices colorRampPalette
 #' @export
 accordion_plot<-function(data,
                          info_to_plot = "accordion",
@@ -78,7 +84,7 @@ accordion_plot<-function(data,
 
 
   # check di input data
-  if(class(data) != "Seurat"){
+  if(!(inherits(data, "Seurat"))){
     data_type <- "matrix"
 
     if(is_empty(data[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]])){
@@ -111,7 +117,6 @@ accordion_plot<-function(data,
   CL_celltype_annotation_column<-paste0(info_to_plot, "_per_", resolution)
 
     if("EC_score" %in% colnames(top_marker_dt) & func == "healthy"){
-      data(cell_onto)
       ontology_celltype<-as.data.frame(cell_onto[["name"]])
       colnames(ontology_celltype)<-"CL_celltype"
       ontology_celltype$CL_ID<-rownames(ontology_celltype)

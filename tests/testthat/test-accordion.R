@@ -4,15 +4,14 @@
 #' It takes in input either a Seurat object or a raw or normalized count matrix and return in output
 #' the cell types assignment and the detailed informations of the annotation results (added to the Seurat object or as a list).
 #'
-#'
 #' @param data Either a  Seurat object (version 4 or 5) or a raw or normalized
 #'   count matrix with genes on rows and cells on columns. If raw counts are
 #'   provided, data are log-normalized exploiting the NormalizeData() function
 #'   from the Seurat package.
-#' @param cluster_info in case \code{object} is a Seurat object,
+#' @param cluster_info in case \code{data} is a Seurat object,
 #'   \code{cluster_info} should be need to be a character string specifying the
 #'   name of the column in the metadata that contains cluster ids; if
-#'   \code{object} is a count matrix, \code{cluster_info} should be need to be a
+#'   \code{data} is a count matrix, \code{cluster_info} should be need to be a
 #'   data frame or data table containing cluster identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “cluster”, which specifies
@@ -32,13 +31,18 @@
 #'   multiple species are selected, marker genes are merged together. Default is
 #'   “Human”.
 #' @param tissue Character string or character string vector specifying the tissue.
-#'  Run the function "list_tissues()" to obtain the available tissues.
-#'  If NULL, all tissues information are aggregated together. Default is NULL.
-#' @param evidence_consistency_score_threshold Integer value (currently in
-#'   [1,7]) specifying the minimum evidence consistency (EC) score for each
+#'  Run the function "list_tissues()" to obtain the available tissues. If multiple
+#'  tissues are selected cell types and markers from the selected tissues
+#'  are aggregated. If NULL, all tissues are considered. Default is NULL.
+#' @param include_descendants  Logical value indicating whether include all the
+#'  tissues that are descendants of the selected tissue(s) according to the uberon
+#'  ontology. If TRUE,cell types and markers from the selected tissues and their
+#'  descendants are aggregated. Default is FALSE
+#' @param evidence_consistency_score_threshold Integer value (currently in (1,17))
+#'   specifying the minimum evidence consistency (EC) score for each
 #'   marker. Only markers >= this threshold are kept. If NULL, no filter is
 #'   applied. Default is NULL.
-#' @param specificity_score_threshold numeric value in (0,1] specifying the
+#' @param specificity_score_threshold numeric value in (0,1) specifying the
 #'   minimum specificity score for each marker. Only markers <= this threshold
 #'   are kept. If  NULL, no filter is applied. Default is NULL.
 #' @param log2FC_threshold numeric value specifying the
@@ -52,7 +56,7 @@
 #'   keep for each cell type. For the selection, markers are ranked according to
 #'   their combined score, obtained by multiplying evidence consistency score
 #'   and specificity score. If  NULL, no filter is applied. Default is NULL.
-#' @param combined_score_quantile_threshold numeric value in (0,1] specifying
+#' @param combined_score_quantile_threshold numeric value in (0,1) specifying
 #'   the combined score quantile threshold. For the selection, markers are
 #'   ranked according to their combined score,  obtained by multiplying evidence
 #'   consistency score and specificity score. Only markers >  the
@@ -61,7 +65,7 @@
 #' @param annotation_resolution Character string or character string vector
 #'   specifying the resolution of the annotation. Either “cluster” and/or “cell”
 #'   are supported. Default is “cluster”.
-#' @param cluster_score_quantile_threshold numeric value in [0,1] specifying the
+#' @param cluster_score_quantile_threshold numeric value in (0,1) specifying the
 #'   cluster score quantile threshold. For each cell a score specific for each
 #'   cell type is computed. To annotate a cluster cl, for each cell type the
 #'   \code{cluster_score_quantile_threshold} is computed across cells belonging
@@ -90,18 +94,18 @@
 #'   included. If a Seurat object is provided as input the list is stored in the
 #'   misc slot of the object (object@misc@\code{annotation_name}). If the input is a count
 #'   matrix, the list is returned in the final output. Default is TRUE.
-#' @param condition_group_info in case \code{object} is a Seurat object,
+#' @param condition_group_info in case \code{data} is a Seurat object,
 #'  \code{condition_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains condition ids for each cell;
-#'  if \code{object} is a count matrix, \code{condition_group_info} should be need to be a
+#'  if \code{data} is a count matrix, \code{condition_group_info} should be need to be a
 #'   data frame or data table containing condition identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
 #'   the condition id’s for each cell.  Default is NULL.
-#' @param CL_celltype_group_info in case \code{object} is a Seurat object,
+#' @param CL_celltype_group_info in case \code{data} is a Seurat object,
 #'  \code{CL_celltype_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains cell types ids for each cell;
-#'  if \code{object} is a count matrix, \code{CL_celltype_group_info} should be need to be a
+#'  if \code{data} is a count matrix, \code{CL_celltype_group_info} should be need to be a
 #'   data frame or data table containing cell types identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “CL_celltype”, which specifies
@@ -117,7 +121,7 @@
 #'  \code{top_cell_score_quantile_threshold} are retrieved.
 #'  Either "celltype_cluster", "celltype_cell","cluster", "cell" or "score_cell".
 #'  Default is "celltype_cluster".
-#' @param top_cell_score_quantile_threshold numeric value in (0,1] specifying
+#' @param top_cell_score_quantile_threshold numeric value in (0,1) specifying
 #'  the cell score quantile threshold. For each cell type a score specific for
 #'  each cell is computed. The \code{top_cell_score_quantile_threshold} is
 #'  computed across cells belonging to the same cell type, and only
@@ -131,7 +135,7 @@
 #'   to be included in the output for each cell type, cluster or cell depending
 #'   on the selected \code{annotation_resolution} and \code{group_markers_by}
 #'   parameters. Default is 5.
-#' @param top_marker_score_quantile_threshold numeric value in (0,1] specifying
+#' @param top_marker_score_quantile_threshold numeric value in (0,1) specifying
 #'   the marker score quantile threshold. For each marker a score specific for
 #'   each cell is computed. To identify the \code{n_top_markers} for a cluster
 #'   cl or a cell type ct, the \code{top_marker_score_quantile_threshold} is
@@ -175,7 +179,6 @@
 #' \itemize{
 #' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
-#'
 #' @import scales
 #' @import plyr
 #' @import data.table
@@ -184,6 +187,9 @@
 #' @import stringr
 #' @import ontologyIndex
 #' @import knitr
+#' @importFrom stats aggregate
+#' @importFrom methods as
+#' @importFrom stats quantile
 #' @export
 accordion<-function(data,
                     cluster_info = "seurat_clusters",
@@ -216,7 +222,7 @@ accordion<-function(data,
 
   #count matrix  data
   #check the type of input (Seurat data or raw count matrix)
-  if(!"Seurat" %in% class(data)){
+  if(!inherits(data,"Seurat")){
 
     #check that is not an empty count matrix
     if(sum(dim(data)) == 0){
@@ -224,13 +230,13 @@ accordion<-function(data,
     }
     data_type<-"matrix"
     #check if the first column is the gene columns
-    if(class(data[,1]) == "character"){
+    if(inherits(data[,1],"character")){
       setDF(data)
       # Set the barcodes as the row names
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if("dgCMatrix" %in% class(data)){
+    if(inherits(data,"dgCMatrix")){
       data <- as(as.matrix(data), "sparseMatrix")
 
     }
@@ -242,7 +248,7 @@ accordion<-function(data,
       if(is.null(cluster_info)){
         warning("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation.Cell types annotation will be perform only with per cell resolution.")
       } else {
-        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           warning("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation. Cell types annotation will be perform only with per cell resolution.")
         } else { #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -260,7 +266,7 @@ accordion<-function(data,
       if(is.null(cluster_info)){
         stop("cluster_info not found. Please provide a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
       } else {
-        if(!("data.table" %in% class(cluster_info)) | !("data.frame" %in% class(cluster_info))){
+        if(!(inherits(cluster_info, "data.table")) | !(inherits(cluster_info, "data.frame"))){
           stop("Invalid input type. cluster_info needs to be a data table or data frame specifying cell clusters to perform per cluster annotation, or set cell in the annotation_resolution parameter to perform annotation with per cell resolution.")
         } else{ #if exists check that contain columns name
           if(!("cell" %in% colnames(cluster_info))){
@@ -295,7 +301,7 @@ accordion<-function(data,
       }
       #check that the cluster column is present in the data
       if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           warning("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
@@ -312,7 +318,7 @@ accordion<-function(data,
           }
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
-        if(class(cluster_info) != "character"){
+        if(!(inherits(cluster_info, "character"))){
           stop("Invalid input type: cluster_info needs to be a character string specifying the name of the column in the meta data containing cluster id's.")
         } else if (!cluster_info %in% colnames(data@meta.data)){
           stop(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's."))
@@ -366,8 +372,6 @@ accordion<-function(data,
 
 
   #load the Cell Marker Accordion database based on the condition selected
-  data(accordion_marker)
-
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){
     if(!is.numeric(log2FC_threshold)){
@@ -437,7 +441,6 @@ accordion<-function(data,
       }
     }
     if(include_descendants == TRUE){
-      data(uberon_onto)
       root_id<-unique(accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
       desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
       accordion_marker<-accordion_marker[Uberon_ID %in% desc$V1]
