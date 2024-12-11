@@ -43,18 +43,18 @@
 #'   species. Currently, either “Human” and/or “Mouse” are supported. If
 #'   multiple species are selected, marker genes are merged together. Default is
 #'   “Human”.
-#' @param evidence_consistency_score_threshold Integer value (currently in
-#'   [1,7]) specifying the minimum evidence consistency (EC) score for each
+#' @param evidence_consistency_score_threshold Integer value
+#'   specifying the minimum evidence consistency (EC) score for each
 #'   marker. Only markers >= this threshold are kept. If NULL, no filter is
 #'   applied. Default is NULL.
-#' @param specificity_score_threshold numeric value in (0,1] specifying the
+#' @param specificity_score_threshold numeric value in (0,1) specifying the
 #'   minimum specificity score for each marker. Only markers <= this threshold
 #'   are kept. If  NULL, no filter is applied. Default is NULL.
 #' @param log2FC_threshold numeric value specifying the
 #'   minimum log2FC threshold for each marker reporting this information.
 #'   Only markers <= this threshold or without any log2FC
 #'   are kept. If  NULL, no filter is applied. Default is NULL.
-#' @param malignant_quantile_threshold numeric value in (0,1] specifying the malignant
+#' @param malignant_quantile_threshold numeric value in (0,1) specifying the malignant
 #'  quantile threshold. If an aberant cell type is provide in input,
 #'  a malignant score specific for each cell is computed.
 #'  The \code{malignant_quantile_threshold} is
@@ -68,8 +68,8 @@
 #'   keep for each cell type. For the selection, markers are ranked according to
 #'   their combined score, obtained by multiplying evidence consistency score
 #'   and specificity score. If  NULL, no filter is applied. Default is NULL.
-#' @param combined_score_quantile_threshold numeric value in (0,1] specifying
-#'   the combined score quantile threshold. For the selection, markers are
+#' @param combined_score_quantile_threshold numeric value in (0,1) specifying
+#'   the combined score quantile threshold. For the selection, marers are
 #'   ranked according to their combined score,  obtained by multiplying evidence
 #'   consistency score and specificity score. Only markers >  the
 #'   quantile_threshold are kept. If  NULL, no filter is applied. Default is
@@ -84,7 +84,7 @@
 #' @param annotation_resolution Character string or character string vector
 #'   specifying the resolution of the annotation. Either “cluster” and/or “cell”
 #'   are supported. Default is “cluster”.
-#' @param cluster_score_quantile_threshold numeric value in [0,1] specifying the
+#' @param cluster_score_quantile_threshold numeric value in (0,1) specifying the
 #'   cluster score quantile threshold. For each cell a score specific for each
 #'   cell type is computed. To annotate a cluster cl, for each cell type the
 #'   \code{cluster_score_quantile_threshold} is computed across cells belonging
@@ -140,7 +140,7 @@
 #'  cells with a score greater than \code{top_cell_score_quantile_threshold} are
 #'  retrieved. Either "celltype_cluster", "celltype_cell",
 #'  "cluster", "cell" or "score_cell". Default is "celltype_cluster".
-#' @param top_cell_score_quantile_threshold numeric value in (0,1] specifying
+#' @param top_cell_score_quantile_threshold numeric value in (0,1) specifying
 #'  the cell score quantile threshold. For each cell type a score specific for
 #'  each cell is computed. The \code{top_cell_score_quantile_threshold} is
 #'  computed across cells belonging to the same cell type, and only
@@ -154,7 +154,7 @@
 #'   to be included in the output for each cell type, cluster or cell depending
 #'   on the selected \code{annotation_resolution} and \code{group_markers_by}
 #'   parameters. Default is 5.
-#' @param top_marker_score_quantile_threshold numeric value in (0,1] specifying
+#' @param top_marker_score_quantile_threshold numeric value in (0,1) specifying
 #'   the marker score quantile threshold. For each marker a score specific for
 #'   each cell is computed. To identify the \code{n_top_markers} for a cluster
 #'   cl or a cell type ct, the \code{top_marker_score_quantile_threshold} is
