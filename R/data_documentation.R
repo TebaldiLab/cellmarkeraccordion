@@ -4,7 +4,6 @@
 #' @name accordion_marker
 #' @usage data(accordion_marker)
 #' @format A data table
-#' @export
 NULL
 
 #' bone_marrow_data: Example dataset of human bone marrow from
@@ -22,7 +21,6 @@ NULL
 #' @name cell_onto
 #' @usage data(cell_onto)
 #' @format Cell ontology
-#' @export
 NULL
 
 
@@ -40,7 +38,6 @@ NULL
 #' @name disease_accordion_marker
 #' @usage data(disease_accordion_marker)
 #' @format A data table
-#' @export
 NULL
 
 
@@ -83,7 +80,6 @@ NULL
 #' @name uberon_onto
 #' @usage data(uberon_onto)
 #' @format Uberon ontology
-#' @export
 NULL
 
 
