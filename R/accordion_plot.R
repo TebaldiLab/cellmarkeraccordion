@@ -50,6 +50,9 @@
 #' @import scales
 #' @import Rgraphviz
 #' @import knitr
+#' @importFrom stats aggregate
+#' @importFrom methods as
+#' @importFrom stats quantile
 #' @importFrom grDevices colorRampPalette
 #' @export
 accordion_plot<-function(data,
