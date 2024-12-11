@@ -99,7 +99,7 @@ NULL.}
 specifying the resolution of the annotation. Either “cluster” and/or “cell”
 are supported. Default is “cluster”.}
 
-\item{cluster_score_quantile_threshold}{numeric value in \link{0,1} specifying the
+\item{cluster_score_quantile_threshold}{numeric value in (0,1) specifying the
 cluster score quantile threshold. For each cell a score specific for each
 cell type is computed. To annotate a cluster cl, for each cell type the
 \code{cluster_score_quantile_threshold} is computed across cells belonging
