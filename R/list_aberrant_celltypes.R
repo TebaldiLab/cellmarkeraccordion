@@ -1,6 +1,4 @@
 #' List aberrant cell types available in the Cell Marker Accordion disease database
-#' @docType function
-#' @name list_aberrant_celltypes
 #' @param species Character string or character string vector specifying the
 #'   species for which to extract the associate list of available cell types.
 #'   Currently, either “Human” and/or “Mouse” are supported. Default is
