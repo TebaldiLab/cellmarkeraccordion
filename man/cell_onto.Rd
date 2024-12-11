@@ -6,8 +6,12 @@
 \title{cell_onto: Cell ontology}
 \format{
 Cell ontology
+
+Cell ontology
 }
 \usage{
+data(cell_onto)
+
 data(cell_onto)
 }
 \description{
