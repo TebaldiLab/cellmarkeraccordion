@@ -50,4 +50,11 @@ jobs:
         with:
           upload-snapshots: false
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          
+          - name: Run R CMD check
+        run: |
+          R CMD check --no-manual --ignore-vignettes .
+        env:
+          _R_CHECK_FORCE_SUGGESTS_: false
+        continue-on-error: true # Allows the job to proceed even with warnings or notes
 
