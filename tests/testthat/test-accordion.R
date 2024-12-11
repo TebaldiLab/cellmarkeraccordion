@@ -183,6 +183,7 @@
 #' @import ggplot2
 #' @import stringr
 #' @import ontologyIndex
+#' @import knitr
 #' @export
 accordion<-function(data,
                     cluster_info = "seurat_clusters",

@@ -11,6 +11,10 @@ permissions: read-all
 
 jobs:
   R-CMD-check:
+              
+  - name: Set Time Zone in R
+    run: Rscript -e "Sys.setenv(TZ = 'UTC')"
+
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
@@ -49,3 +53,4 @@ jobs:
         with:
           upload-snapshots: false
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+

@@ -179,6 +179,7 @@
 #' @import Seurat
 #' @import ggplot2
 #' @import stringr
+#' @import knitr
 #' @export
 accordion_custom<-function(data,
                            marker_table,

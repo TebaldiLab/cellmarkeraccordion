@@ -49,6 +49,7 @@
 #' @import data.table
 #' @import scales
 #' @import Rgraphviz
+#' @import knitr
 #' @export
 accordion_plot<-function(data,
                          info_to_plot = "accordion",
