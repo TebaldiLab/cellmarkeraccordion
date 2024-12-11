@@ -5,7 +5,6 @@
 #' @usage data(accordion_marker)
 #' @format A data table
 #' @export
-
 NULL
 
 #' bone_marrow_data: Example dataset of human bone marrow from
