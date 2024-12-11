@@ -24,8 +24,8 @@ As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) fre
 Load the raw counts and create a Seurat object
 ```bash
 data(counts) #raw counts
-file_path <- system.file("extdata", "counts.rda", package = "cellmarkeracc")
-data <- read_csv(file_path)
+file_path <- system.file("extdata", "counts.rda", package = "cellmarkeraccordion")
+counts <- load(file_path)
 # Create Seurat Object
 data <- CreateSeuratObject(counts = counts, min.cells = 3, min.features = 200)
 ```
