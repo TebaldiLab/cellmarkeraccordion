@@ -375,7 +375,6 @@ accordion_disease<-function(data,
   })
 
   #load the Cell Marker Accordion database based on the condition selected
-  disease_accordion_marker<-cellmarkeraccordion::disease_accordion_marker
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){
     if(!is.numeric(log2FC_threshold)){
@@ -461,8 +460,6 @@ accordion_disease<-function(data,
       }
     }
     if(include_descendants == TRUE){
-      uberon_onto<-cellmarkeraccordion::uberon_onto
-
       root_id<-unique(disease_accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
       desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
       disease_accordion_marker<-disease_accordion_marker[Uberon_ID %in% desc$V1]
@@ -609,7 +606,6 @@ accordion_disease<-function(data,
 
     if(disease_vs_healthy == T){   # compare the healthy and the disease cell types if compare is set to TRUE
       #disease_accordion_marker[,cellID_healthy:= tstrsplit(NCIT_ID, "-", keep=2)]
-      accordion_marker<-cellmarkeraccordion::accordion_marker
       accordion_healthy<-accordion_marker
       accordion_healthy<-accordion_healthy[species %in% input_species & Uberon_tissue %in% tissue & CL_ID %in% unique(disease_accordion_marker$CL_ID) & marker %in% rownames(data)]
       accordion_healthy<-accordion_healthy[!is.na(CL_ID)]

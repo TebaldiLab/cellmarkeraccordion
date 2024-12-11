@@ -18,7 +18,6 @@ list_disease_tissues<-function(species = c("Human","Mouse"),
                                disease = NULL,
                        aberrant_celltype = NULL
 ){
-  disease_accordion_marker<-cellmarkeraccordion::disease_accordion_marker
   input_species<-species
   if(!is.null(aberrant_celltype)){
     output_table<-disease_accordion_marker[species %in% input_species & NCIT_celltype %in% aberrant_celltype]
