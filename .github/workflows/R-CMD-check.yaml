@@ -56,4 +56,4 @@ jobs:
           R CMD check --no-manual --ignore-vignettes .
         env:
           _R_CHECK_FORCE_SUGGESTS_: false
-        continue-on-error: true # Allows the job to proceed even with warnings or notes
+        continue-on-error: true  # Allows the job to proceed even with warnings or notes
