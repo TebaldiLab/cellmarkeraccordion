@@ -576,7 +576,7 @@ accordion_plot<-function(data,
                                   arrow = arrow(type = "closed", length = unit(3, 'mm')))+
                    geom_label(aes(x = x, y = y, label = name), nudge_y = 0.1, label.size = NA,size = bs*0.28, colour=V(onto_igraph)$color, label.padding = unit(0.1, "lines")) +
                    theme_graph()+
-                   xlim(-1, 1)
+                   xlim(-2, 2)
                 como_plot<-plot_grid(pl, tree_plot, rel_widths = c(1, 2), nrow=1, scale = c(1, 1))
 
                 if(data_type == "seurat"){
