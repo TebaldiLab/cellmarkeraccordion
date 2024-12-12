@@ -573,7 +573,7 @@ accordion_plot<-function(data,
 
                  tree_plot <- ggraph(onto_igraph,layout = 'tree') +
                    geom_edge_link(aes(start_cap = label_rect(node1.name), end_cap = label_rect(node2.name,padding = margin(10, 10, 10, 10, "mm"))),
-                                  arrow = arrow(type = "closed", length = unit(3, 'mm')))+
+                                  arrow = arrow(type = "closed", length = unit(0.5, 'mm')))+
                    geom_label(aes(x = x, y = y, label = name), nudge_y = 0.1, label.size = NA,size = bs*0.28, colour=V(onto_igraph)$color, label.padding = unit(0.1, "lines")) +
                    theme_graph()
 
