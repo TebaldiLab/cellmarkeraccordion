@@ -515,11 +515,10 @@ accordion_disease<-function(data,
 
   # keep only cell types gives in input and markers found in data
   # assigned the parameter NCIT_celltype to the more specific "input_NCIT_celltype"
-
+  input_NCIT_celltype <- NCIT_celltypes
   if(is.null(input_NCIT_celltype)){
     disease_accordion_marker<-disease_accordion_marker[marker %in% rownames(data)]
   } else {
-    input_NCIT_celltype <- NCIT_celltypes
     input_NCIT_celltype<-str_to_title(input_NCIT_celltype)
     input_NCIT_celltype_not_in_accordion<-input_NCIT_celltype[!(input_NCIT_celltype %in% unique(disease_accordion_marker$NCIT_celltype))]
     disease_present<-disease_accordion_marker[NCIT_celltype %in% input_NCIT_celltype][marker %in% rownames(data)]
