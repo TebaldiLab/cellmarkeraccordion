@@ -548,6 +548,9 @@ accordion_disease<-function(data,
         input_NCIT_celltype<-ct_present
 
       }
+    } else if(length(input_NCIT_celltype_not_in_accordion) ==0){
+      disease_accordion_marker<-disease_accordion_marker[NCIT_celltype %in% input_NCIT_celltype]
+
     }
   }
   # check group_markers_by input

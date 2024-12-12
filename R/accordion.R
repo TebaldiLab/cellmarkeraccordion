@@ -521,6 +521,9 @@ accordion<-function(data,
         CL_celltype<-ct_present
 
       }
+    } else if(length(input_CL_celltype_not_in_accordion) ==0){
+      accordion_marker<-accordion_marker[CL_celltype %in% input_CL_celltype]
+
     }
   }
 
