@@ -450,6 +450,7 @@ accordion<-function(data,
       }
     }
     if(include_descendants == TRUE){
+      data("uberon_onto", package = "cellmarkeraccordion",envir = environment())
       root_id<-unique(accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
       desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
       accordion_marker<-accordion_marker[Uberon_ID %in% desc$V1]

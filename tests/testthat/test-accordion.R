@@ -164,19 +164,19 @@
 #' provided in input, the function returns a list containing the following
 #' elements:
 #'
-#' \itemize{
+#' \describe{
 #' \item{"scaled_matrix":}{normalized and scaled expression matrix;}
 #' }
 #' If \code{annotation_resolution} is set to “cell”:
-#' \itemize{
+#' \describe{
 #' \item{"cell_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{annotation_resolution} is set to “cluster”:
-#' \itemize{
+#' \describe{
 #' \item{"cluster_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{include_detailed_annotation_info} is set to TRUE:
-#' \itemize{
+#' \describe{
 #' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
 #' @import scales
@@ -370,6 +370,7 @@ accordion<-function(data,
     }
   })
 
+  data("accordion_marker", package = "cellmarkeraccordion",envir = environment())
 
   #load the Cell Marker Accordion database based on the condition selected
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
@@ -424,23 +425,32 @@ accordion<-function(data,
     if(length(tissue_not_in_accordion) == 1){
       if(uniqueN(accordion_tissue$Uberon_tissue) == 0){
         ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
-        warning(eval(ct_not_present), " tissue is not present. Annotation will be performed considering all tissues in the database")
+        warning(eval(ct_not_present), " tissue is not present. Annotation performed considering all tissues in the database")
+        tissue<-unique(accordion_marker$Uberon_tissue)
       } else{
         ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
         ct_present<-knitr::combine_words(unique(accordion_tissue$Uberon_tissue))
-        warning(eval(ct_not_present), " tissue is not present. Annotation will be performed considering only ", eval(ct_present), " tissues")
+        warning(eval(ct_not_present), " tissue is not present. Annotation performed considering only ", eval(ct_present), " tissues")
+        accordion_marker<-accordion_marker[Uberon_tissue %in% ct_present]
+        tissue<-ct_present
+
       }
     } else if(length(tissue_not_in_accordion) > 1) {
       if(uniqueN(accordion_tissue$Uberon_tissue) == 0){
         ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
-        warning(eval(ct_not_present), " tissues are not present. Annotation will be performed considering all tissues in the database")
+        warning(eval(ct_not_present), " tissues are not present. Annotation performed considering all tissues in the database")
+        tissue<-unique(accordion_marker$Uberon_tissue)
+
       } else{
         ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
         ct_present<-knitr::combine_words(unique(accordion_tissue$Uberon_tissue))
-        warning(eval(ct_not_present), " tissues are not present. Annotation will be performed considering only ", eval(ct_present), " tissues")
+        warning(eval(ct_not_present), " tissues are not present. Annotation performed considering only ", eval(ct_present), " tissues")
+        accordion_marker<-accordion_marker[Uberon_tissue %in% ct_present]
+        tissue<-ct_present
       }
     }
     if(include_descendants == TRUE){
+      data("uberon_onto", package = "cellmarkeraccordion",envir = environment())
       root_id<-unique(accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
       desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
       accordion_marker<-accordion_marker[Uberon_ID %in% desc$V1]
@@ -490,20 +500,26 @@ accordion<-function(data,
     if(length(input_CL_celltype_not_in_accordion) == 1){
       if(uniqueN(accordion_marker$CL_celltype) == 0){
         ct_not_present<-knitr::combine_words(input_CL_celltype_not_in_accordion[1:length(input_CL_celltype_not_in_accordion)])
-        warning(eval(ct_not_present), " cell type is not present. Annotation will be performed considering all cell types in the database")
+        warning(eval(ct_not_present), " cell type is not present. Annotation performed considering all cell types in the database")
+        input_CL_celltype<-unique(accordion_marker$CL_celltype)
       } else{
         ct_not_present<-knitr::combine_words(input_CL_celltype_not_in_accordion[1:length(input_CL_celltype_not_in_accordion)])
         ct_present<-knitr::combine_words(unique(accordion_marker$CL_celltype))
-        warning(eval(ct_not_present), " cell type are not present. Annotation will be performed considering only ", eval(ct_present), " cell types")
+        warning(eval(ct_not_present), " cell type are not present. Annotation performed considering only ", eval(ct_present), " cell types")
+        CL_celltype<-ct_present
       }
     } else if(length(input_CL_celltype_not_in_accordion) > 1) {
       if(uniqueN(accordion_marker$CL_celltype) == 0){
         ct_not_present<-knitr::combine_words(input_CL_celltype_not_in_accordion[1:length(input_CL_celltype_not_in_accordion)])
-        warning(eval(ct_not_present), " cell types are not present. Annotation will be performed considering all cell types in the database")
+        warning(eval(ct_not_present), " cell types are not present. Annotation performed considering all cell types in the database")
+        input_CL_celltype<-unique(accordion_marker$CL_celltype)
+
       } else{
         ct_not_present<-knitr::combine_words(input_CL_celltype_not_in_accordion[1:length(input_CL_celltype_not_in_accordion)])
         ct_present<-knitr::combine_words(unique(accordion_marker$CL_celltype))
-        warning(eval(ct_not_present), " cell types are not present. Annotation will be performed considering only ", eval(ct_present), " cell types")
+        warning(eval(ct_not_present), " cell types are not present. Annotation performed considering only ", eval(ct_present), " cell types")
+        CL_celltype<-ct_present
+
       }
     }
   }

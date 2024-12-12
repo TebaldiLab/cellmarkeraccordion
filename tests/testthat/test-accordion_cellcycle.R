@@ -116,19 +116,19 @@
 #' count matrix was provided in input, the function returns a list containing
 #' the following elements:
 #'
-#' \itemize{
+#' \describe{
 #' \item{"scaled_matrix":}{normalized and scaled expression matrix;}
 #' }
 #' If \code{annotation_resolution} is set to “cell”:
-#' \itemize{
+#' \describe{
 #' \item{"cell_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{annotation_resolution} is set to “cluster”:
-#' \itemize{
+#' \describe{
 #' \item{"cluster_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{include_detailed_annotation_info} is set to TRUE:
-#' \itemize{
+#' \describe{
 #' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
 #' @import scales
@@ -262,6 +262,8 @@ accordion_cellcycle<-function(data,
       }
     }
   }
+
+  data("cell_cycle_markers", package = "cellmarkeraccordion",envir = environment())
 
   if((length(species) ==1 & !(species %in% c("Human","Mouse"))) | (length(species) == 2 & setequal(species, c("Human","Mouse")))){
     warning("Invalid species type")

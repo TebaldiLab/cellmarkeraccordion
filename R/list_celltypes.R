@@ -12,6 +12,8 @@
 list_celltypes<-function(species = c("Human","Mouse"),
                tissue = NULL
 ){
+  data("accordion_marker", package = "cellmarkeraccordion",envir = environment())
+
   input_species<-species
   if(!is.null(tissue)){
     output_table<-accordion_marker[species %in% input_species & Uberon_tissue %in% tissue]

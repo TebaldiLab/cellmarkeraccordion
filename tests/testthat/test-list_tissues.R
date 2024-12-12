@@ -12,6 +12,8 @@
 list_tissues<-function(species = c("Human","Mouse"),
                        celltype = NULL
 ){
+  data("disease_accordion_marker", package = "cellmarkeraccordion",envir = environment())
+
   input_species<-species
   if(!is.null(celltype)){
     output_table<-accordion_marker[species %in% input_species & CL_celltype %in% celltype]

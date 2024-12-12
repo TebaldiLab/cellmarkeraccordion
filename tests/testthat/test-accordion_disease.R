@@ -184,19 +184,19 @@
 #' was provided in input, the function returns a list containing the following
 #' elements:
 #'
-#' \itemize{
+#' \describe{
 #' \item{"scaled_matrix":}{normalized and scaled expression matrix;}
 #' }
 #' If \code{annotation_resolution} is set to “cell”:
-#' \itemize{
+#' \describe{
 #' \item{"cell_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{annotation_resolution} is set to “cluster”:
-#' \itemize{
+#' \describe{
 #' \item{"cluster_annotation":}{data table containing cell types annotation results for each cell;}
 #' }
 #' If \code{include_detailed_annotation_info} is set to TRUE:
-#' \itemize{
+#' \describe{
 #' \item{"\code{annotation_name}":}{list containing detailed information of cell types annotation.}
 #' }
 #' @import scales
@@ -374,6 +374,8 @@ accordion_disease<-function(data,
     }
   })
 
+  data("disease_accordion_marker", package = "cellmarkeraccordion",envir = environment())
+
   #load the Cell Marker Accordion database based on the condition selected
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){
@@ -443,23 +445,35 @@ accordion_disease<-function(data,
     if(length(tissue_not_in_accordion) == 1){
       if(uniqueN(accordion_tissue$Uberon_tissue) == 0){
         ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
-        warning(eval(ct_not_present), " tissue is not present. Annotation will be performed considering all tissues in the database")
+        warning(eval(ct_not_present), " tissue is not present. Annotation performed considering all tissues in the database")
+        tissue<-unique(disease_accordion_marker$Uberon_tissue)
+
       } else{
         ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
         ct_present<-knitr::combine_words(unique(accordion_tissue$Uberon_tissue))
-        warning(eval(ct_not_present), " tissue is not present. Annotation will be performed considering only ", eval(ct_present), " tissues")
+        warning(eval(ct_not_present), " tissue is not present. Annotation performed considering only ", eval(ct_present), " tissues")
+        disease_accordion_marker<-disease_accordion_marker[Uberon_tissue %in% ct_present]
+        tissue<-ct_present
+
       }
     } else if(length(tissue_not_in_accordion) > 1) {
       if(uniqueN(accordion_tissue$Uberon_tissue) == 0){
         ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
-        warning(eval(ct_not_present), " tissues are not present. Annotation will be performed considering all tissues in the database")
+        warning(eval(ct_not_present), " tissues are not present. Annotation performed considering all tissues in the database")
+        tissue<-unique(disease_accordion_marker$Uberon_tissue)
+
       } else{
         ct_not_present<-knitr::combine_words(tissue_not_in_accordion[1:length(tissue_not_in_accordion)])
         ct_present<-knitr::combine_words(unique(accordion_tissue$Uberon_tissue))
-        warning(eval(ct_not_present), " tissues are not present. Annotation will be performed considering only ", eval(ct_present), " tissues")
+        warning(eval(ct_not_present), " tissues are not present. Annotation performed considering only ", eval(ct_present), " tissues")
+        disease_accordion_marker<-disease_accordion_marker[Uberon_tissue %in% ct_present]
+        tissue<-ct_present
+
       }
     }
+
     if(include_descendants == TRUE){
+      data("uberon_onto", package = "cellmarkeraccordion",envir = environment())
       root_id<-unique(disease_accordion_marker[Uberon_tissue %in% tissue]$Uberon_ID)
       desc<-as.data.table(get_descendants(uberon_onto, roots=eval(root_id)))
       disease_accordion_marker<-disease_accordion_marker[Uberon_ID %in% desc$V1]
@@ -505,29 +519,36 @@ accordion_disease<-function(data,
   if(is.null(input_NCIT_celltype)){
     disease_accordion_marker<-disease_accordion_marker[marker %in% rownames(data)]
   } else {
-    disease_accordion_marker<-disease_accordion_marker[NCIT_celltype %in% input_NCIT_celltype][marker %in% rownames(data)]
     input_NCIT_celltype_not_in_accordion<-input_NCIT_celltype[!(input_NCIT_celltype %in% unique(disease_accordion_marker$NCIT_celltype))]
+    disease_present<-disease_accordion_marker[NCIT_celltype %in% input_NCIT_celltype][marker %in% rownames(data)]
     if(length(input_NCIT_celltype_not_in_accordion) == 1){
-      if(uniqueN(disease_accordion_marker$NCIT_celltype) == 0){
+      if(uniqueN(disease_present$NCIT_celltype) == 0){
         ct_not_present<-knitr::combine_words(input_NCIT_celltype_not_in_accordion[1:length(input_NCIT_celltype_not_in_accordion)])
-        warning(eval(ct_not_present), " cell type is not present. Annotation will be performed considering all cell types in the database")
+        warning(eval(ct_not_present), " cell type is not present. Annotation performed considering all aberrant cell types in the database")
+        input_NCIT_celltype<-unique(disease_accordion_marker$NCIT_celltype)
       } else{
         ct_not_present<-knitr::combine_words(input_NCIT_celltype_not_in_accordion[1:length(input_NCIT_celltype_not_in_accordion)])
         ct_present<-knitr::combine_words(unique(disease_accordion_marker$NCIT_celltype))
-        warning(eval(ct_not_present), " cell type are not present. Annotation will be performed considering only ", eval(ct_present), " cell types")
+        warning(eval(ct_not_present), " cell type are not present. Annotation performed considering only ", eval(ct_present), " cell types")
+        disease_accordion_marker<-disease_accordion_marker[NCIT_celltype %in% ct_present]
+        input_NCIT_celltype<-ct_present
+
       }
     } else if(length(input_NCIT_celltype_not_in_accordion) > 1) {
-      if(uniqueN(disease_accordion_marker$NCIT_celltype) == 0){
+      if(uniqueN(disease_present$NCIT_celltype) == 0){
         ct_not_present<-knitr::combine_words(input_NCIT_celltype_not_in_accordion[1:length(input_NCIT_celltype_not_in_accordion)])
-        warning(eval(ct_not_present), " cell types are not present. Annotation will be performed considering all cell types in the database")
+        warning(eval(ct_not_present), " cell types are not present. Annotation performed considering all aberrant cell types in the database")
+        input_NCIT_celltype<-unique(disease_accordion_marker$NCIT_celltype)
       } else{
         ct_not_present<-knitr::combine_words(input_NCIT_celltype_not_in_accordion[1:length(input_NCIT_celltype_not_in_accordion)])
         ct_present<-knitr::combine_words(unique(disease_accordion_marker$NCIT_celltype))
-        warning(eval(ct_not_present), " cell types are not present. Annotation will be performed considering only ", eval(ct_present), " cell types")
+        warning(eval(ct_not_present), " cell types are not present. Annotation performed considering only ", eval(ct_present), "  cell types")
+        disease_accordion_marker<-disease_accordion_marker[NCIT_celltype %in% ct_present]
+        input_NCIT_celltype<-ct_present
+
       }
     }
   }
-
   # check group_markers_by input
   if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
     warning("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\", \"celltype_cell\" or \"score_cell\"")
@@ -606,6 +627,7 @@ accordion_disease<-function(data,
 
     if(disease_vs_healthy == T){   # compare the healthy and the disease cell types if compare is set to TRUE
       #disease_accordion_marker[,cellID_healthy:= tstrsplit(NCIT_ID, "-", keep=2)]
+      data("accordion_marker", package = "cellmarkeraccordion",envir = environment())
       accordion_healthy<-accordion_marker
       accordion_healthy<-accordion_healthy[species %in% input_species & Uberon_tissue %in% tissue & CL_ID %in% unique(disease_accordion_marker$CL_ID) & marker %in% rownames(data)]
       accordion_healthy<-accordion_healthy[!is.na(CL_ID)]
