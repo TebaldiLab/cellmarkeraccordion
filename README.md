@@ -171,7 +171,7 @@ load(system.file("extdata", "bone_marrow_data.rda", package = "cellmarkeraccordi
 ```
 
 
-To identify for example "leukemia stem cell" in "acute myeloid leukemia" samples run: 
+To identify for example "Leukemic Hematopoietic Stem Cell" in "acute myeloid leukemia" patients from "bone marrow" samples run: 
 ```bash
 bone_marrow_data = accordion_disease(bone_marrow_data, assay = "RNA", species="Human",tissue="bone marrow", disease= "acute myeloid leukemia", NCIT_celltypes = "Leukemic Hematopoietic Stem Cell",annotation_resolution = "cell", max_n_marker = 30, log2FC_threshold = 1, plot=F, annotation_name = "LHSC")
 
@@ -180,7 +180,7 @@ FeaturePlot(bone_marrow_data, features = "LHSC_per_cell_score", min.cutoff = "q1
 
 ![LSCH_score](https://github.com/user-attachments/assets/1b11885b-5345-4c17-9027-9559665c9952)
 
-To identify instead neoplastic monocyte run:
+To identify instead "Neoplastic Monocyte" run:
 ```bash
 bone_marrow_data = accordion_disease(bone_marrow_data, assay = "RNA", species="Human",tissue="bone marrow", disease= "acute myeloid leukemia", NCIT_celltypes = "Neoplastic Monocyte",annotation_resolution = "cell",max_n_marker = 30, log2FC_threshold = 1, plot=F, annotation_name = "Neoplastic_monocyte")
 
