@@ -571,11 +571,15 @@ accordion_plot<-function(data,
                   scale_x_continuous(limits = c(0, round_any(max(top_celltypes_cl$impact_score)*1.25+2, 1, f = ceiling)))
 
 
-                 tree_plot <- ggraph(onto_igraph,layout = 'tree') +
+                 tree_plot <- ggraph(onto_igraph,layout = 'tree',nodeSpacing = 1) +
                    geom_edge_link(aes(start_cap = label_rect(node1.name), end_cap = label_rect(node2.name,padding = margin(10, 10, 10, 10, "mm"))),
-                                  arrow = arrow(type = "closed", length = unit(3, 'mm')), edge_length = 1)+
+                                  arrow = arrow(type = "closed", length = unit(3, 'mm')))+
                    geom_label(aes(x = x, y = y, label = name), nudge_y = 0.1, label.size = NA,size = bs*0.28, colour=V(onto_igraph)$color, label.padding = unit(0.1, "lines")) +
-                   theme_graph()
+                   theme_graph()+
+                   ylim(-3, 3) +
+                   xlim(-3, 3) +
+                   theme(plot.margin = margin(0, 0, 0, 0)) +
+                   scale_y_continuous(expand = c(0, 0))
 
                 como_plot<-plot_grid(pl, tree_plot, rel_widths = c(1, 2), nrow=1, scale = c(1, 1))
 
