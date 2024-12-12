@@ -53,3 +53,15 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           error-on: '"error"'
+
+          - name: Query dependencies
+          run: |
+            install.packages(c('remotes', 'BiocManager'), INSTALL_opts="--no-multiarch")
+            options(repos = c(getOption("repos"), BiocManager::repositories()))
+            saveRDS(remotes::dev_package_deps(dependencies = TRUE), "depends.Rds", version = 2)          
+          shell: Rscript {0}
+        - name: Install dependencies
+          run: |
+            install.packages(c("remotes", "rcmdcheck"), INSTALL_opts="--no-multiarch")
+            remotes::install_deps(dependencies = TRUE)
+          shell: Rscript {0}
