@@ -99,8 +99,7 @@ data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][[
 <strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```. It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. We used a published human retinal dataset (Lu et al., Dev Cell. 2020) and we included a table of well-known markers associated to retinal cell types.
 
 ```bash
-file_path <- system.file("extdata", "retina_markers.xlsx", package = "cellmarkeraccordion")
-retina_markers<-read_excel("retina_markers.xlsx")
+load(system.file("extdata", "retina_markers.rda", package = "cellmarkeraccordion"))
 head(retina_markers)
 ```
 
@@ -115,7 +114,7 @@ head(retina_markers)
 
 
 ```bash
-data(retinal_data)
+load(system.file("extdata", "retinal_data.rda", package = "cellmarkeraccordion")) 
 ```
 
 To perform the annotation with the custom marker genes run:
@@ -129,7 +128,7 @@ DimPlot(retinal_data, group.by = "cell_type_retina_per_cluster", reduction = "um
 
 You can also exploit the ```accordion_custom``` function to explore the expression of group of genes associated to a specific pathway. As an example: 
 ```bash
-data(marker_table_pathway)
+load(system.file("extdata", "marker_table_pathway.rda", package = "cellmarkeraccordion")) 
 ```
 | pathway  | genes |                                         
 | ------------- | ------------- | 
@@ -168,7 +167,7 @@ data<-accordion_cellcycle(data)
 This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specific both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
 
 ```bash
-load(bone_marrow_data)
+load(system.file("extdata", "bone_marrow_data.rda", package = "cellmarkeraccordion"))
 ```
 
 
