@@ -173,11 +173,22 @@ load(system.file("extdata", "bone_marrow_data.rda", package = "cellmarkeraccordi
 
 To identify for example "leukemia stem cell" in "acute myeloid leukemia" samples run: 
 ```bash
-bone_marrow_data = accordion_disease(bone_marrow_data, disease= "acute myeloid leukemia", NCIT_celltype = "Leukemia Hematopoietic Stem Cell",combined_score_quantile_threshold = 0.75, annotation_resolution = "cell", plot=F, annotation_name = "LSC")
+bone_marrow_data = accordion_disease(bone_marrow_data, assay = "RNA", species="Human",tissue="bone marrow", disease= "acute myeloid leukemia", NCIT_celltypes = "Leukemic Hematopoietic Stem Cell",annotation_resolution = "cell", max_n_marker = 30, log2FC_threshold = 1, plot=F, annotation_name = "LHSC")
 
-FeaturePlot(bone_marrow_data, features = "LSC_per_cell_score", min.cutoff = "q10",max.cutoff = "q75", cols = c("gray","red"), order = T) 
+FeaturePlot(bone_marrow_data, features = "LHSC_per_cell_score", min.cutoff = "q15",max.cutoff = "q95", split.by="condition", cols = c("gray","red"), order = T) 
 ```
 
-![LSC](https://github.com/user-attachments/assets/11ed18ad-fdbb-4e6e-b7d0-ce68346ddad6)
+![LSCH_score](https://github.com/user-attachments/assets/1b11885b-5345-4c17-9027-9559665c9952)
+
+To identify instead neoplastic monocyte run:
+```bash
+bone_marrow_data = accordion_disease(bone_marrow_data, assay = "RNA", species="Human",tissue="bone marrow", disease= "acute myeloid leukemia", NCIT_celltypes = "Neoplastic Monocyte",annotation_resolution = "cell",max_n_marker = 30, log2FC_threshold = 1, plot=F, annotation_name = "Neoplastic_monocyte")
+
+FeaturePlot(bone_marrow_data, features = "Neoplastic_monocyte_per_cell_score", min.cutoff = "q10",max.cutoff = "q90", split.by="condition", cols = c("gray","blue"), order = T) 
+```
+![Neo_mono_score](https://github.com/user-attachments/assets/f6b54ca9-f7a3-45c7-ad3f-00d19ce6b77d)
+
+
+
 
 
