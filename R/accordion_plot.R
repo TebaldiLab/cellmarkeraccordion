@@ -578,9 +578,7 @@ accordion_plot<-function(data,
                    theme_graph()+
                    ylim(-3, 3) +
                    xlim(-3, 3) +
-                   theme(plot.margin = margin(0, 0, 0, 0)) +
-                   scale_y_continuous(expand = c(0, 0))
-
+                   theme(plot.margin = margin(0, 0, 0, 0))
                 como_plot<-plot_grid(pl, tree_plot, rel_widths = c(1, 2), nrow=1, scale = c(1, 1))
 
                 if(data_type == "seurat"){
