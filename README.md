@@ -26,9 +26,7 @@ All the functions of the <strong>cellmarkeraccordion</strong> accept as input ei
 As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
 Load the raw counts and create a Seurat object
 ```bash
-data(counts) #raw counts
-file_path <- system.file("extdata", "counts.rda", package = "cellmarkeraccordion")
-counts <- load(file_path)
+load("extdata", "counts.rda", package = "cellmarkeraccordion") #counts data
 # Create Seurat Object
 data <- CreateSeuratObject(counts = counts, min.cells = 3, min.features = 200)
 ```
@@ -62,7 +60,7 @@ data <- accordion(data, assay ="RNA", species ="Human", tissue="blood", annotati
 ```bash
 DimPlot(data, group.by = "accordion_per_cluster")
 ```
-![Annotation_example](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/673e5368-0014-444d-916c-873d0b522b7e)
+![Annotation_pbmc](https://github.com/user-attachments/assets/9fea9931-a0b7-47bf-8748-b6ef614acfc5)
 
 Or you can use raw counts matrix and specify cluster's id for each cell.
 ```bash
@@ -80,17 +78,18 @@ The Cell Marker Accordion has been developed to improve the biological interpret
 seurat_obj@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["global"]]
 ```
 
-![Pbmc_top_cell_type](https://github.com/user-attachments/assets/29c20803-e134-44ab-ab0f-083256c266c1)
+![Top_ct_global](https://github.com/user-attachments/assets/4ecdcf91-de64-4edc-8e04-20e61de99379)
+
 
 Further insight is provided by looking at the percentage of cells assigned to the top scoring cell types, and their similarity based on the Cell Ontology hierarchy
 ```bash
-seurat_obj@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["2_naive B cell"]]
+data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["2_naive B cell"]]
 ```
 ![Pbmc_rank_naive](https://github.com/user-attachments/assets/1372c184-f3e1-43eb-908b-1419e7c21698)
 
 Finally the top N marker genes contributing to the annotation of each specific cell type can be explored 
 ```bash
-seurat_obj@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster_plot"]][["global"]]
+data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster_plot"]][["global"]]
 ```
 ![Pbmc_top_markers](https://github.com/user-attachments/assets/282337b9-b897-4880-a422-ebfec7ecc7a5)
 
