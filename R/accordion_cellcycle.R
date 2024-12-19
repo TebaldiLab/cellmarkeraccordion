@@ -69,10 +69,10 @@
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
 #'   the condition id’s for each cell.  Default is NULL.
-#' @param cell_type_group_info in case \code{data} is a Seurat object,
-#'  \code{cell_type_group_info} should be need to be a character string specifying the
+#' @param celltype_group_info in case \code{data} is a Seurat object,
+#'  \code{celltype_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains cell types ids for each cell;
-#'  if \code{data} is a count matrix, \code{cell_type_group_info} should be need to be a
+#'  if \code{data} is a count matrix, \code{celltype_group_info} should be need to be a
 #'   data frame or data table containing cell types identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “cell_type”, which specifies
@@ -151,7 +151,7 @@ accordion_cellcycle<-function(data,
                               allow_unknown = FALSE,
                               include_detailed_annotation_info = FALSE,
                               condition_group_info = NULL,
-                              cell_type_group_info = NULL,
+                              celltype_group_info = NULL,
                               group_markers_by = "celltype_cell",
                               n_top_celltypes = 5,
                               n_top_markers = 5,
@@ -466,7 +466,7 @@ accordion_cellcycle<-function(data,
                                                         n_top_markers,
                                                         top_marker_score_quantile_threshold,
                                                         condition_group_info,
-                                                        cell_type_group_info)
+                                                        celltype_group_info)
       } else{
         accordion_output<-include_detailed_annotation_info_helper(accordion_output,
                                                                   data_type,
@@ -484,7 +484,7 @@ accordion_cellcycle<-function(data,
                                                                   n_top_markers,
                                                                   top_marker_score_quantile_threshold,
                                                                   condition_group_info,
-                                                                  cell_type_group_info)
+                                                                  celltype_group_info)
       }
 
     }

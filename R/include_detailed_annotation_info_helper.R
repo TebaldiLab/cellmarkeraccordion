@@ -16,7 +16,7 @@ include_detailed_annotation_info_helper<-function(data,
                                             top_marker_score_quantile_threshold,
                                             top_cell_score_quantile_threshold,
                                             condition_group_info,
-                                            CL_celltype_group_info){
+                                            celltype_group_info){
   if(data_type == "matrix"){
     info_list<-list()
   }
@@ -141,7 +141,7 @@ include_detailed_annotation_info_helper<-function(data,
     if("celltype_cell" %in% group_markers_by){
       #for each cell retrieves first N cell type and first N markers
       if(!is.null(condition_group_info)){
-        if(is.null(CL_celltype_group_info)){ # only condition group
+        if(is.null(celltype_group_info)){ # only condition group
           if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
@@ -166,16 +166,16 @@ include_detailed_annotation_info_helper<-function(data,
           colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
 
           cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
-        } else if (!is.null(CL_celltype_group_info)){ #condition group and cell type group
+        } else if (!is.null(celltype_group_info)){ #condition group and cell type group
           if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
-            col_vec<-c("cell",condition_group_info, CL_celltype_group_info)
+            col_vec<-c("cell",condition_group_info, celltype_group_info)
             condition_table<-condition_table[,..col_vec]
             colnames(condition_table)<-c("cell","condition","celltype")
             condition_table<-condition_table[,c("cell","condition","celltype")]
           } else{
-            col_vec<-c("cell",condition_group_info, CL_celltype_group_info)
+            col_vec<-c("cell",condition_group_info, celltype_group_info)
             condition_table<-as.data.table(condition_group_info)[,..col_vec]
             colnames(condition_table)<-c("cell","condition","celltype")
 
@@ -188,23 +188,23 @@ include_detailed_annotation_info_helper<-function(data,
           name<-paste0(annotation_name,"_per_cell")
           name_score<-paste0(annotation_name,"_per_cell_score")
 
-          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),eval(CL_celltype_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
+          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),eval(celltype_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
 
           cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
         }
       }else if(is.null(condition_group_info)){ #only cell type group
-        if(!is.null(CL_celltype_group_info)){
+        if(!is.null(celltype_group_info)){
           if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
-            col_vec<-c("cell",CL_celltype_group_info)
+            col_vec<-c("cell",celltype_group_info)
             condition_table<-condition_table[,..col_vec]
             colnames(condition_table)<-c("cell","celltype")
             condition_table<-condition_table[,c("cell","celltype")]
 
           } else{
-            col_vec<-c("cell", CL_celltype_group_info)
-            condition_table<-as.data.table(CL_celltype_group_info)[,..col_vec]
+            col_vec<-c("cell", celltype_group_info)
+            condition_table<-as.data.table(celltype_group_info)[,..col_vec]
             colnames(condition_table)<-c("cell","celltype")
           }
           dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
@@ -220,7 +220,7 @@ include_detailed_annotation_info_helper<-function(data,
           cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
         }
       }
-      if(is.null(CL_celltype_group_info) & is.null(condition_group_info)){
+      if(is.null(celltype_group_info) & is.null(condition_group_info)){
         dt_top <- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell")][,c("cell","annotation_per_cell","marker","marker_type","quantile_score_marker","EC_score","specificity")])
         dt_top_marker_by_cell<-unique(dt_top[,c("annotation_per_cell","marker","marker_type","quantile_score_marker","EC_score","specificity")])
         dt_top_marker_by_cell<-dt_top_marker_by_cell[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
@@ -237,7 +237,7 @@ include_detailed_annotation_info_helper<-function(data,
     if ("score_cell" %in% group_markers_by){
       #for each cell retrieves first N cell type and first N markers
       if(!is.null(condition_group_info)){
-        if(is.null(CL_celltype_group_info)){ # only condition group
+        if(is.null(celltype_group_info)){ # only condition group
           if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
@@ -264,16 +264,16 @@ include_detailed_annotation_info_helper<-function(data,
 
           cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
 
-        } else if (!is.null(CL_celltype_group_info)){ #condition group and cell type group
+        } else if (!is.null(celltype_group_info)){ #condition group and cell type group
           if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
-            col_vec<-c("cell",condition_group_info, CL_celltype_group_info)
+            col_vec<-c("cell",condition_group_info, celltype_group_info)
             condition_table<-condition_table[,..col_vec]
             colnames(condition_table)<-c("cell","condition","celltype")
             condition_table<-condition_table[,c("cell","condition","celltype")]
           } else{
-            col_vec<-c("cell",condition_group_info, CL_celltype_group_info)
+            col_vec<-c("cell",condition_group_info, celltype_group_info)
             condition_table<-as.data.table(condition_group_info)[,..col_vec]
             colnames(condition_table)<-c("cell","condition","celltype")
 
@@ -287,23 +287,23 @@ include_detailed_annotation_info_helper<-function(data,
           name<-paste0(annotation_name,"_per_cell")
           name_score<-paste0(annotation_name,"_per_cell_score")
 
-          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),eval(CL_celltype_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
+          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),eval(celltype_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","EC_score","specificity")
 
           cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
         }
       }else if(is.null(condition_group_info)){ #only cell type group
-        if(!is.null(CL_celltype_group_info)){
+        if(!is.null(celltype_group_info)){
           if(data_type == "seurat"){
             condition_table<-data@meta.data
             condition_table<-as.data.table(condition_table)[,cell:=rownames(condition_table)]
-            col_vec<-c("cell",CL_celltype_group_info)
+            col_vec<-c("cell",celltype_group_info)
             condition_table<-condition_table[,..col_vec]
             colnames(condition_table)<-c("cell","celltype")
             condition_table<-condition_table[,c("cell","celltype")]
 
           } else{
-            col_vec<-c("cell", CL_celltype_group_info)
-            condition_table<-as.data.table(CL_celltype_group_info)[,..col_vec]
+            col_vec<-c("cell", celltype_group_info)
+            condition_table<-as.data.table(celltype_group_info)[,..col_vec]
             colnames(condition_table)<-c("cell","celltype")
           }
           dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
@@ -324,7 +324,7 @@ include_detailed_annotation_info_helper<-function(data,
         }
       }
 
-      if(is.null(CL_celltype_group_info) & is.null(condition_group_info)){
+      if(is.null(celltype_group_info) & is.null(condition_group_info)){
         dt_top <- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell")][,c("cell","annotation_per_cell","marker","marker_type","quantile_score_marker","EC_score","specificity")])
         dt_top_marker_by_cell<-unique(dt_top[,c("annotation_per_cell","marker","marker_type","quantile_score_marker","EC_score","specificity")])
         dt_top_marker_by_cell<-dt_top_marker_by_cell[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]

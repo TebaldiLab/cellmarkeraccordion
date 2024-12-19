@@ -122,10 +122,10 @@
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
 #'   the condition id’s for each cell.  Default is NULL.
-#' @param NCIT_celltype_group_info in case \code{data} is a Seurat object,
-#'  \code{NCIT_celltype_group_info} should be need to be a character string specifying the
+#' @param celltype_group_info in case \code{data} is a Seurat object,
+#'  \code{celltype_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains cell types ids for each cell;
-#'  if \code{data} is a count matrix, \code{NCIT_celltype_group_info} should be need to be a
+#'  if \code{data} is a count matrix, \code{celltype_group_info} should be need to be a
 #'   data frame or data table containing cell types identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “NCIT_celltype”, which specifies
@@ -232,7 +232,7 @@ accordion_disease<-function(data,
                             annotation_name = "accordion_disease",
                             include_detailed_annotation_info = TRUE,
                             condition_group_info = NULL,
-                            NCIT_celltype_group_info = NULL,
+                            celltype_group_info = NULL,
                             group_markers_by = "celltype_cluster",
                             top_cell_score_quantile_threshold = 0.90,
                             n_top_celltypes = 5,
@@ -836,7 +836,7 @@ accordion_disease<-function(data,
                                                       top_marker_score_quantile_threshold,
                                                       top_cell_score_quantile_threshold,
                                                       condition_group_info,
-                                                      NCIT_celltype_group_info)
+                                                      celltype_group_info)
     } else{
       accordion_output<-include_detailed_annotation_info_helper(accordion_output,
                                                                 data_type,
@@ -854,7 +854,7 @@ accordion_disease<-function(data,
                                                                 top_marker_score_quantile_threshold,
                                                                 top_cell_score_quantile_threshold,
                                                                 condition_group_info,
-                                                                NCIT_celltype_group_info)
+                                                                celltype_group_info)
     }
 
   }
