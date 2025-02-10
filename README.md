@@ -41,8 +41,8 @@ data <- FindClusters(data, resolution = 0.8)
 data <- RunUMAP(data, dims = 1:10)
 ```
 ## Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
-<strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissue in single-cell dataset by running function ``` accordion ```. 
-It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting the for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
+<strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissues in single-cell dataset by running function ``` accordion ```. 
+It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 
 Run list_tissues() function to explore which tissues are available in the Cell Marker Accordion. 
 ```bash  
@@ -153,7 +153,7 @@ FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.
 ![Retina_apoptosis](https://github.com/user-attachments/assets/41a887ce-e98e-48bf-98c5-2b71956e87bd)
 
 ## Automatically identify and interpreting cell cycle state of single-cell populations
-<strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assing cell cycle state to cell populations. This function exploits the built-in collection of
+<strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle state to cell populations. This function exploits the built-in collection of
 marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
 To perform cell cycle identification run: 
 ```bash
@@ -164,7 +164,7 @@ data<-accordion_cellcycle(data)
 
 ## Annotate and interprete aberrant single-cell populations with the built-in Cell Marker Accordion disease database
 <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
-This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specific both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
+This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specify both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
 
 ```bash
 load(system.file("extdata", "bone_marrow_data.rda", package = "cellmarkeraccordion"))
