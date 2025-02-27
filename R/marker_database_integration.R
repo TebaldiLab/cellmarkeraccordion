@@ -35,7 +35,7 @@
 #'@param marker_type_column String characters specifying the name of the
 #'  \code{marker_table} column containing marker types.
 #'  Default is “marker_type”.
-#'@param resource_column String characters specifying the name of the
+#'@param marker_type_column String characters specifying the name of the
 #'  \code{marker_table} column containing resources.
 #'  Default is “resource”.
 #' @importFrom plyr ddply
