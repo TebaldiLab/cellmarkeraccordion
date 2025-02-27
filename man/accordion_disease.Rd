@@ -11,11 +11,12 @@ accordion_disease(
   tissue = NULL,
   cluster_info = "seurat_clusters",
   assay = "RNA",
+  database = NULL,
   NCIT_celltypes = NULL,
   species = "Human",
   include_descendants = FALSE,
   evidence_consistency_score_threshold = NULL,
-  specificity_score_threshold = NULL,
+  SPs_score_threshold = NULL,
   log2FC_threshold = NULL,
   malignant_quantile_threshold = 0.95,
   min_n_marker = 5,
@@ -28,7 +29,7 @@ accordion_disease(
   annotation_name = "accordion_disease",
   include_detailed_annotation_info = TRUE,
   condition_group_info = NULL,
-  NCIT_celltype_group_info = NULL,
+  celltype_group_info = NULL,
   group_markers_by = "celltype_cluster",
   top_cell_score_quantile_threshold = 0.9,
   n_top_celltypes = 5,
@@ -68,6 +69,9 @@ parameter is set to “cluster”. Default is “seurat_clusters”.}
 parameter is necessary only  in case \code{data} is a Seurat object.
 Default is “RNA”.}
 
+\item{database}{Data table returns from the "marker_database_integration()" function.
+By default is set to NULL and the Accordion database is used for the annotation.}
+
 \item{NCIT_celltypes}{Character string or character string vector specifying the
 cell types to annotate. Run the function "list_aberrant_celltypes()" to obtain the
 available aberrant cell types. If this parameter is not specified, all aberrant
@@ -88,8 +92,8 @@ specifying the minimum evidence consistency (EC) score for each
 marker. Only markers >= this threshold are kept. If NULL, no filter is
 applied. Default is NULL.}
 
-\item{specificity_score_threshold}{numeric value in (0,1) specifying the
-minimum specificity score for each marker. Only markers <= this threshold
+\item{SPs_score_threshold}{numeric value in (0,1) specifying the
+minimum SPs score for each marker. Only markers <= this threshold
 are kept. If  NULL, no filter is applied. Default is NULL.}
 
 \item{log2FC_threshold}{numeric value specifying the
@@ -112,19 +116,19 @@ threshold are kept.  Default is 5.}
 \item{max_n_marker}{Integer value specifying the maximum number of markers to
 keep for each cell type. For the selection, markers are ranked according to
 their combined score, obtained by multiplying evidence consistency score
-and specificity score. If  NULL, no filter is applied. Default is NULL.}
+and SPs score. If  NULL, no filter is applied. Default is NULL.}
 
 \item{combined_score_quantile_threshold}{numeric value in (0,1) specifying
 the combined score quantile threshold. For the selection, marers are
 ranked according to their combined score,  obtained by multiplying evidence
-consistency score and specificity score. Only markers >  the
+consistency score and SPs score. Only markers >  the
 quantile_threshold are kept. If  NULL, no filter is applied. Default is
 NULL.}
 
 \item{disease_vs_healthy}{Logical value indicating whether to compare the
 markers associated with disease cell types with respect to the markers
 associated with the corresponding healthy cell types. If TRUE the
-specificity score is calculated considering if a gene is also a marker for
+SPs score is calculated considering if a gene is also a marker for
 the corresponding healthy cell type. For each cell, a specific score for
 disease cell types and another score for the healthy types (named as the
 cell types label) are returned. Default is TRUE.}
@@ -176,10 +180,10 @@ data frame or data table should contain at least two columns, one  named
 “cell”, which specifies cell id’s, and one named “condition”, which specifies
 the condition id’s for each cell.  Default is NULL.}
 
-\item{NCIT_celltype_group_info}{in case \code{data} is a Seurat object,
-\code{NCIT_celltype_group_info} should be need to be a character string specifying the
+\item{celltype_group_info}{in case \code{data} is a Seurat object,
+\code{celltype_group_info} should be need to be a character string specifying the
 name of the column in the metadata that contains cell types ids for each cell;
-if \code{data} is a count matrix, \code{NCIT_celltype_group_info} should be need to be a
+if \code{data} is a count matrix, \code{celltype_group_info} should be need to be a
 data frame or data table containing cell types identity for each cell. The
 data frame or data table should contain at least two columns, one  named
 “cell”, which specifies cell id’s, and one named “NCIT_celltype”, which specifies

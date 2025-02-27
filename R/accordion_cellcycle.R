@@ -312,24 +312,24 @@ accordion_cellcycle<-function(data,
     #Evidence consistency score log-transformed
     cell_cycle_markers[,weight_scaled := log10(weight)+1]
 
-    #compute specificity for positive and negative markers
+    #compute SPs for positive and negative markers
     mark_spec<-ddply(cell_cycle_markers,.(marker,marker_type),nrow)
-    colnames(mark_spec)<-c("marker","marker_type","specificity")
+    colnames(mark_spec)<-c("marker","marker_type","SPs")
     cell_cycle_markers<-merge(cell_cycle_markers,mark_spec,by=c("marker","marker_type"),all.x = TRUE)
 
     length_ct_pos<-uniqueN(cell_cycle_markers[marker_type=="positive"]$cell_type)
     length_ct_neg<-uniqueN(cell_cycle_markers[marker_type=="negative"]$cell_type)
 
-    #scale and log transforme specificity
-    cell_cycle_markers<-cell_cycle_markers[marker_type=="positive",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
-    ][marker_type=="negative",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
-    ][,c("cell_type","marker","marker_type","specificity","specificity_scaled","weight_scaled","weight")]
-    cell_cycle_markers[,specificity_scaled:=log10(specificity_scaled)+1]
+    #scale and log transforme SPs
+    cell_cycle_markers<-cell_cycle_markers[marker_type=="positive",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
+    ][marker_type=="negative",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
+    ][,c("cell_type","marker","marker_type","SPs","SPs_reg","weight_scaled","weight")]
+    cell_cycle_markers[,SPs_reg:=log10(SPs_reg)+1]
 
     setkey(cell_cycle_markers,marker,cell_type)
 
     # merge Z_scaled_dt and accordion table
-    cell_cycle_markers[,combined_score := specificity_scaled * weight_scaled]
+    cell_cycle_markers[,combined_score := SPs_reg * weight_scaled]
 
     # store original scale.data slot if present
     if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
@@ -352,7 +352,7 @@ accordion_cellcycle<-function(data,
     sum_dt <- dt_score[data.table("cell_type" = rep(dt_score_ct$cell_type, each = 2),
                                   "cell" = rep(dt_score_ct$cell, each = 2),
                                   "marker_type" = c("positive", "negative")),
-                       .(score= (sum(score)/(sqrt((sum(weight_scaled * specificity_scaled)))))), by = .EACHI]
+                       .(score= (sum(score)/(sqrt((sum(weight_scaled * SPs_reg)))))), by = .EACHI]
 
 
     sum_dt<-unique(sum_dt)

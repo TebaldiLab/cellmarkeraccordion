@@ -117,7 +117,7 @@ accordion_plot<-function(data,
   CL_celltype_annotation_column<-paste0(info_to_plot, "_per_", resolution)
   data("cell_onto", package = "cellmarkeraccordion",envir = environment())
 
-    if("EC_score" %in% colnames(top_marker_dt) & func == "healthy"){
+    if("ECs" %in% colnames(top_marker_dt) & func == "healthy"){
       ontology_celltype<-as.data.frame(cell_onto[["name"]])
       colnames(ontology_celltype)<-"CL_celltype"
       ontology_celltype$CL_ID<-rownames(ontology_celltype)
@@ -189,53 +189,53 @@ accordion_plot<-function(data,
         colfunc_neg <- colorRampPalette(c("#104E8B", "#cfdbe7"))
         vec_neg<-colfunc_neg(5)
 
-        top_dt_cl[,specificity_ratio:=(specificity)]
+        top_dt_cl[,SPs_ratio:=(SPs)]
 
-        top_dt_cl[specificity_ratio == 1,specificity_range:= "1"]
-        top_dt_cl[specificity_ratio == 0.50,specificity_range:= "0.50"]
-        top_dt_cl[specificity_ratio == 0.33,specificity_range:= "0.33"]
-        top_dt_cl[specificity_ratio == 0.25,specificity_range:= "0.25"]
-        top_dt_cl[specificity_ratio < 0.25,specificity_range:= "<0.25"]
-        top_dt_cl[marker_type =="positive",specificity_positive := specificity_range]
-        top_dt_cl[marker_type =="negative",specificity_negative := specificity_range]
+        top_dt_cl[SPs_ratio == 1,SPs_range:= "1"]
+        top_dt_cl[SPs_ratio == 0.50,SPs_range:= "0.50"]
+        top_dt_cl[SPs_ratio == 0.33,SPs_range:= "0.33"]
+        top_dt_cl[SPs_ratio == 0.25,SPs_range:= "0.25"]
+        top_dt_cl[SPs_ratio < 0.25,SPs_range:= "<0.25"]
+        top_dt_cl[marker_type =="positive",SPs_positive := SPs_range]
+        top_dt_cl[marker_type =="negative",SPs_negative := SPs_range]
 
         #add colors
         top_dt_cl[,color_combo:=as.character()]
-        top_dt_cl[specificity_ratio == 1, color_combo:=ifelse(marker_type=="positive", vec_pos[1], vec_neg[1])]
-        top_dt_cl[specificity_ratio == 0.50, color_combo:=ifelse(marker_type=="positive", vec_pos[2], vec_neg[2])]
-        top_dt_cl[specificity_ratio == 0.33, color_combo:=ifelse(marker_type=="positive", vec_pos[3], vec_neg[3])]
-        top_dt_cl[specificity_ratio == 0.25, color_combo:=ifelse(marker_type=="positive", vec_pos[4], vec_neg[4])]
-        top_dt_cl[specificity_ratio < 0.25, color_combo:=ifelse(marker_type=="positive", vec_pos[5], vec_neg[5])]
-        top_dt_cl<-top_dt_cl[order(-specificity_ratio)]
+        top_dt_cl[SPs_ratio == 1, color_combo:=ifelse(marker_type=="positive", vec_pos[1], vec_neg[1])]
+        top_dt_cl[SPs_ratio == 0.50, color_combo:=ifelse(marker_type=="positive", vec_pos[2], vec_neg[2])]
+        top_dt_cl[SPs_ratio == 0.33, color_combo:=ifelse(marker_type=="positive", vec_pos[3], vec_neg[3])]
+        top_dt_cl[SPs_ratio == 0.25, color_combo:=ifelse(marker_type=="positive", vec_pos[4], vec_neg[4])]
+        top_dt_cl[SPs_ratio < 0.25, color_combo:=ifelse(marker_type=="positive", vec_pos[5], vec_neg[5])]
+        top_dt_cl<-top_dt_cl[order(-SPs_ratio)]
 
         vec_pos<-top_dt_cl[marker_type=="positive"]$color_combo
-        names(vec_pos)<-top_dt_cl[marker_type=="positive"]$specificity_range
+        names(vec_pos)<-top_dt_cl[marker_type=="positive"]$SPs_range
         vec_pos<-vec_pos[!duplicated(vec_pos)]
 
         vec_neg<-top_dt_cl[marker_type=="negative"]$color_combo
-        names(vec_neg)<-top_dt_cl[marker_type=="negative"]$specificity_range
+        names(vec_neg)<-top_dt_cl[marker_type=="negative"]$SPs_range
         vec_neg<-vec_neg[!duplicated(vec_neg)]
         suppressWarnings({
-        if("EC_score" %in% colnames(top_marker_dt)){
-          top_dt_cl[, EC_score_range:= EC_score][EC_score > 5, EC_score_range:=5]
+        if("ECs" %in% colnames(top_marker_dt)){
+          top_dt_cl[, ECs_range:= ECs][ECs > 5, ECs_range:=5]
           pl <- ggplot(top_dt_cl, aes(impact_score, marker)) +
             geom_vline(xintercept = 0, linetype = 2) +
-            geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),linewidth = bs/10, show.legend = F) +
-            geom_point(aes(size=EC_score_range,color=specificity_range), alpha= 1, shape = 16) +
+            geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=SPs_range),linewidth = bs/10, show.legend = F) +
+            geom_point(aes(size=ECs_range,color=SPs_range), alpha= 1, shape = 16) +
             theme_bw(base_size = bs) +
             scale_size("EC score",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual("Specificity\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
+            scale_color_manual("SPs\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
-            if(length(unique(top_dt_cl$specificity_negative)) > 0){
+            if(length(unique(top_dt_cl$SPs_negative)) > 0){
               pl <- pl + new_scale("color") +
                 new_scale("size") +
                 geom_vline(xintercept = 0, linetype = 2) +
-                geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),linewidth = bs/10, show.legend = F) +
-                geom_point(aes(size=EC_score_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
+                geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=SPs_range),data = subset(top_dt_cl, !is.na(SPs_negative)),linewidth = bs/10, show.legend = F) +
+                geom_point(aes(size=ECs_range,color=SPs_range),data = subset(top_dt_cl, !is.na(SPs_negative)),alpha= 1, shape = 16) + #, stroke = NA
                 theme_bw(base_size = bs) +
                 scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
                 scale_size("EC score",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-                scale_color_manual("Specificity\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
+                scale_color_manual("SPs\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
             }
 
@@ -258,24 +258,24 @@ accordion_plot<-function(data,
           top_dt_cl[, weight_range:= weight][weight > 5, weight_range:=5]
           pl <- ggplot(top_dt_cl, aes(impact_score, marker)) +
             geom_vline(xintercept = 0, linetype = 2) +
-            geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),linewidth = bs/10, show.legend = F) +
-            geom_point(aes(size=weight_range,color=specificity_range), alpha= 1, shape = 16) +
+            geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=SPs_range),linewidth = bs/10, show.legend = F) +
+            geom_point(aes(size=weight_range,color=SPs_range), alpha= 1, shape = 16) +
             theme_bw(base_size = bs) +
             scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
             scale_size("Weight",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-            scale_color_manual("Specificity\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
+            scale_color_manual("SPs\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
 
-            if(length(unique(top_dt_cl$specificity_negative)) > 0){
+            if(length(unique(top_dt_cl$SPs_negative)) > 0){
             pl <- pl + new_scale("color") +
                       new_scale("size") +
                       geom_vline(xintercept = 0, linetype = 2) +
-                      geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),linewidth = bs/10, show.legend = F) +
-                      geom_point(aes(size=weight_range,color=specificity_range),data = subset(top_dt_cl, !is.na(specificity_negative)),alpha= 1, shape = 16) + #, stroke = NA
+                      geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=SPs_range),data = subset(top_dt_cl, !is.na(SPs_negative)),linewidth = bs/10, show.legend = F) +
+                      geom_point(aes(size=weight_range,color=SPs_range),data = subset(top_dt_cl, !is.na(SPs_negative)),alpha= 1, shape = 16) + #, stroke = NA
                       theme_bw(base_size = bs) +
               scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
               scale_size("Weight",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-              scale_color_manual("Specificity\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
+              scale_color_manual("SPs\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
             }
 
             pl <- pl + theme(panel.border = element_blank()) +
@@ -292,8 +292,8 @@ accordion_plot<-function(data,
             ggtitle(name)
         }
         })
-        if(uniqueN(top_dt_cl$specificity_range) == 1){
-          if(unique(top_dt_cl$specificity_range) == 1){
+        if(uniqueN(top_dt_cl$SPs_range) == 1){
+          if(unique(top_dt_cl$SPs_range) == 1){
             pl <- pl + guides(color="none")
           }
         }
@@ -514,7 +514,7 @@ accordion_plot<-function(data,
             top_celltypes_cl<-top_celltypes_cl[order(impact_score)]
             top_celltypes_cl[,CL_celltype:=factor(CL_celltype,levels = unique(CL_celltype))]
 
-            if("EC_score" %in% colnames(top_marker_dt) & length(top_celltypes_cl$CL_ID) > 1){
+            if("ECs" %in% colnames(top_marker_dt) & length(top_celltypes_cl$CL_ID) > 1){
               # onto_plot<-onto_plot2(cell_onto, top_celltypes_cl$CL_ID)
               # onto_plot@nodes<-gsub("(.{10,}?)\\s", "\\1\n", onto_plot@nodes, perl = TRUE)
               #
