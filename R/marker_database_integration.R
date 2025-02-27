@@ -147,7 +147,7 @@ marker_database_integration<-function(marker_table,
 
 
     #add gene description
-    load("C:/Users/emmab/Desktop/PhD/CellMarkerAccordion_Rpackage/github/R2/data/gene_description.rda")
+    data("gene_description", package = "cellmarkeraccordion",envir = environment())
     marker_table<-merge(marker_table, gene_description, by.x="marker",by.y="gene_symbol")
 
 
