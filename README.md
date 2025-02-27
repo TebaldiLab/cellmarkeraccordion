@@ -209,7 +209,7 @@ table_integrated<-marker_database_integration(marker_table,
                            marker_type_column = "marker_type",
                            resource_column = "resource")
 ```
-## Annotate and interprete single-cell populations with the integrated marker databases.
+## Annotate and interprete single-cell populations with the integrated marker databases
 To perform automatic cell type annotation with the previuos built inetegrated marker database, add the output table from the ```marker_database_integration``` to the *database* parameter of the ```accordion``` or ```accordion_disease```.
 
 ```bash
