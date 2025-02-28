@@ -21,6 +21,17 @@ library(cellmarkeraccordion)
 library(Seurat)
 library(data.table)
 ```
+## Access the Accordion database
+To explore the healthy Accordion database run:
+```bash
+data(accordion_marker)
+```
+To explore the disease Accordion database run:
+```bash
+data(disease accordion_marker)
+```
+To download the complete Accordion database as an excel file please vist the Accordion web tool: https://rdds.it/CellMarkerAccordion/ 
+
 ## Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
 As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
