@@ -21,6 +21,17 @@ library(cellmarkeraccordion)
 library(Seurat)
 library(data.table)
 ```
+## Access the Accordion database
+To explore the healthy Accordion database run:
+```bash
+data(accordion_marker)
+```
+To explore the disease Accordion database run:
+```bash
+data(disease accordion_marker)
+```
+To download the complete Accordion database as an excel file please vist the Accordion web tool: https://rdds.it/CellMarkerAccordion/ 
+
 ## Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
 As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
@@ -189,6 +200,52 @@ FeaturePlot(bone_marrow_data, features = "Neoplastic_monocyte_per_cell_score", m
 ![Neo_mono_score](https://github.com/user-attachments/assets/f6b54ca9-f7a3-45c7-ad3f-00d19ce6b77d)
 
 
+## Integrate custom set of markers with the Accordion database
+The <strong>cellmarkeraccordion</strong> package includes the ```marker_database_integration``` function, which allows users to integrate a custom set of marker genes into the Accordion database—either for healthy or disease conditions.
 
+<strong>Usage</strong>
+Set the *database* parameter to either:
+- "healthy" → Integrate with the healthy Accordion database
+- "disease" → Integrate with the disease Accordion database
+
+<strong>Input Requirements</strong>
+The function requires a marker gene table with at least two columns:
+- "cell_type" – Specifies the cell type
+- "marker" – Lists the marker genes
+
+To ensure proper integration, cell types nomenclature should be standardized:
+- Healthy database → Use Cell Ontology
+- Disease database → Use NCI Thesaurus
+If non-standardized cell types are provided, they will be added as "new" cell types in the database.
+
+<strong>Optional Columns</strong>
+Additional columns can be included:
+- "species": Specifies the species (default: "Human").
+- "tissue": Specifies the related tissue. Standardization with Uberon Ontology is recommended for effective integration. Non-standardized tissues will be added as "new" tissues. If omitted, integration will ignore tissue specificity.
+- "marker_type": Defines marker type ("positive" or "negative"; default: "positive").
+- "resource": Indicates the data source. If omitted, markers are labeled as "custom_set".
+- "disease": Required if database = "disease". Standardization with Disease Ontology is recommended. Non-standardized diseases will be added as "new" diseases. If omitted, disease specificity is ignored.
+
+<strong>Running the Integration</strong>
+To integrate a custom marker set with the Accordion database, use:
+
+```bash
+table_integrated<-marker_database_integration(marker_table,
+                           database = "healthy",
+                           species_column = "species",
+                           disease_column = "disease",
+                           tissue_column = "tissue",
+                           celltype_column = "cell_type",
+                           marker_column = "marker",
+                           marker_type_column = "marker_type",
+                           resource_column = "resource")
+```
+## Annotate and interprete single-cell populations with the integrated marker databases
+To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of either:
+- ```accordion``` function → For annotation of healthy populations
+- ```accordion_disease``` function → For annotation of disease-critical cells
+```bash
+data <- accordion(data, assay ="RNA", database ="table_integrated", species ="Human", tissue="blood", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+```
 
 
