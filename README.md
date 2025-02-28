@@ -200,7 +200,7 @@ Set the *database* parameter to either:
 <strong>Input Requirements<strong>
 The function requires a marker gene table with at least two columns:
 - "cell_type" – Specifies the cell type
-- - "marker" – Lists the marker genes
+- "marker" – Lists the marker genes
 
 To ensure proper integration, cell types nomenclature should be standardized:
 - Healthy database → Use Cell Ontology
