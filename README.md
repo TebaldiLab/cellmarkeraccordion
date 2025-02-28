@@ -215,7 +215,7 @@ Additional columns can be included:
 - "resource": Indicates the data source. If omitted, markers are labeled as "custom_set".
 - "disease": Required if database = "disease". Standardization with Disease Ontology is recommended. Non-standardized diseases will be added as "new" diseases. If omitted, disease specificity is ignored.
 
-<strong>ORunning the Integration<strong>O
+<strong>Running the Integration<strong>
 To integrate a custom marker set with the Accordion database, use:
 
 ```bash
