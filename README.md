@@ -192,12 +192,12 @@ FeaturePlot(bone_marrow_data, features = "Neoplastic_monocyte_per_cell_score", m
 ## Integrate custom set of markers with the Accordion database
 The <strong>cellmarkeraccordion</strong> package includes the ```marker_database_integration``` function, which allows users to integrate a custom set of marker genes into the Accordion database—either for healthy or disease conditions.
 
-<strong>Usage<strong>
+<strong>Usage</strong>
 Set the *database* parameter to either:
 - "healthy" → Integrate with the healthy Accordion database
 - "disease" → Integrate with the disease Accordion database
 
-<strong>Input Requirements<strong>
+<strong>Input Requirements</strong>
 The function requires a marker gene table with at least two columns:
 - "cell_type" – Specifies the cell type
 - "marker" – Lists the marker genes
@@ -207,7 +207,7 @@ To ensure proper integration, cell types nomenclature should be standardized:
 - Disease database → Use NCI Thesaurus
 If non-standardized cell types are provided, they will be added as "new" cell types in the database.
 
-<strong>Optional Columns<strong>
+<strong>Optional Columns</strong>
 Additional columns can be included:
 - "species": Specifies the species (default: "Human").
 - "tissue": Specifies the related tissue. Standardization with Uberon Ontology is recommended for effective integration. Non-standardized tissues will be added as "new" tissues. If omitted, integration will ignore tissue specificity.
@@ -215,7 +215,7 @@ Additional columns can be included:
 - "resource": Indicates the data source. If omitted, markers are labeled as "custom_set".
 - "disease": Required if database = "disease". Standardization with Disease Ontology is recommended. Non-standardized diseases will be added as "new" diseases. If omitted, disease specificity is ignored.
 
-<strong>Running the Integration<strong>
+<strong>Running the Integration</strong>
 To integrate a custom marker set with the Accordion database, use:
 
 ```bash
