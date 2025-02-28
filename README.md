@@ -194,8 +194,8 @@ The <strong>cellmarkeraccordion</strong> package includes the ```marker_database
 
 <strong>Usage<strong>
 Set the *database* parameter to either:
-    - "healthy" → Integrate with the healthy Accordion database
-    - "disease" → Integrate with the disease Accordion database
+- "healthy" → Integrate with the healthy Accordion database
+- "disease" → Integrate with the disease Accordion database
 
 <strong>Input Requirements<strong>
 The function requires a marker gene table with at least two columns:
