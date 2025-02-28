@@ -199,28 +199,21 @@ Set the *database* parameter to either:
 
 <strong>Input Requirements<strong>
 The function requires a marker gene table with at least two columns:
-    - "cell_type" – Specifies the cell type
-    - "marker" – Lists the marker genes
+- "cell_type" – Specifies the cell type
+- - "marker" – Lists the marker genes
 
 To ensure proper integration, cell types nomenclature should be standardized:
-    Healthy database → Use Cell Ontology
-    Disease database → Use NCI Thesaurus
-    If non-standardized cell types are provided, they will be added as "new" cell types in the database.
+- Healthy database → Use Cell Ontology
+- Disease database → Use NCI Thesaurus
+If non-standardized cell types are provided, they will be added as "new" cell types in the database.
 
 <strong>Optional Columns<strong>
 Additional columns can be included:
-    - "species": Specifies the species (default: "Human").
-    - "tissue": Specifies the related tissue.
-        Standardization with Uberon Ontology is recommended for effective integration.
-        Non-standardized tissues will be added as "new" tissues.
-        If omitted, integration will ignore tissue specificity.
-    - "marker_type": Defines marker type ("positive" or "negative"; default: "positive").
-    - "resource": Indicates the data source.
-        If omitted, markers are labeled as "custom_set".
-    - "disease": Required if database = "disease".
-        Standardization with Disease Ontology is recommended.
-        Non-standardized diseases will be added as "new" diseases.
-        If omitted, disease specificity is ignored.
+- "species": Specifies the species (default: "Human").
+- "tissue": Specifies the related tissue. Standardization with Uberon Ontology is recommended for effective integration. Non-standardized tissues will be added as "new" tissues. If omitted, integration will ignore tissue specificity.
+- "marker_type": Defines marker type ("positive" or "negative"; default: "positive").
+- "resource": Indicates the data source. If omitted, markers are labeled as "custom_set".
+- "disease": Required if database = "disease". Standardization with Disease Ontology is recommended. Non-standardized diseases will be added as "new" diseases. If omitted, disease specificity is ignored.
 
 <strong>ORunning the Integration<strong>O
 To integrate a custom marker set with the Accordion database, use:
