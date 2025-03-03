@@ -59,7 +59,9 @@ accordion_plot<-function(data,
                          info_to_plot = "accordion",
                          resolution = "cluster",
                          group_markers_by = "celltype_cluster",
-                         color_by = "cell_type"
+                         color_by = "cell_type",
+                         condition_group_info = NULL,
+                         celltype_group_info=NULL
 
                          ){
 
@@ -303,9 +305,9 @@ accordion_plot<-function(data,
           }
         }
 
-        if("condition" %in% colnames(top_dt_cl)){
+        if(eval(condition_group_info) %in% colnames(top_dt_cl)){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(condition ~ .)
+          pl<- pl + facet_grid(eval(condition_group_info) ~ .)
         }
 
         if(data_type == "seurat"){
