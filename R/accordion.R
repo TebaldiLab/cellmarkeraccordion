@@ -832,9 +832,9 @@ accordion<-function(data,
 
   if(include_detailed_annotation_info==T & plot == T){
     if(data_type == "seurat"){
-      data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by, color_by = color_by)
+      data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by, color_by = color_by, condition_group_info=condition_group_info, celltype_group_info=celltype_group_info)
     } else{
-      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by, color_by = color_by)
+      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by, color_by = color_by,condition_group_info=condition_group_info, celltype_group_info=celltype_group_info)
 
     }
   }
