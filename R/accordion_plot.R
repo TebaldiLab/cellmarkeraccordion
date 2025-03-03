@@ -310,9 +310,9 @@ accordion_plot<-function(data,
           }
         }
 
-        if(eval(condition_group_info) %in% colnames(top_dt_cl)){
+        if("condition" %in% colnames(top_dt_cl)){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(condition ~ .)
+          pl<- pl + facet_grid(. ~ condition)
         }
 
         if(data_type == "seurat"){
