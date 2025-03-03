@@ -177,6 +177,11 @@ accordion_plot<-function(data,
           name<-gr
         }
 
+
+        if(eval(condition_group_info) %in% colnames(top_dt_cl)){
+          colnames(top_dt_cl)[colnames(top_dt_cl) == eval(condition_group_info)] <- "condition"
+        }
+
         top_dt_cl<-top_dt_cl[order(impact_score)]
         top_dt_cl<-top_dt_cl[impact_score > 0]
 
@@ -307,7 +312,7 @@ accordion_plot<-function(data,
 
         if(eval(condition_group_info) %in% colnames(top_dt_cl)){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(eval(condition_group_info) ~ .)
+          pl<- pl + facet_grid(condition ~ .)
         }
 
         if(data_type == "seurat"){
