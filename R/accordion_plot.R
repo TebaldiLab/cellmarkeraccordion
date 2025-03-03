@@ -113,6 +113,10 @@ accordion_plot<-function(data,
     func<-"healthy"
   }
 
+  if(eval(condition_group_info) %in% colnames(top_marker_dt)){
+    colnames(top_marker_dt)[colnames(top_marker_dt) == eval(condition_group_info)] <- "condition"
+  }
+
   marker_slot_plot<-paste0(top_markers,"_plot")
   celltype_slot_plot<-"top_celltypes_plot"
 
@@ -175,11 +179,6 @@ accordion_plot<-function(data,
           top_dt_cl<-top_marker_dt[get(info_to_plot_per_cell) == gr]
           colnames(top_dt_cl)[colnames(top_dt_cl) == "gene_impact_score_per_score_cell"] <- "impact_score"
           name<-gr
-        }
-
-
-        if(eval(condition_group_info) %in% colnames(top_dt_cl)){
-          colnames(top_dt_cl)[colnames(top_dt_cl) == eval(condition_group_info)] <- "condition"
         }
 
         top_dt_cl<-top_dt_cl[order(impact_score)]
