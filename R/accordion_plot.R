@@ -117,6 +117,10 @@ accordion_plot<-function(data,
     colnames(top_marker_dt)[colnames(top_marker_dt) == eval(condition_group_info)] <- "condition"
   }
 
+  if(!is.null(celltype_group_info) & eval(celltype_group_info) %in% colnames(top_marker_dt)){
+    colnames(top_marker_dt)[colnames(top_marker_dt) == eval(celltype_group_info)] <- "celltype_group_info"
+  }
+
   marker_slot_plot<-paste0(top_markers,"_plot")
   celltype_slot_plot<-"top_celltypes_plot"
 
@@ -309,11 +313,18 @@ accordion_plot<-function(data,
           }
         }
 
-        if("condition" %in% colnames(top_dt_cl)){
+        if("condition" %in% colnames(top_dt_cl) & "celltype_group_info" %in% colnames(top_dt_cl)){
+          col<-hue_pal()(uniqueN(top_dt_cl))
+          pl<- pl + facet_grid(celltype_group_info ~ condition)
+        }
+        if("condition" %in% colnames(top_dt_cl) & !("celltype_group_info" %in% colnames(top_dt_cl))){
           col<-hue_pal()(uniqueN(top_dt_cl))
           pl<- pl + facet_grid(. ~ condition)
         }
-
+        if(!("condition" %in% colnames(top_dt_cl)) & "celltype_group_info" %in% colnames(top_dt_cl)){
+          col<-hue_pal()(uniqueN(top_dt_cl))
+          pl<- pl + facet_grid(celltype_group_info ~ .)
+        }
         if(data_type == "seurat"){
             data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][[name]]<-pl
         } else {
