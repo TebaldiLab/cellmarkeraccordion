@@ -113,7 +113,7 @@ accordion_plot<-function(data,
     func<-"healthy"
   }
 
-  if(eval(condition_group_info) %in% colnames(top_marker_dt)){
+  if(!is.null(condition_group_info) & eval(condition_group_info) %in% colnames(top_marker_dt)){
     colnames(top_marker_dt)[colnames(top_marker_dt) == eval(condition_group_info)] <- "condition"
   }
 
