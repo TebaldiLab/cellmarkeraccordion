@@ -5,7 +5,7 @@
 # cellmarkeraccordion
 ### R package for automatically annotating and interpreting single-cell populations.
 ## Installation 
-To install the cellmarkeraccordion package directly from GitHub the devtools package is required. If not already installed on your system, run
+To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run
 ```bash
 install.packages("devtools")
 ```
