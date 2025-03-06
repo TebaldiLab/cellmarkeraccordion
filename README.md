@@ -21,16 +21,18 @@ library(cellmarkeraccordion)
 library(Seurat)
 library(data.table)
 ```
-## Access the Accordion database
-To explore the healthy Accordion database run:
+## Access and download the Accordion database
+To access the healthy Accordion database run:
 ```bash
 data(accordion_marker)
 ```
-To explore the disease Accordion database run:
+To access the disease Accordion database run:
 ```bash
 data(disease accordion_marker)
 ```
-To download the complete Accordion database as an excel file please vist the Accordion web tool: https://rdds.it/CellMarkerAccordion/ 
+
+To download the Accordion database as an excel file you can click on the download button on the shiny app or directly here: https://rdds.it/CellMarkerAccordion/session/d02bff5678393a96699abc3160dde89e/download/downloadAccordionDB?w=
+Otherwise downalod the "AccordionDB.xlsb" file sotred in the shiny app repository: [https://github.com/TebaldiLab/shiny_cellmarkeraccordion/tree/main](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb)
 
 ## Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
