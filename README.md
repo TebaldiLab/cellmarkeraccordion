@@ -33,7 +33,7 @@ data(disease accordion_marker)
 
 To download the Accordion database as an excel file you can click on the download button on the shiny app or directly here: https://rdds.it/CellMarkerAccordion/session/d02bff5678393a96699abc3160dde89e/download/downloadAccordionDB?w=.
 
-Otherwise downalod the "AccordionDB.xlsb" file sotred in the shiny app repository: [https://github.com/TebaldiLab/shiny_cellmarkeraccordion/tree/main](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb)
+Otherwise downalod the "AccordionDB.xlsb" file sotred in the shiny app GitHub repository: [https://github.com/TebaldiLab/shiny_cellmarkeraccordion/tree/main](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb)
 
 ## Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
