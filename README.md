@@ -219,6 +219,7 @@ The function requires a marker gene table with at least two columns:
 To ensure proper integration, cell types nomenclature should be standardized:
 - Healthy database → Use Cell Ontology
 - Disease database → Use NCI Thesaurus
+
 If non-standardized cell types are provided, they will be added as "new" cell types in the database.
 
 <strong>Optional Columns</strong>
