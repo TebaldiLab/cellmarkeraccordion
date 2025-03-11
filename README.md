@@ -253,7 +253,7 @@ To perform automatic cell type annotation using the previously integrated marker
 - ```accordion``` function → For annotation of healthy populations
 - ```accordion_disease``` function → For annotation of disease-critical cells
 ```bash
-data <- accordion(data, assay ="RNA", database ="table_integrated", species ="Human", tissue="blood", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+data <- accordion(data, assay ="RNA", database =table_integrated, species ="Human", tissue="blood", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 
