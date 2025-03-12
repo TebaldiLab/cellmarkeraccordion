@@ -192,9 +192,8 @@ Load the Seurat object already processed:
 load(system.file("extdata", "mouse_bm_data.rda", package = "cellmarkeraccordion"))
 table(mouse_bm_data$condition)
 ```
-Vehicle    STM2457 
-
-568    482 
+| Vehicle   | 568   |
+| STM2457   | 482   |
     
 Load the innate immune response signature table:
 ```bash
