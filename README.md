@@ -274,7 +274,8 @@ ggplot(dt_filt, aes(gene_impact_score_per_celltype_cell, marker)) +
         axis.text.y = element_text(size = bs)) 
 ```
 
-![Top_markers_cond_celltype](https://github.com/user-attachments/assets/31fa52fd-d628-4f37-97f7-c44d109862ae)
+![Top_markers_cond_celltype](https://github.com/user-attachments/assets/cf8e1823-3ec3-43a8-b6b3-04c36a83305f)
+
 
 ## Automatically identify and interpreting cell cycle state of single-cell populations
 <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle state to cell populations. This function exploits the built-in collection of
