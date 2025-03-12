@@ -252,6 +252,7 @@ We can extract the annotation results from the misc slot and visualize the top 5
 #extract annotation results for common lymphoid progenitor and megakaryocyte populations
 dt <- mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]]
 dt_filt<- dt[accordion_per_cluster %in% c("mast cell", "megakaryocyte")]
+dt_filt<- dt_filt[order(gene_impact_score_per_celltype_cell)][,marker:=factor(marker, levels = unique(marker))]
 
 #customize the plot with ggplot
 bs<-20
