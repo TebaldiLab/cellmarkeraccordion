@@ -51,7 +51,7 @@ data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000)
 data <- ScaleData(data)
 data <- RunPCA(data, features = VariableFeatures(object = data))
 data <- FindNeighbors(data, dims = 1:10)
-data <- FindClusters(data, resolution = 0.8)
+data <- FindClusters(data, resolution = 0.4)
 data <- RunUMAP(data, dims = 1:10)
 ```
 ## Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
