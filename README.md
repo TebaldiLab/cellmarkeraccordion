@@ -182,17 +182,31 @@ retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_colu
 FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90")
 ```
 
-# Identification of pathway-specific genes across different cell types and conditions.
+# Identification of pathway-specific genes across different cell types and conditions
 Recent studies turned the spotlight on aberrant activation of innate immune pathways as a consequence of response to the pharmacological inhibition of the m6A methyltransferase Mettl3. To explore the impact of the inhibition of Mettl3 on immunity in single-cell datasets, the Cell Marker Accordion can be exploit to compute an “innate immune response” score based on the activation of genes associated with this signature. 
 
 As an example dataset we used a published bone marrow dataset from mice upon pharmacological inhibition of Mettl3 with STM245 (Sturgess et al., Leukemia, 2023). We included a table of genes associated to innate immune response signature.
 
+Load the Seurat object already processed:
 ```bash
 load(system.file("extdata", "mouse_bm_data.rda", package = "cellmarkeraccordion"))
 table(mouse_bm_data$condition)
+```
+
+Load the innate immune response signature table:
+```bash
 load(system.file("extdata", "in_im_resp_sig.rda", package = "cellmarkeraccordion"))
 head(in_im_resp_sig)
 ```
+| Symbol  | terms                   |
+|---------|-------------------------|
+| Acod1   | innate_immune_response  |
+| Actg1   | innate_immune_response  |
+| Actr2   | innate_immune_response  |
+| Actr3   | innate_immune_response  |
+| Adam8   | innate_immune_response  |
+| Adam15  | innate_immune_response  |
+
 
 First, cell types annotation can be performed by running the ```accordion``` function, specyfing *species ="Mouse"* and *tissue="bone marrow"*:
 ```bash
@@ -219,6 +233,19 @@ mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  catego
                                      condition_group_info = "condition", celltype_group_info = "accordion_per_cluster", annotation_name = "innate_immune_response_celltype_condition")
 head(mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]], n = 10)
 ```
+| innate_immune_response_celltype_condition_per_cell | condition | accordion_per_cluster             | marker | marker_type | gene_impact_score_per_celltype_cell | weight | SPs |
+|---------------------------------------------------|-----------|----------------------------------|--------|-------------|------------------------------------|--------|-----|
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Cd74   | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | H2-Aa  | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | H2-Eb1 | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Lgals3 | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Mpeg1  | positive    | 9.889319                           | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Ccr1   | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Nlrc3  | positive    | 5.484863                           | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Ccl2   | positive    | 4.973215                           | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Tarm1  | positive    | 4.969851                           | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Ulbp1  | positive    | 4.477746                           | 1      | 1   |
+
 
 We can extract the annotation results from the misc slot and visualize the top 5 genes for common lymphoid progenitor and megakaryocyte populations for vehicle- and STM245-treated mice respectively.
 ```bash
