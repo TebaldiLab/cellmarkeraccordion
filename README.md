@@ -5,32 +5,35 @@
 # cellmarkeraccordion
 ### R package for automatically annotating and interpreting single-cell populations.
 ## Installation 
-To install the cellmarkeraccordion package directly from GitHub the devtools package is required. If not already installed on your system, run
+To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run
 ```bash
 install.packages("devtools")
 ```
-Otherwise, load devtools and install the cellmarkeraccordion by
+Next, load `devtools` and install `cellmarkeraccordion` using:
 ```bash
 library(devtools)
 install_github("TebaldiLab/cellmarkeraccordion", dependencies = TRUE)
 ```
-## Loading
-To load the cellmarkeraccordion run
+## Loading the package
+Once installed, load `cellmarkeraccordion` along with `Seurat` and `data.table` packages required for this tutorial:
 ```bash
 library(cellmarkeraccordion)
 library(Seurat)
 library(data.table)
 ```
-## Access the Accordion database
-To explore the healthy Accordion database run:
+## Access and download the Accordion database
+To access the *healthy* Accordion database run:
 ```bash
 data(accordion_marker)
 ```
-To explore the disease Accordion database run:
+To access the *disease* Accordion database run:
 ```bash
 data(disease accordion_marker)
 ```
-To download the complete Accordion database as an excel file please vist the Accordion web tool: https://rdds.it/CellMarkerAccordion/ 
+To download the Accordion database as an Excel file click the Download button in the Cell Marker Accordion Shiny app available at: https://rdds.it/CellMarkerAccordion/.
+Or using this direct link: [Download AccordionDB from Shiny app](https://rdds.it/CellMarkerAccordion/session/d02bff5678393a96699abc3160dde89e/download/downloadAccordionDB?w=).
+
+Alternatively, download the "AccordionDB.xlsb" file from the Shiny app’s GitHub repository: [Download AccordionDB from Shiny app](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb).
 
 ## Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
@@ -48,7 +51,7 @@ data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000)
 data <- ScaleData(data)
 data <- RunPCA(data, features = VariableFeatures(object = data))
 data <- FindNeighbors(data, dims = 1:10)
-data <- FindClusters(data, resolution = 0.8)
+data <- FindClusters(data, resolution = 0.4)
 data <- RunUMAP(data, dims = 1:10)
 ```
 ## Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
@@ -204,11 +207,13 @@ FeaturePlot(bone_marrow_data, features = "Neoplastic_monocyte_per_cell_score", m
 The <strong>cellmarkeraccordion</strong> package includes the ```marker_database_integration``` function, which allows users to integrate a custom set of marker genes into the Accordion database—either for healthy or disease conditions.
 
 <strong>Usage</strong>
+
 Set the *database* parameter to either:
 - "healthy" → Integrate with the healthy Accordion database
 - "disease" → Integrate with the disease Accordion database
 
 <strong>Input Requirements</strong>
+
 The function requires a marker gene table with at least two columns:
 - "cell_type" – Specifies the cell type
 - "marker" – Lists the marker genes
@@ -216,9 +221,11 @@ The function requires a marker gene table with at least two columns:
 To ensure proper integration, cell types nomenclature should be standardized:
 - Healthy database → Use Cell Ontology
 - Disease database → Use NCI Thesaurus
+
 If non-standardized cell types are provided, they will be added as "new" cell types in the database.
 
 <strong>Optional Columns</strong>
+
 Additional columns can be included:
 - "species": Specifies the species (default: "Human").
 - "tissue": Specifies the related tissue. Standardization with Uberon Ontology is recommended for effective integration. Non-standardized tissues will be added as "new" tissues. If omitted, integration will ignore tissue specificity.
@@ -227,15 +234,40 @@ Additional columns can be included:
 - "disease": Required if database = "disease". Standardization with Disease Ontology is recommended. Non-standardized diseases will be added as "new" diseases. If omitted, disease specificity is ignored.
 
 <strong>Running the Integration</strong>
-To integrate a custom marker set with the Accordion database, use:
+
+Load a custom set of marker genes:
+```bash
+load(system.file("extdata", "custom_markers_to_integrated.rda", package = "cellmarkeraccordion"))
+head(custom_markers_to_integrated)
+```
+# Cell Marker Table
+
+| species | Uberon_tissue | CL_celltype | marker  | resource    |
+|---------|--------------|-------------|---------|------------|
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | CD14   | custom_set1 |
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | CD14   | custom_set2 |
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | FCGR3A | custom_set1 |
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set1 |
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set2 |
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set3 |
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | VCAN   | custom_set1 |
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | VCAN   | custom_set2 |
+| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | G0S2   | custom_set1 |
+| Human   | Blood        | CD4-positive, alpha-beta memory T cell | MAL    | custom_set1 |
+| Human   | Blood        | CD4-positive, alpha-beta memory T cell | CD3D   | custom_set1 |
+| Human   | Blood        | CD4-positive, alpha-beta memory T cell | TRAC   | custom_set2 |
+| Human   | Blood        | CD4-positive, alpha-beta memory T cell | TRAC   | custom_set2 |
+
+
+To integrate the custom table with the Accordion database, use:
 
 ```bash
-table_integrated<-marker_database_integration(marker_table,
+table_integrated<-marker_database_integration(marker_table = custom_markers_to_integrated,
                            database = "healthy",
                            species_column = "species",
                            disease_column = "disease",
-                           tissue_column = "tissue",
-                           celltype_column = "cell_type",
+                           tissue_column = "Uberon_tissue",
+                           celltype_column = "CL_celltype",
                            marker_column = "marker",
                            marker_type_column = "marker_type",
                            resource_column = "resource")
@@ -244,8 +276,16 @@ table_integrated<-marker_database_integration(marker_table,
 To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of either:
 - ```accordion``` function → For annotation of healthy populations
 - ```accordion_disease``` function → For annotation of disease-critical cells
+
+As an example use the integrated table to annotate the dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics already loaded.
+
 ```bash
-data <- accordion(data, assay ="RNA", database ="table_integrated", species ="Human", tissue="blood", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+data <- accordion(data, assay ="RNA", database =table_integrated, species ="Human", tissue="blood", annotation_resolution = "cluster", max_n_marker = 30, annotation_name="integrated_database")
 ```
+See the new annotation
+```bash
+DimPlot(data, group.by="integrated_database_per_cluster")
+```
+
 
 
