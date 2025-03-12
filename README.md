@@ -181,7 +181,71 @@ retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_colu
 FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90")
 ```
 
-![Retina_apoptosis](https://github.com/user-attachments/assets/41a887ce-e98e-48bf-98c5-2b71956e87bd)
+# Identification of pathway-specific genes across different cell types and conditions.
+Recent studies turned the spotlight on aberrant activation of innate immune pathways as a consequence of response to the pharmacological inhibition of the m6A methyltransferase Mettl3. To explore the impact of the inhibition of Mettl3 on immunity in single-cell datasets, the Cell Marker Accordion can be exploit to compute an “innate immune response” score based on the activation of genes associated with this signature. 
+
+As an example dataset we used a published bone marrow dataset from mice upon pharmacological inhibition of Mettl3 with STM245 (Sturgess et al., Leukemia, 2023). We included a table of genes associated to innate immune response signature.
+
+```bash
+load(system.file("extdata", "mouse_bm_data.rda", package = "cellmarkeraccordion"))
+table(mouse_bm_data$condition)
+load(system.file("extdata", "in_im_resp_sig.rda", package = "cellmarkeraccordion"))
+head(in_im_resp_sig)
+```
+
+First, cell types annotation can be performed by running the ```accordion``` function, specyfing *species ="Mouse"* and *tissue="bone marrow"*:
+```bash
+mouse_bm_data <- accordion(mouse_bm_data, assay ="RNA", species ="Mouse", tissue="bone marrow", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F)
+DimPlot(mouse_bm_data, group.by = "accordion_per_cluster")
+```
+![Mouse_anno](https://github.com/user-attachments/assets/68c1a0dd-24db-4d63-95d5-7f72e4671341)
+
+Next, the ```accordion_custom``` function can be used to explore the expression of innate immune response genes following Mettl3 inhibition. To identify the most impactful condition-specific genes in vehicle- and STM245-treated mice respectively, we can specify in the *condition_group_info* parameter the column name in the metadata of the Seurat object that contains the cell condition information. 
+
+```bash
+mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
+                                     *condition_group_info* = "condition", annotation_name = "innate_immune_response_condition")
+
+#visualize the top markers associated to the innate immune response, for vehicle- and STM245-treated mice respectively:
+mouse_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell_plot"]][["innate_immune_response"]]
+```
+![Top_markers_cond](https://github.com/user-attachments/assets/c2c81011-4d76-4a05-bb5f-d3b7b0171bd1)
+
+Moreover, the <strong>cellmarkeraccordion</strong> allows to furhter identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata.
+
+```bash
+mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
+                                     condition_group_info = "condition", celltype_group_info = "accordion_per_cluster", annotation_name = "innate_immune_response_celltype_condition")
+head(mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]], n = 10)
+```
+
+We can extract the annotation results from the misc slot and visualize the top 5 genes for common lymphoid progenitor and megakaryocyte populations for vehicle- and STM245-treated mice respectively.
+```bash
+#extract annotation results for common lymphoid progenitor and megakaryocyte populations
+dt <- mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]]
+dt_filt<- dt[accordion_per_cluster %in% c("mast cell", "megakaryocyte")]
+
+#customize the plot with ggplot
+bs<-20
+ggplot(dt_filt, aes(gene_impact_score_per_celltype_cell, marker)) +
+  geom_vline(xintercept = 0, linetype = 2) +
+  geom_segment(aes(x = 0, xend = gene_impact_score_per_celltype_cell, y = marker, yend = marker, color=condition),linewidth = bs/10, show.legend = F) +
+  geom_point(aes(color=condition),size=6, alpha= 1, shape = 16) +
+  theme_bw(base_size = bs) +
+  facet_grid(accordion_per_cluster ~ condition, scale="free_y") + 
+  scale_color_manual(values = c("gray50","#8B1A1A"), guide="none") + 
+  theme(panel.border = element_blank()) +
+  labs(x = "Gene impact score", y = "") +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.ticks.y = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_text(size=bs, face = "bold"),
+        text = element_text(size = bs),
+        axis.text.y = element_text(size = bs)) 
+```
+
+![Top_markers_cond_celltype](https://github.com/user-attachments/assets/31fa52fd-d628-4f37-97f7-c44d109862ae)
 
 ## Automatically identify and interpreting cell cycle state of single-cell populations
 <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle state to cell populations. This function exploits the built-in collection of
