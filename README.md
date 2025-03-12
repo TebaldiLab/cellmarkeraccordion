@@ -5,7 +5,7 @@
 # cellmarkeraccordion
 
 ### R package for automated annotation and interpretation of single-cell and spatial omics data.
-##Overview
+## Overview
 Single-cell technologies offer a unique opportunity to explore cellular heterogeneity in health and
 disease. However, reliable identification of cell types and states represents a bottleneck. Available
 databases and analysis tools employ dissimilar markers, leading to inconsistent annotations and
@@ -14,7 +14,7 @@ applicability to disease.
 We developed Cell Marker Accordion, a user-friendly platform that includes both an R package and a Shiny app (available at https://rdds.it/CellMarkerAccordion/). This tool provides automated annotation and biological interpretation of single-cell populations using consistency-weighted markers.
 Cell Marker Accordion enhances annotation accuracy in single-cell and spatial omics datasets across various human and murine tissues. Additionally, it can identify disease-critical cells and pathological processes, helping to extract potential biomarkers across diverse disease contexts.
 
-##Citing the cellmarkeraccordion
+## Citing the cellmarkeraccordion
 Please cite the following article when using the cellmarkeraccordion:
 
 <strong>Cell Marker Accordion: interpretable single-cell and spatial omics annotation in health and disease</strong>
@@ -23,7 +23,7 @@ Emma Busarello, Giulia Biancon, Ilaria Cimignolo, Fabio Lauria, Zuhairia Ibnat, 
 
 bioRxiv 2024.03.08.584053; doi: https://doi.org/10.1101/2024.03.08.584053 
 
-##Installation 
+## Installation 
 To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run
 ```bash
 install.packages("devtools")
@@ -33,7 +33,7 @@ Next, load `devtools` and install `cellmarkeraccordion` using:
 library(devtools)
 install_github("TebaldiLab/cellmarkeraccordion", dependencies = TRUE)
 ```
-##Loading the package
+## Loading the package
 Once installed, load `cellmarkeraccordion` along with `Seurat` and `data.table` packages required for this tutorial:
 ```bash
 library(cellmarkeraccordion)
@@ -41,7 +41,7 @@ library(Seurat)
 library(data.table)
 library(ggplot2)
 ```
-##Access and download the Accordion database
+## Access and download the Accordion database
 To access the *healthy* Accordion database run:
 ```bash
 data(accordion_marker)
