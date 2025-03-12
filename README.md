@@ -3,7 +3,24 @@
 
 ![Logo](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/f71d49b1-72c9-4c45-99d8-e682248154ab)
 # cellmarkeraccordion
+
 ### R package for automated annotation and interpretation of single-cell and spatial omics data.
+## Overview
+Single-cell technologies offer a unique opportunity to explore cellular heterogeneity in health and
+disease. However, reliable identification of cell types and states represents a bottleneck. Available
+databases and analysis tools employ dissimilar markers, leading to inconsistent annotations and
+poor interpretability. Furthermore, current tools focus mostly on physiological cell types, limiting their
+applicability to disease.
+We developed Cell Marker Accordion, a user-friendly platform that includes both an R package and a Shiny app (available at https://rdds.it/CellMarkerAccordion/). This tool provides automated annotation and biological interpretation of single-cell populations using consistency-weighted markers.
+Cell Marker Accordion enhances annotation accuracy in single-cell and spatial omics datasets across various human and murine tissues. Additionally, it can identify disease-critical cells and pathological processes, helping to extract potential biomarkers across diverse disease contexts.
+
+## Citing the cellmarkeraccordion
+Please cite the following article when using the cellmarkeraccordion:
+
+<strong>Cell Marker Accordion: interpretable single-cell and spatial omics annotation in health and disease<\strong>
+Emma Busarello, Giulia Biancon, Ilaria Cimignolo, Fabio Lauria, Zuhairia Ibnat, Christian Ramirez, Gabriele Tomè, Marianna Ciuffreda, Giorgia Bucciarelli, Alessandro Pilli, Stefano Maria Marino, Vittorio Bontempi, Kristin R. Aass, Jennifer VanOudenhove, Maria Caterina Mione, Therese Standal, Paolo Macchi, Gabriella Viero, Stephanie Halene, Toma Tebaldi
+bioRxiv 2024.03.08.584053; doi: https://doi.org/10.1101/2024.03.08.584053 
+
 ## Installation 
 To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run
 ```bash
@@ -31,8 +48,6 @@ To access the *disease* Accordion database run:
 data(disease accordion_marker)
 ```
 To download the Accordion database as an Excel file click the Download button in the Cell Marker Accordion Shiny app available at: https://rdds.it/CellMarkerAccordion/.
-Or using this direct link: [Download AccordionDB from Shiny app](https://rdds.it/CellMarkerAccordion/session/d02bff5678393a96699abc3160dde89e/download/downloadAccordionDB?w=).
-
 Alternatively, download the "AccordionDB.xlsb" file from the Shiny app’s GitHub repository: [Download AccordionDB from Shiny app](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb).
 
 ## Input data
