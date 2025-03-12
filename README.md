@@ -234,6 +234,7 @@ Additional columns can be included:
 - "disease": Required if database = "disease". Standardization with Disease Ontology is recommended. Non-standardized diseases will be added as "new" diseases. If omitted, disease specificity is ignored.
 
 <strong>Running the Integration</strong>
+
 Load a custom set of marker genes:
 ```bash
 load(system.file("extdata", "custom_markers_to_integrated.rda", package = "cellmarkeraccordion"))
@@ -253,10 +254,10 @@ head(custom_markers_to_integrated)
 | Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_2 |
 | Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_3 |
 
-To integrate the custom table with the Accordion database, use:
+To integrate the custom table with the healthy Accordion database, use:
 
 ```bash
-table_integrated<-marker_database_integration(marker_table = custom_markers_to_integrated,
+database_integrated<-marker_database_integration(marker_table = custom_markers_to_integrated,
                            database = "healthy",
                            species_column = "species",
                            disease_column = "disease",
@@ -267,7 +268,7 @@ table_integrated<-marker_database_integration(marker_table = custom_markers_to_i
                            resource_column = "resource")
 ```
 
-## Annotate and interprete single-cell populations with the integrated marker databases
+## Annotate and interprete single-cell populations with the integrated marker database
 To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of the ```accordion``` function (or ```accordion_disease``` if the integration has been performed with the disease database of the Cell Marker Accordion)
 
 As an example we used an adult mouse brain MERFISH dataset (Zhuang et al., 2024) with a panel of 1122 genes. 
@@ -278,14 +279,14 @@ load(system.file("extdata", "brain_data.rda", package = "cellmarkeraccordion"))
 
 First, perform cell type annotation with the Cell Marker Accordion database only and visualize the result:
 ```bash
-brain_data <- accordion(brain_data, assay ="SCT", species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = T, plot = F, allow_unknown = F)
+brain_data <- accordion(brain_data, assay ="SCT", species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F, allow_unknown = F)
 DimPlot(brain_data, group.by="accordion_per_cluster")
 ```
 ![Merfish_anno_accordion](https://github.com/user-attachments/assets/d2a9e34d-d63a-43e2-83a5-f8ae0b9cfdb5)
 
 Then, perform cell with the integrated database by setting *database = table_integrated* and compare the result. We can notice that glutamatergic neuron are now identified.
 ```bash
-brain_data <- accordion(brain_data, assay ="SCT",database=table_integrated,group_markers_by = "cluster", species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = T, plot = F, allow_unknown = F, annotation_name = "integrated_database")
+brain_data <- accordion(brain_data, assay ="SCT",database=database_integrated, species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F, allow_unknown = F, annotation_name = "integrated_database")
 DimPlot(brain_data, group.by="integrated_database")
 ```
 ![Merfish_anno_integratedDB](https://github.com/user-attachments/assets/902c2a4d-6e14-4db4-885b-58cfb9db9e4d)
