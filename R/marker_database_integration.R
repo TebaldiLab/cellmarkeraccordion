@@ -130,7 +130,7 @@ marker_database_integration<-function(marker_table,
     ontology_celltype<-as.data.frame(cell_onto[["name"]])
     colnames(ontology_celltype)<-"CL_celltype"
     ontology_celltype$CL_ID<-rownames(ontology_celltype)
-    ontology_celltype$cell_definition<-cell_onto[["def"]]
+    ontology_celltype$CL_cell_definition<-cell_onto[["def"]]
     ontology_celltype<-as.data.table(ontology_celltype)
 
     marker_table<-merge(marker_table, ontology_celltype, by="CL_celltype", all.x=TRUE)
@@ -151,12 +151,12 @@ marker_database_integration<-function(marker_table,
     marker_table<-merge(marker_table, gene_description, by.x="marker",by.y="gene_symbol")
 
 
-    marker_table<-marker_table[,c("species","original_tissue","Uberon_tissue","Uberon_ID","tissue_definition","original_celltype","CL_celltype","CL_ID","cell_definition", "marker","gene_description","marker_type", "resource", "log2FC", "p.value", "adjusted_p.value","pct1")]
+    marker_table<-marker_table[,c("species","original_tissue","Uberon_tissue","Uberon_ID","tissue_definition","original_celltype","CL_celltype","CL_ID","CL_cell_definition", "marker","gene_description","marker_type", "resource", "log2FC", "p.value", "adjusted_p.value","pct1")]
     marker_table<-unique(marker_table)
-    marker_table[,cell_definition:=str_remove_all(cell_definition, '"')]
-    marker_table[,cell_definition:=str_remove_all(cell_definition, "\\$")]
-    marker_table[,cell_definition:=str_remove_all(cell_definition, r"(\\)")]
-    marker_table[,cell_definition:=tstrsplit(cell_definition, "[", fixed = TRUE, keep = 1)]
+    marker_table[,CL_cell_definition:=str_remove_all(CL_cell_definition, '"')]
+    marker_table[,CL_cell_definition:=str_remove_all(CL_cell_definition, "\\$")]
+    marker_table[,CL_cell_definition:=str_remove_all(CL_cell_definition, r"(\\)")]
+    marker_table[,CL_cell_definition:=tstrsplit(CL_cell_definition, "[", fixed = TRUE, keep = 1)]
     marker_table[,gene_description:=tstrsplit(gene_description,"[",fixed=TRUE,keep=1)]
     marker_table[,tissue_definition:=str_remove_all(tissue_definition, '"')]
     marker_table[,tissue_definition:=str_remove_all(tissue_definition, "\\$")]
@@ -193,7 +193,7 @@ marker_database_integration<-function(marker_table,
       marker_database<-merge(marker_database,mark_spec,by=c("species","Uberon_tissue","Uberon_ID","marker","marker_type"),all.x = TRUE)
       marker_database[,SPs_tissue_specific:=format(round(1/SPs_tissue_specific,2), nsmall=2)]
 
-      marker_database<-marker_database[,c("species","original_tissue","Uberon_tissue","Uberon_ID","tissue_definition","original_celltype","CL_celltype","CL_ID","cell_definition", "marker","gene_description","marker_type", "resource", "log2FC", "p.value", "adjusted_p.value","pct1","ECs_global","ECs_tissue_specific","SPs_global","SPs_tissue_specific")]
+      marker_database<-marker_database[,c("species","original_tissue","Uberon_tissue","Uberon_ID","tissue_definition","original_celltype","CL_celltype","CL_ID","CL_cell_definition", "marker","gene_description","marker_type", "resource", "log2FC", "p.value", "adjusted_p.value","pct1","ECs_global","ECs_tissue_specific","SPs_global","SPs_tissue_specific")]
 
 
   } else if(database == "disease"){ #disease integration
@@ -276,18 +276,24 @@ marker_database_integration<-function(marker_table,
       ontology_tissue<-as.data.table(ontology_tissue)
       marker_table<-merge(marker_table, ontology_tissue, by="Uberon_tissue", all.x=TRUE)
 
-      marker_table<-marker_table[,c("species","original_diseasetype","DO_diseasetype","DO_ID","DO_definition","original_tissue","Uberon_tissue","Uberon_ID","tissue_definition","original_celltype","NCIT_celltype","NCIT_ID","NCIT_cell_definition", "marker","gene_description","marker_type", "resource", "log2FC", "p.value", "adjusted_p.value","pct1")]
-      marker_table<-unique(marker_table)
 
-      marker_table[,cell_definition:=str_remove_all(cell_definition, '"')]
-      marker_table[,cell_definition:=str_remove_all(cell_definition, "\\$")]
-      marker_table[,cell_definition:=str_remove_all(cell_definition, r"(\\)")]
-      marker_table[,cell_definition:=tstrsplit(cell_definition, "[", fixed = TRUE, keep = 1)]
+      #add gene description
+      data("gene_description", package = "cellmarkeraccordion",envir = environment())
+      marker_table<-merge(marker_table, gene_description, by.x="marker",by.y="gene_symbol")
+
+      marker_table<-unique(marker_table)
+      marker_table[,NCIT_cell_definition:=str_remove_all(NCIT_cell_definition, '"')]
+      marker_table[,NCIT_cell_definition:=str_remove_all(NCIT_cell_definition, "\\$")]
+      marker_table[,NCIT_cell_definition:=str_remove_all(NCIT_cell_definition, r"(\\)")]
+      marker_table[,NCIT_cell_definition:=tstrsplit(NCIT_cell_definition, "[", fixed = TRUE, keep = 1)]
       marker_table[,gene_description:=tstrsplit(gene_description,"[",fixed=TRUE,keep=1)]
       marker_table[,tissue_definition:=str_remove_all(tissue_definition, '"')]
       marker_table[,tissue_definition:=str_remove_all(tissue_definition, "\\$")]
       marker_table[,tissue_definition:=str_remove_all(tissue_definition, r"(\\)")]
       marker_table[,tissue_definition:=tstrsplit(tissue_definition, "[", fixed = TRUE, keep = 1)]
+
+      marker_table<-marker_table[,c("species","original_diseasetype","DO_diseasetype","DO_ID","DO_definition","original_tissue","Uberon_tissue","Uberon_ID","tissue_definition","original_celltype","NCIT_celltype","NCIT_ID","NCIT_cell_definition", "marker","gene_description","marker_type", "resource", "log2FC", "p.value", "adjusted_p.value","pct1")]
+      marker_table<-unique(marker_table)
 
       marker_database<-rbind(disease_accordion_marker, marker_table)
 
