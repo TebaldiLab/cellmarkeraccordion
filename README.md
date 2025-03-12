@@ -182,7 +182,7 @@ retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_colu
 FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90")
 ```
 
-# Identification of pathway-specific top genes across different cell types and conditions
+# Identification of pathway-specific top genes across multiple cell types and conditions
 Recent studies turned the spotlight on aberrant activation of innate immune pathways as a consequence of response to the pharmacological inhibition of the m6A methyltransferase Mettl3. To explore the impact of the inhibition of Mettl3 on immunity in single-cell datasets, the Cell Marker Accordion can be exploit to compute an “innate immune response” score based on the activation of genes associated with this signature. 
 
 As an example dataset we used a published bone marrow dataset from mice upon pharmacological inhibition of Mettl3 with STM245 (Sturgess et al., Leukemia, 2023). We included a table of genes associated to innate immune response signature.
