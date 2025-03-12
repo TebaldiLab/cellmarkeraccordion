@@ -216,7 +216,8 @@ First, cell types annotation can be performed by running the ```accordion``` fun
 mouse_bm_data <- accordion(mouse_bm_data, assay ="RNA", species ="Mouse", tissue="bone marrow", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F)
 DimPlot(mouse_bm_data, group.by = "accordion_per_cluster")
 ```
-![Mouse_anno](https://github.com/user-attachments/assets/68c1a0dd-24db-4d63-95d5-7f72e4671341)
+![Mouse_anno](https://github.com/user-attachments/assets/6b328777-b4ae-4df8-80ed-e4a340d29b67)
+
 
 Next, the ```accordion_custom``` function can be used to explore the expression of innate immune response genes following Mettl3 inhibition. To identify the most impactful condition-specific genes in vehicle- and STM245-treated mice respectively, we can specify in the *condition_group_info* parameter the column name in the metadata of the Seurat object that contains the cell condition information. 
 
