@@ -39,6 +39,7 @@ Once installed, load `cellmarkeraccordion` along with `Seurat` and `data.table` 
 library(cellmarkeraccordion)
 library(Seurat)
 library(data.table)
+library(ggplot2)
 ```
 ## Access and download the Accordion database
 To access the *healthy* Accordion database run:
