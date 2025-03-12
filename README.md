@@ -3,7 +3,26 @@
 
 ![Logo](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/f71d49b1-72c9-4c45-99d8-e682248154ab)
 # cellmarkeraccordion
-### R package for automatically annotating and interpreting single-cell populations.
+
+### R package for automated annotation and interpretation of single-cell and spatial omics data.
+## Overview
+Single-cell technologies offer a unique opportunity to explore cellular heterogeneity in health and
+disease. However, reliable identification of cell types and states represents a bottleneck. Available
+databases and analysis tools employ dissimilar markers, leading to inconsistent annotations and
+poor interpretability. Furthermore, current tools focus mostly on physiological cell types, limiting their
+applicability to disease.
+We developed Cell Marker Accordion, a user-friendly platform that includes both an R package and a Shiny app (available at https://rdds.it/CellMarkerAccordion/). This tool provides automated annotation and biological interpretation of single-cell populations using consistency-weighted markers.
+Cell Marker Accordion enhances annotation accuracy in single-cell and spatial omics datasets across various human and murine tissues. Additionally, it can identify disease-critical cells and pathological processes, helping to extract potential biomarkers across diverse disease contexts.
+
+## Citing the cellmarkeraccordion
+Please cite the following article when using the cellmarkeraccordion:
+
+<strong>Cell Marker Accordion: interpretable single-cell and spatial omics annotation in health and disease</strong>
+
+Emma Busarello, Giulia Biancon, Ilaria Cimignolo, Fabio Lauria, Zuhairia Ibnat, Christian Ramirez, Gabriele Tomè, Marianna Ciuffreda, Giorgia Bucciarelli, Alessandro Pilli, Stefano Maria Marino, Vittorio Bontempi, Kristin R. Aass, Jennifer VanOudenhove, Maria Caterina Mione, Therese Standal, Paolo Macchi, Gabriella Viero, Stephanie Halene, Toma Tebaldi
+
+bioRxiv 2024.03.08.584053; doi: https://doi.org/10.1101/2024.03.08.584053 
+
 ## Installation 
 To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run
 ```bash
@@ -31,8 +50,6 @@ To access the *disease* Accordion database run:
 data(disease accordion_marker)
 ```
 To download the Accordion database as an Excel file click the Download button in the Cell Marker Accordion Shiny app available at: https://rdds.it/CellMarkerAccordion/.
-Or using this direct link: [Download AccordionDB from Shiny app](https://rdds.it/CellMarkerAccordion/session/d02bff5678393a96699abc3160dde89e/download/downloadAccordionDB?w=).
-
 Alternatively, download the "AccordionDB.xlsb" file from the Shiny app’s GitHub repository: [Download AccordionDB from Shiny app](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb).
 
 ## Input data
@@ -54,7 +71,7 @@ data <- FindNeighbors(data, dims = 1:10)
 data <- FindClusters(data, resolution = 0.4)
 data <- RunUMAP(data, dims = 1:10)
 ```
-## Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
+## ## Annotate and interpret single-cell and spatial omics data with the built-in Cell Marker Accordion database
 <strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissues in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 
@@ -240,29 +257,24 @@ Load a custom set of marker genes:
 load(system.file("extdata", "custom_markers_to_integrated.rda", package = "cellmarkeraccordion"))
 head(custom_markers_to_integrated)
 ```
-# Cell Marker Table
 
-| species | Uberon_tissue | CL_celltype | marker  | resource    |
-|---------|--------------|-------------|---------|------------|
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | CD14   | custom_set1 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | CD14   | custom_set2 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | FCGR3A | custom_set1 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set1 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set2 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set3 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | VCAN   | custom_set1 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | VCAN   | custom_set2 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | G0S2   | custom_set1 |
-| Human   | Blood        | CD4-positive, alpha-beta memory T cell | MAL    | custom_set1 |
-| Human   | Blood        | CD4-positive, alpha-beta memory T cell | CD3D   | custom_set1 |
-| Human   | Blood        | CD4-positive, alpha-beta memory T cell | TRAC   | custom_set2 |
-| Human   | Blood        | CD4-positive, alpha-beta memory T cell | TRAC   | custom_set2 |
+| species | Uberon_tissue | CL_celltype         | marker  | resource     |
+|---------|--------------|---------------------|---------|-------------|
+| Mouse   | brain        | glutamatergic neuron | Satb2   | custom_set_1 |
+| Mouse   | brain        | glutamatergic neuron | Satb2   | custom_set_2 |
+| Mouse   | brain        | glutamatergic neuron | Slc17a6 | custom_set_1 |
+| Mouse   | brain        | glutamatergic neuron | Slc17a7 | custom_set_1 |
+| Mouse   | brain        | glutamatergic neuron | Slc17a7 | custom_set_2 |
+| Mouse   | brain        | pyramidal neuron     | Sv2b    | custom_set_1 |
+| Mouse   | brain        | pyramidal neuron     | Calb1   | custom_set_1 |
+| Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_1 |
+| Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_2 |
+| Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_3 |
 
-
-To integrate the custom table with the Accordion database, use:
+To integrate the custom table with the healthy Accordion database, use:
 
 ```bash
-table_integrated<-marker_database_integration(marker_table = custom_markers_to_integrated,
+database_integrated<-marker_database_integration(marker_table = custom_markers_to_integrated,
                            database = "healthy",
                            species_column = "species",
                            disease_column = "disease",
@@ -272,20 +284,43 @@ table_integrated<-marker_database_integration(marker_table = custom_markers_to_i
                            marker_type_column = "marker_type",
                            resource_column = "resource")
 ```
-## Annotate and interprete single-cell populations with the integrated marker databases
-To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of either:
-- ```accordion``` function → For annotation of healthy populations
-- ```accordion_disease``` function → For annotation of disease-critical cells
 
-As an example use the integrated table to annotate the dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics already loaded.
+To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of the ```accordion``` function (or ```accordion_disease``` if the integration has been performed with the disease database of the Cell Marker Accordion).
 
+## Annotate and interpret single-cell and spatial omics data with the integrated marker database
+As an example we used an adult mouse brain MERFISH dataset (Zhuang et al., 2024) with a panel of 1122 genes. 
+Load the brain seurat object:
 ```bash
-data <- accordion(data, assay ="RNA", database =table_integrated, species ="Human", tissue="blood", annotation_resolution = "cluster", max_n_marker = 30, annotation_name="integrated_database")
-```
-See the new annotation
-```bash
-DimPlot(data, group.by="integrated_database_per_cluster")
+load(system.file("extdata", "brain_data.rda", package = "cellmarkeraccordion"))
 ```
 
+First, perform cell type annotation with the Cell Marker Accordion database only and visualize the result:
+```bash
+brain_data <- accordion(brain_data, assay ="SCT", species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F, allow_unknown = F)
+DimPlot(brain_data, group.by="accordion_per_cluster")
+```
+![Merfish_anno_accordion](https://github.com/user-attachments/assets/d2a9e34d-d63a-43e2-83a5-f8ae0b9cfdb5)
+
+Then, perform cell with the integrated database by setting *database = table_integrated* and compare the result. We can notice that glutamatergic neuron are now identified.
+```bash
+brain_data <- accordion(brain_data, assay ="SCT",database=database_integrated, species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F, allow_unknown = F, annotation_name = "integrated_database")
+DimPlot(brain_data, group.by="integrated_database")
+```
+![Merfish_anno_integratedDB](https://github.com/user-attachments/assets/902c2a4d-6e14-4db4-885b-58cfb9db9e4d)
+
+In the metadata of the Seurat object are stored the x and y coordinates of each cell. We can then visualize the annotation results on the brain tissue:
+```bash
+ggplot(brain_data@meta.data, aes(x=x, y=-y, color=integrated_database_per_cluster))+
+  geom_point(size=1)+
+  theme_classic()+
+  theme(
+    axis.title = element_blank(),  
+    axis.text = element_blank(),   
+    axis.ticks = element_blank(),  
+    axis.line = element_blank()    
+  )
+```
+
+![Merfish](https://github.com/user-attachments/assets/23d43cc0-aabd-4810-8bed-92e69009f10b)
 
 
