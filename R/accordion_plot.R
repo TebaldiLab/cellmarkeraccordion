@@ -318,15 +318,15 @@ accordion_plot<-function(data,
 
         if("condition" %in% colnames(top_dt_cl) & "celltype_group_info" %in% colnames(top_dt_cl)){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(celltype_group_info ~ condition)
+          pl<- pl + facet_grid(celltype_group_info ~ condition, scale="free_y")
         }
         if("condition" %in% colnames(top_dt_cl) & !("celltype_group_info" %in% colnames(top_dt_cl))){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(. ~ condition)
+          pl<- pl + facet_grid(. ~ condition, scale="free_y")
         }
         if(!("condition" %in% colnames(top_dt_cl)) & "celltype_group_info" %in% colnames(top_dt_cl)){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(celltype_group_info ~ .)
+          pl<- pl + facet_grid(celltype_group_info ~ ., scale="free_y")
         }
         if(data_type == "seurat"){
             data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][[name]]<-pl
