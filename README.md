@@ -18,7 +18,9 @@ Cell Marker Accordion enhances annotation accuracy in single-cell and spatial om
 Please cite the following article when using the cellmarkeraccordion:
 
 <strong>Cell Marker Accordion: interpretable single-cell and spatial omics annotation in health and disease</strong>
+
 Emma Busarello, Giulia Biancon, Ilaria Cimignolo, Fabio Lauria, Zuhairia Ibnat, Christian Ramirez, Gabriele Tomè, Marianna Ciuffreda, Giorgia Bucciarelli, Alessandro Pilli, Stefano Maria Marino, Vittorio Bontempi, Kristin R. Aass, Jennifer VanOudenhove, Maria Caterina Mione, Therese Standal, Paolo Macchi, Gabriella Viero, Stephanie Halene, Toma Tebaldi
+
 bioRxiv 2024.03.08.584053; doi: https://doi.org/10.1101/2024.03.08.584053 
 
 ## Installation 
