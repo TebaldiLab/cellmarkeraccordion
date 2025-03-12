@@ -240,24 +240,19 @@ Load a custom set of marker genes:
 load(system.file("extdata", "custom_markers_to_integrated.rda", package = "cellmarkeraccordion"))
 head(custom_markers_to_integrated)
 ```
-# Cell Marker Table
 
-| species | Uberon_tissue | CL_celltype | marker  | resource    |
-|---------|--------------|-------------|---------|------------|
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | CD14   | custom_set1 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | CD14   | custom_set2 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | FCGR3A | custom_set1 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set1 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set2 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | IL1B   | custom_set3 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | VCAN   | custom_set1 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | VCAN   | custom_set2 |
-| Human   | Blood        | CD14-positive, CD16-negative classical monocyte | G0S2   | custom_set1 |
-| Human   | Blood        | CD4-positive, alpha-beta memory T cell | MAL    | custom_set1 |
-| Human   | Blood        | CD4-positive, alpha-beta memory T cell | CD3D   | custom_set1 |
-| Human   | Blood        | CD4-positive, alpha-beta memory T cell | TRAC   | custom_set2 |
-| Human   | Blood        | CD4-positive, alpha-beta memory T cell | TRAC   | custom_set2 |
-
+| species | Uberon_tissue | CL_celltype         | Marker  | Resource     |
+|---------|--------------|---------------------|---------|-------------|
+| Mouse   | brain        | glutamatergic neuron | Satb2   | custom_set_1 |
+| Mouse   | brain        | glutamatergic neuron | Satb2   | custom_set_2 |
+| Mouse   | brain        | glutamatergic neuron | Slc17a6 | custom_set_1 |
+| Mouse   | brain        | glutamatergic neuron | Slc17a7 | custom_set_1 |
+| Mouse   | brain        | glutamatergic neuron | Slc17a7 | custom_set_2 |
+| Mouse   | brain        | pyramidal neuron     | Sv2b    | custom_set_1 |
+| Mouse   | brain        | pyramidal neuron     | Calb1   | custom_set_1 |
+| Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_1 |
+| Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_2 |
+| Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_3 |
 
 To integrate the custom table with the Accordion database, use:
 
