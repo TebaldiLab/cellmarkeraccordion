@@ -3,7 +3,7 @@
 
 ![Logo](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/f71d49b1-72c9-4c45-99d8-e682248154ab)
 # cellmarkeraccordion
-### R package for automatically annotating and interpreting single-cell populations.
+### R package for automated annotation and interpretation of single-cell and spatial omics data.
 ## Installation 
 To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run
 ```bash
@@ -54,7 +54,7 @@ data <- FindNeighbors(data, dims = 1:10)
 data <- FindClusters(data, resolution = 0.4)
 data <- RunUMAP(data, dims = 1:10)
 ```
-## Annotate and interprete single-cell populations with the built-in Cell Marker Accordion database
+## ## Annotate and interpret single-cell and spatial omics data with the built-in Cell Marker Accordion database
 <strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissues in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 
@@ -268,9 +268,9 @@ database_integrated<-marker_database_integration(marker_table = custom_markers_t
                            resource_column = "resource")
 ```
 
-## Annotate and interprete single-cell populations with the integrated marker database
-To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of the ```accordion``` function (or ```accordion_disease``` if the integration has been performed with the disease database of the Cell Marker Accordion)
+To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of the ```accordion``` function (or ```accordion_disease``` if the integration has been performed with the disease database of the Cell Marker Accordion).
 
+## Annotate and interpret single-cell and spatial omics data with the integrated marker database
 As an example we used an adult mouse brain MERFISH dataset (Zhuang et al., 2024) with a panel of 1122 genes. 
 Load the brain seurat object:
 ```bash
