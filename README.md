@@ -234,14 +234,13 @@ Additional columns can be included:
 - "disease": Required if database = "disease". Standardization with Disease Ontology is recommended. Non-standardized diseases will be added as "new" diseases. If omitted, disease specificity is ignored.
 
 <strong>Running the Integration</strong>
-
 Load a custom set of marker genes:
 ```bash
 load(system.file("extdata", "custom_markers_to_integrated.rda", package = "cellmarkeraccordion"))
 head(custom_markers_to_integrated)
 ```
 
-| species | Uberon_tissue | CL_celltype         | Marker  | Resource     |
+| species | Uberon_tissue | CL_celltype         | marker  | resource     |
 |---------|--------------|---------------------|---------|-------------|
 | Mouse   | brain        | glutamatergic neuron | Satb2   | custom_set_1 |
 | Mouse   | brain        | glutamatergic neuron | Satb2   | custom_set_2 |
@@ -267,20 +266,43 @@ table_integrated<-marker_database_integration(marker_table = custom_markers_to_i
                            marker_type_column = "marker_type",
                            resource_column = "resource")
 ```
+
 ## Annotate and interprete single-cell populations with the integrated marker databases
-To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of either:
-- ```accordion``` function → For annotation of healthy populations
-- ```accordion_disease``` function → For annotation of disease-critical cells
+To perform automatic cell type annotation using the previously integrated marker database, pass the output table from  ```marker_database_integration```  to the *database* parameter of the ```accordion``` function (or ```accordion_disease``` if the integration has been performed with the disease database of the Cell Marker Accordion)
 
-As an example use the integrated table to annotate the dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics already loaded.
-
+As an example we used an adult mouse brain MERFISH dataset (Zhuang et al., 2024) with a panel of 1122 genes. 
+Load the brain seurat object:
 ```bash
-data <- accordion(data, assay ="RNA", database =table_integrated, species ="Human", tissue="blood", annotation_resolution = "cluster", max_n_marker = 30, annotation_name="integrated_database")
-```
-See the new annotation
-```bash
-DimPlot(data, group.by="integrated_database_per_cluster")
+load(system.file("extdata", "brain_data.rda", package = "cellmarkeraccordion"))
 ```
 
+First, perform cell type annotation with the Cell Marker Accordion database only and visualize the result:
+```bash
+brain_data <- accordion(brain_data, assay ="SCT", species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = T, plot = F, allow_unknown = F)
+DimPlot(brain_data, group.by="accordion_per_cluster")
+```
+![Merfish_anno_accordion](https://github.com/user-attachments/assets/d2a9e34d-d63a-43e2-83a5-f8ae0b9cfdb5)
+
+Then, perform cell with the integrated database by setting *database = table_integrated* and compare the result. We can notice that glutamatergic neuron are now identified.
+```bash
+brain_data <- accordion(brain_data, assay ="SCT",database=table_integrated,group_markers_by = "cluster", species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = T, plot = F, allow_unknown = F, annotation_name = "integrated_database")
+DimPlot(brain_data, group.by="integrated_database")
+```
+![Merfish_anno_integratedDB](https://github.com/user-attachments/assets/902c2a4d-6e14-4db4-885b-58cfb9db9e4d)
+
+In the metadata of the Seurat object are stored the x and y coordinates of each cell. We can then visualize the annotation results on the brain tissue:
+```bash
+ggplot(brain_data@meta.data, aes(x=x, y=-y, color=integrated_database_per_cluster))+
+  geom_point(size=1)+
+  theme_classic()+
+  theme(
+    axis.title = element_blank(),  
+    axis.text = element_blank(),   
+    axis.ticks = element_blank(),  
+    axis.line = element_blank()    
+  )
+```
+
+![Merfish](https://github.com/user-attachments/assets/23d43cc0-aabd-4810-8bed-92e69009f10b)
 
 
