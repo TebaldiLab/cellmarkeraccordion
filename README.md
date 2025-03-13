@@ -404,7 +404,7 @@ DimPlot(brain_data, group.by="accordion_per_cluster")
 Then, perform cell with the integrated database by setting *database = table_integrated* and compare the result. We can notice that glutamatergic neuron are now identified.
 ```bash
 brain_data <- accordion(brain_data, assay ="SCT",database=database_integrated, species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F, allow_unknown = F, annotation_name = "integrated_database")
-DimPlot(brain_data, group.by="integrated_database")
+DimPlot(brain_data, group.by="integrated_database_per_cluster")
 ```
 ![Merfish_anno_integratedDB](https://github.com/user-attachments/assets/902c2a4d-6e14-4db4-885b-58cfb9db9e4d)
 
