@@ -196,7 +196,7 @@ table(mouse_bm_data$condition)
 ```
 | Vehicle | STM2457 |
 |-----------|-------|
-| 568   | 482   |
+| 480   | 395   |
     
 Load the innate immune response signature table:
 ```bash
