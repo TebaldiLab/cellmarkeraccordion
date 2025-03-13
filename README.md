@@ -224,7 +224,7 @@ Next, the ```accordion_custom``` function can be used to explore the expression 
 
 ```bash
 mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
-                                     *condition_group_info* = "condition", annotation_name = "innate_immune_response_condition")
+                                     condition_group_info = "condition", annotation_name = "innate_immune_response_condition")
 
 #visualize the top markers associated to the innate immune response, for vehicle- and STM245-treated mice respectively:
 mouse_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell_plot"]][["innate_immune_response"]]
