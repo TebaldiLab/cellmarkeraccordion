@@ -39,6 +39,7 @@ Once installed, load `cellmarkeraccordion` along with `Seurat` and `data.table` 
 library(cellmarkeraccordion)
 library(Seurat)
 library(data.table)
+library(ggplot2)
 ```
 ## Access and download the Accordion database
 To access the *healthy* Accordion database run:
@@ -71,7 +72,7 @@ data <- FindNeighbors(data, dims = 1:10)
 data <- FindClusters(data, resolution = 0.4)
 data <- RunUMAP(data, dims = 1:10)
 ```
-## ## Annotate and interpret single-cell and spatial omics data with the built-in Cell Marker Accordion database
+##Annotate and interpret single-cell and spatial omics data with the built-in Cell Marker Accordion database
 <strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissues in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 
@@ -114,7 +115,7 @@ data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][[
 
 Further insight is provided by looking at the percentage of cells assigned to the top scoring cell types, and their similarity based on the Cell Ontology hierarchy
 ```bash
-data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["2_B cell"]]
+data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["3_B cell"]]
 ```
 ![Top_ct_Bcell](https://github.com/user-attachments/assets/61301129-3d0c-43b3-9fc2-bc81c570b5a5)
 
@@ -181,7 +182,105 @@ retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_colu
 FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90")
 ```
 
-![Retina_apoptosis](https://github.com/user-attachments/assets/41a887ce-e98e-48bf-98c5-2b71956e87bd)
+# Identification of pathway-specific top genes across multiple cell types and conditions
+Recent studies turned the spotlight on aberrant activation of innate immune pathways as a consequence of response to the pharmacological inhibition of the m6A methyltransferase Mettl3. To explore the impact of the inhibition of Mettl3 on immunity in single-cell datasets, the Cell Marker Accordion can be exploit to compute an “innate immune response” score based on the activation of genes associated with this signature. 
+
+As an example dataset we used a published bone marrow dataset from mice upon pharmacological inhibition of Mettl3 with STM245 (Sturgess et al., Leukemia, 2023). We included a table of genes associated to innate immune response signature.
+
+Load the Seurat object already processed:
+```bash
+load(system.file("extdata", "mouse_bm_data.rda", package = "cellmarkeraccordion"))
+table(mouse_bm_data$condition)
+```
+| Vehicle | STM2457 |
+|-----------|-------|
+| 568   | 482   |
+    
+Load the innate immune response signature table:
+```bash
+load(system.file("extdata", "in_im_resp_sig.rda", package = "cellmarkeraccordion"))
+head(in_im_resp_sig)
+```
+| Symbol  | terms                   |
+|---------|-------------------------|
+| Acod1   | innate_immune_response  |
+| Actg1   | innate_immune_response  |
+| Actr2   | innate_immune_response  |
+| Actr3   | innate_immune_response  |
+| Adam8   | innate_immune_response  |
+| Adam15  | innate_immune_response  |
+
+
+First, cell types annotation can be performed by running the ```accordion``` function, specyfing *species ="Mouse"* and *tissue="bone marrow"*:
+```bash
+mouse_bm_data <- accordion(mouse_bm_data, assay ="RNA", species ="Mouse", tissue="bone marrow", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F)
+DimPlot(mouse_bm_data, group.by = "accordion_per_cluster")
+```
+![Mouse_anno](https://github.com/user-attachments/assets/eb40a202-66eb-4f01-b356-7322070fa595)
+
+
+Next, the ```accordion_custom``` function can be used to explore the expression of innate immune response genes following Mettl3 inhibition. To identify the most impactful condition-specific genes in vehicle- and STM245-treated mice respectively, we can specify in the *condition_group_info* parameter the column name in the metadata of the Seurat object that contains the cell condition information. 
+
+```bash
+mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
+                                     *condition_group_info* = "condition", annotation_name = "innate_immune_response_condition")
+
+#visualize the top markers associated to the innate immune response, for vehicle- and STM245-treated mice respectively:
+mouse_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell_plot"]][["innate_immune_response"]]
+```
+![Top_markers_cond](https://github.com/user-attachments/assets/bf6d0c95-447a-437d-b857-3a465a1bae17)
+
+
+Moreover, the <strong>cellmarkeraccordion</strong> allows to furhter identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata.
+
+```bash
+mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
+                                     condition_group_info = "condition", celltype_group_info = "accordion_per_cluster", annotation_name = "innate_immune_response_celltype_condition")
+head(mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]], n = 10)
+```
+| innate_immune_response_celltype_condition_per_cell | condition | accordion_per_cluster             | marker | marker_type | gene_impact_score_per_celltype_cell | weight | SPs |
+|---------------------------------------------------|-----------|----------------------------------|--------|-------------|------------------------------------|--------|-----|
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Cd74   | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | H2-Aa  | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | H2-Eb1 | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Lgals3 | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Mpeg1  | positive    | 9.889319                           | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Ccr1   | positive    | 10.000000                          | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Nlrc3  | positive    | 5.484863                           | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Ccl2   | positive    | 4.973215                           | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Tarm1  | positive    | 4.969851                           | 1      | 1   |
+| innate_immune_response                           | Vehicle   | mast cell                        | Ulbp1  | positive    | 4.477746                           | 1      | 1   |
+
+
+We can extract the annotation results from the misc slot and visualize the top 5 genes for common lymphoid progenitor and megakaryocyte populations for vehicle- and STM245-treated mice respectively.
+```bash
+#extract annotation results for common lymphoid progenitor and megakaryocyte populations
+dt <- mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]]
+dt_filt<- dt[accordion_per_cluster %in% c("mast cell", "megakaryocyte")]
+dt_filt<- dt_filt[order(gene_impact_score_per_celltype_cell)][,marker:=factor(marker, levels = unique(marker))]
+
+#customize the plot with ggplot
+bs<-20
+ggplot(dt_filt, aes(gene_impact_score_per_celltype_cell, marker)) +
+  geom_vline(xintercept = 0, linetype = 2) +
+  geom_segment(aes(x = 0, xend = gene_impact_score_per_celltype_cell, y = marker, yend = marker, color=condition),linewidth = bs/10, show.legend = F) +
+  geom_point(aes(color=condition),size=6, alpha= 1, shape = 16) +
+  theme_bw(base_size = bs) +
+  facet_grid(accordion_per_cluster ~ condition, scale="free_y") + 
+  scale_color_manual(values = c("gray50","#8B1A1A"), guide="none") + 
+  theme(panel.border = element_blank()) +
+  labs(x = "Gene impact score", y = "") +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.ticks.y = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_text(size=bs, face = "bold"),
+        text = element_text(size = bs),
+        axis.text.y = element_text(size = bs)) 
+```
+![Top_markers_cond_celltype](https://github.com/user-attachments/assets/cb723c32-1b43-4855-925d-1879e2d049ec)
+
+
 
 ## Automatically identify and interpreting cell cycle state of single-cell populations
 <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle state to cell populations. This function exploits the built-in collection of
