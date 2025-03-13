@@ -216,7 +216,7 @@ First, cell types annotation can be performed by running the ```accordion``` fun
 mouse_bm_data <- accordion(mouse_bm_data, assay ="RNA", species ="Mouse", tissue="bone marrow", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F)
 DimPlot(mouse_bm_data, group.by = "accordion_per_cluster")
 ```
-![Mouse_anno](https://github.com/user-attachments/assets/6b328777-b4ae-4df8-80ed-e4a340d29b67)
+![Mouse_anno](https://github.com/user-attachments/assets/eb40a202-66eb-4f01-b356-7322070fa595)
 
 
 Next, the ```accordion_custom``` function can be used to explore the expression of innate immune response genes following Mettl3 inhibition. To identify the most impactful condition-specific genes in vehicle- and STM245-treated mice respectively, we can specify in the *condition_group_info* parameter the column name in the metadata of the Seurat object that contains the cell condition information. 
@@ -228,7 +228,8 @@ mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  catego
 #visualize the top markers associated to the innate immune response, for vehicle- and STM245-treated mice respectively:
 mouse_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell_plot"]][["innate_immune_response"]]
 ```
-![Top_markers_cond](https://github.com/user-attachments/assets/c2c81011-4d76-4a05-bb5f-d3b7b0171bd1)
+![Top_markers_cond](https://github.com/user-attachments/assets/bf6d0c95-447a-437d-b857-3a465a1bae17)
+
 
 Moreover, the <strong>cellmarkeraccordion</strong> allows to furhter identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata.
 
@@ -277,8 +278,8 @@ ggplot(dt_filt, aes(gene_impact_score_per_celltype_cell, marker)) +
         text = element_text(size = bs),
         axis.text.y = element_text(size = bs)) 
 ```
+![Top_markers_cond_celltype](https://github.com/user-attachments/assets/cb723c32-1b43-4855-925d-1879e2d049ec)
 
-![Top_markers_cond_celltype](https://github.com/user-attachments/assets/cf8e1823-3ec3-43a8-b6b3-04c36a83305f)
 
 
 ## Automatically identify and interpreting cell cycle state of single-cell populations
