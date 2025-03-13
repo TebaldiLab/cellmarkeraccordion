@@ -288,10 +288,10 @@ ggplot(dt_filt, aes(gene_impact_score_per_celltype_cell, marker)) +
 marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
 To perform cell cycle identification run: 
 ```bash
-data<-accordion_cellcycle(data)
+mouse_bm_data<-accordion_cellcycle(mouse_bm_data)
+DimPlot(mouse_bm_data, group.by="accordion_cell_cycle_per_cell")
 ```
-
-![CellCycle](https://github.com/user-attachments/assets/9a1f7e1d-5a48-4fbc-ade1-a29a6d7c6b2c)
+![Cellcycle](https://github.com/user-attachments/assets/c603f14f-00d1-4bc9-948d-5ae283b561a5)
 
 ## Annotate and interprete aberrant single-cell populations with the built-in Cell Marker Accordion disease database
 <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
