@@ -48,7 +48,7 @@ data(accordion_marker)
 ```
 To access the *disease* Accordion database run:
 ```bash
-data(disease accordion_marker)
+data(disease_accordion_marker)
 ```
 To download the Accordion database as an Excel file click the Download button in the Cell Marker Accordion Shiny app available at: https://rdds.it/CellMarkerAccordion/.
 Alternatively, download the "AccordionDB.xlsb" file from the Shiny app’s GitHub repository: [Download AccordionDB from Shiny app](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb).
