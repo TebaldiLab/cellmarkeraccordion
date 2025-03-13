@@ -235,9 +235,9 @@ mouse_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["det
 Moreover, the <strong>cellmarkeraccordion</strong> allows to furhter identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata.
 
 ```bash
-mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
+mouse_bm_data <-accordion_custom(mouse_bm_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
                                      condition_group_info = "condition", celltype_group_info = "accordion_per_cluster", annotation_name = "innate_immune_response_celltype_condition")
-head(mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]], n = 10)
+head(mouse_bm_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]], n = 10)
 ```
 | innate_immune_response_celltype_condition_per_cell | condition | accordion_per_cluster             | marker | marker_type | gene_impact_score_per_celltype_cell | weight | SPs |
 |---------------------------------------------------|-----------|----------------------------------|--------|-------------|------------------------------------|--------|-----|
@@ -256,7 +256,7 @@ head(mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resol
 We can extract the annotation results from the misc slot and visualize the top 5 genes for common lymphoid progenitor and megakaryocyte populations for vehicle- and STM245-treated mice respectively.
 ```bash
 #extract annotation results for common lymphoid progenitor and megakaryocyte populations
-dt <- mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]]
+dt <- mouse_bm_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]]
 dt_filt<- dt[accordion_per_cluster %in% c("mast cell", "megakaryocyte")]
 dt_filt<- dt_filt[order(gene_impact_score_per_celltype_cell)][,marker:=factor(marker, levels = unique(marker))]
 
