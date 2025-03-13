@@ -354,8 +354,8 @@ Additional columns can be included:
 
 Load a custom set of marker genes:
 ```bash
-load(system.file("extdata", "custom_markers_to_integrated.rda", package = "cellmarkeraccordion"))
-head(custom_markers_to_integrated)
+load(system.file("extdata", "custom_markers_to_integrate.rda", package = "cellmarkeraccordion"))
+head(custom_markers_to_integrate)
 ```
 
 | species | Uberon_tissue | CL_celltype         | marker  | resource     |
@@ -374,7 +374,7 @@ head(custom_markers_to_integrated)
 To integrate the custom table with the healthy Accordion database, use:
 
 ```bash
-database_integrated<-marker_database_integration(marker_table = custom_markers_to_integrated,
+database_integrated<-marker_database_integration(marker_table = custom_markers_to_integrate,
                            database = "healthy",
                            species_column = "species",
                            disease_column = "disease",
