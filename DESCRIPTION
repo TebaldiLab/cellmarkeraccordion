@@ -42,6 +42,7 @@ Imports:
 	knitr (>= 1.45),
 	methods (>= 4.2.3),
 	stats (>= 4.2.3)
+biocViews:
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
