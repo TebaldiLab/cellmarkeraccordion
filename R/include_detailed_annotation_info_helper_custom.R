@@ -308,12 +308,12 @@ include_detailed_annotation_info_helper_custom<-function(data,
 
       if(is.null(celltype_group_info) & is.null(condition_group_info)){
         dt_top <- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell")][,c("cell","annotation_per_cell","marker","marker_type","quantile_score_marker","weight","SPs")])
-        dt_top_marker_by_cell<-unique(dt_top[,c("annotation_per_cell","marker","marker_type","quantile_score_marker","SPs")])
+        dt_top_marker_by_cell<-unique(dt_top[,c("annotation_per_cell","marker","marker_type","quantile_score_marker","weight","SPs")])
         dt_top_marker_by_cell<-dt_top_marker_by_cell[order(-quantile_score_marker)][,head(.SD, n_top_markers),annotation_per_cell]
         name<-paste0(annotation_name,"_per_cell")
         name_score<-paste0(annotation_name,"_per_cell_score")
 
-        colnames(dt_top_marker_by_cell)<-c(eval(name), "marker","marker_type","gene_impact_score_per_score_cell","SPs")
+        colnames(dt_top_marker_by_cell)<-c(eval(name), "marker","marker_type","gene_impact_score_per_score_cell","weight","SPs")
 
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }
