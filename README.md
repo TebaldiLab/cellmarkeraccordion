@@ -48,7 +48,7 @@ data(accordion_marker)
 ```
 To access the *disease* Accordion database run:
 ```bash
-data(disease accordion_marker)
+data(disease_accordion_marker)
 ```
 To download the Accordion database as an Excel file click the Download button in the Cell Marker Accordion Shiny app available at: https://rdds.it/CellMarkerAccordion/.
 Alternatively, download the "AccordionDB.xlsb" file from the Shiny app’s GitHub repository: [Download AccordionDB from Shiny app](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb).
@@ -160,7 +160,8 @@ DimPlot(retinal_data, group.by = "cell_type_retina_per_cluster", reduction = "um
 
 You can also exploit the ```accordion_custom``` function to explore the expression of group of genes associated to a specific pathway. As an example: 
 ```bash
-load(system.file("extdata", "marker_table_pathway.rda", package = "cellmarkeraccordion")) 
+load(system.file("extdata", "marker_table_pathway.rda", package = "cellmarkeraccordion"))
+head(marker_table_pathway, 10)
 ```
 | pathway  | genes |                                         
 | ------------- | ------------- | 
@@ -179,8 +180,10 @@ And simply run:
 ```bash
 retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
 
-FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score",  max.cutoff = "q90")
+FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score", reduction="umap.integrated",order = T, max.cutoff = "q90")
 ```
+![Retina_fp](https://github.com/user-attachments/assets/0f763a48-22b9-46de-9064-7053cdbf4859)
+
 
 # Identification of pathway-specific top genes across multiple cell types and conditions
 Recent studies turned the spotlight on aberrant activation of innate immune pathways as a consequence of response to the pharmacological inhibition of the m6A methyltransferase Mettl3. To explore the impact of the inhibition of Mettl3 on immunity in single-cell datasets, the Cell Marker Accordion can be exploit to compute an “innate immune response” score based on the activation of genes associated with this signature. 
@@ -194,7 +197,7 @@ table(mouse_bm_data$condition)
 ```
 | Vehicle | STM2457 |
 |-----------|-------|
-| 568   | 482   |
+| 480   | 395   |
     
 Load the innate immune response signature table:
 ```bash
@@ -213,20 +216,19 @@ head(in_im_resp_sig)
 
 First, cell types annotation can be performed by running the ```accordion``` function, specyfing *species ="Mouse"* and *tissue="bone marrow"*:
 ```bash
-mouse_bm_data <- accordion(mouse_bm_data, assay ="RNA", species ="Mouse", tissue="bone marrow", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F)
+mouse_bm_data <- accordion(mouse_bm_data, assay ="RNA", species ="Mouse", tissue="bone marrow", annotation_resolution = "cluster", max_n_marker = 30, allow_unknown=F, include_detailed_annotation_info = F, plot = F)
 DimPlot(mouse_bm_data, group.by = "accordion_per_cluster")
 ```
-![Mouse_anno](https://github.com/user-attachments/assets/eb40a202-66eb-4f01-b356-7322070fa595)
-
+![Mouse_anno](https://github.com/user-attachments/assets/7a862144-7bcc-4129-acf1-b4a7f558d393)
 
 Next, the ```accordion_custom``` function can be used to explore the expression of innate immune response genes following Mettl3 inhibition. To identify the most impactful condition-specific genes in vehicle- and STM245-treated mice respectively, we can specify in the *condition_group_info* parameter the column name in the metadata of the Seurat object that contains the cell condition information. 
 
 ```bash
-mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
-                                     *condition_group_info* = "condition", annotation_name = "innate_immune_response_condition")
+mouse_bm_data <-accordion_custom(mouse_bm_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
+                                     condition_group_info = "condition", annotation_name = "innate_immune_response_condition")
 
 #visualize the top markers associated to the innate immune response, for vehicle- and STM245-treated mice respectively:
-mouse_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell_plot"]][["innate_immune_response"]]
+mouse_bm_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell_plot"]][["innate_immune_response"]]
 ```
 ![Top_markers_cond](https://github.com/user-attachments/assets/bf6d0c95-447a-437d-b857-3a465a1bae17)
 
@@ -234,28 +236,28 @@ mouse_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["det
 Moreover, the <strong>cellmarkeraccordion</strong> allows to furhter identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata.
 
 ```bash
-mouse_data <-accordion_custom(mouse_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
+mouse_bm_data <-accordion_custom(mouse_bm_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
                                      condition_group_info = "condition", celltype_group_info = "accordion_per_cluster", annotation_name = "innate_immune_response_celltype_condition")
-head(mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]], n = 10)
+head(mouse_bm_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]], n = 10)
 ```
-| innate_immune_response_celltype_condition_per_cell | condition | accordion_per_cluster             | marker | marker_type | gene_impact_score_per_celltype_cell | weight | SPs |
-|---------------------------------------------------|-----------|----------------------------------|--------|-------------|------------------------------------|--------|-----|
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Cd74   | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | H2-Aa  | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | H2-Eb1 | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Lgals3 | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Mpeg1  | positive    | 9.889319                           | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Ccr1   | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Nlrc3  | positive    | 5.484863                           | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Ccl2   | positive    | 4.973215                           | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Tarm1  | positive    | 4.969851                           | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Ulbp1  | positive    | 4.477746                           | 1      | 1   |
+| innate_immune_response | condition | celltype                     | marker  | marker_type | gene_impact_score | weight | SPs |
+|------------------------|-----------|-----------------------------|---------|-------------|-------------------|--------|-----|
+| innate_immune_response | Vehicle   | dendritic cell              | H2-Ab1  | positive    | 8.443083          | 1      | 1   |
+| innate_immune_response | Vehicle   | dendritic cell              | Rnase6  | positive    | 6.746420          | 1      | 1   |
+| innate_immune_response | Vehicle   | dendritic cell              | Irf8    | positive    | 5.249773          | 1      | 1   |
+| innate_immune_response | Vehicle   | dendritic cell              | Unc93b1 | positive    | 4.886153          | 1      | 1   |
+| innate_immune_response | Vehicle   | dendritic cell              | Grn     | positive    | 4.766681          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Stat1   | positive    | 6.115051          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Isg15   | positive    | 5.217695          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Gbp7    | positive    | 5.029485          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Isg20   | positive    | 4.258571          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Irgm1   | positive    | 4.122629          | 1      | 1   |
 
 
 We can extract the annotation results from the misc slot and visualize the top 5 genes for common lymphoid progenitor and megakaryocyte populations for vehicle- and STM245-treated mice respectively.
 ```bash
 #extract annotation results for common lymphoid progenitor and megakaryocyte populations
-dt <- mouse_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]]
+dt <- mouse_bm_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]]
 dt_filt<- dt[accordion_per_cluster %in% c("mast cell", "megakaryocyte")]
 dt_filt<- dt_filt[order(gene_impact_score_per_celltype_cell)][,marker:=factor(marker, levels = unique(marker))]
 
@@ -287,10 +289,10 @@ ggplot(dt_filt, aes(gene_impact_score_per_celltype_cell, marker)) +
 marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
 To perform cell cycle identification run: 
 ```bash
-data<-accordion_cellcycle(data)
+mouse_bm_data<-accordion_cellcycle(mouse_bm_data)
+DimPlot(mouse_bm_data, group.by="accordion_cell_cycle_per_cell")
 ```
-
-![CellCycle](https://github.com/user-attachments/assets/9a1f7e1d-5a48-4fbc-ade1-a29a6d7c6b2c)
+![Cellcycle](https://github.com/user-attachments/assets/c603f14f-00d1-4bc9-948d-5ae283b561a5)
 
 ## Annotate and interprete aberrant single-cell populations with the built-in Cell Marker Accordion disease database
 <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
@@ -353,8 +355,8 @@ Additional columns can be included:
 
 Load a custom set of marker genes:
 ```bash
-load(system.file("extdata", "custom_markers_to_integrated.rda", package = "cellmarkeraccordion"))
-head(custom_markers_to_integrated)
+load(system.file("extdata", "custom_markers_to_integrate.rda", package = "cellmarkeraccordion"))
+head(custom_markers_to_integrate, 10)
 ```
 
 | species | Uberon_tissue | CL_celltype         | marker  | resource     |
@@ -373,7 +375,7 @@ head(custom_markers_to_integrated)
 To integrate the custom table with the healthy Accordion database, use:
 
 ```bash
-database_integrated<-marker_database_integration(marker_table = custom_markers_to_integrated,
+database_integrated<-marker_database_integration(marker_table = custom_markers_to_integrate,
                            database = "healthy",
                            species_column = "species",
                            disease_column = "disease",
@@ -403,7 +405,7 @@ DimPlot(brain_data, group.by="accordion_per_cluster")
 Then, perform cell with the integrated database by setting *database = table_integrated* and compare the result. We can notice that glutamatergic neuron are now identified.
 ```bash
 brain_data <- accordion(brain_data, assay ="SCT",database=database_integrated, species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F, allow_unknown = F, annotation_name = "integrated_database")
-DimPlot(brain_data, group.by="integrated_database")
+DimPlot(brain_data, group.by="integrated_database_per_cluster")
 ```
 ![Merfish_anno_integratedDB](https://github.com/user-attachments/assets/902c2a4d-6e14-4db4-885b-58cfb9db9e4d)
 
