@@ -160,7 +160,8 @@ DimPlot(retinal_data, group.by = "cell_type_retina_per_cluster", reduction = "um
 
 You can also exploit the ```accordion_custom``` function to explore the expression of group of genes associated to a specific pathway. As an example: 
 ```bash
-load(system.file("extdata", "marker_table_pathway.rda", package = "cellmarkeraccordion")) 
+load(system.file("extdata", "marker_table_pathway.rda", package = "cellmarkeraccordion"))
+head(marker_table_pathway, 10)
 ```
 | pathway  | genes |                                         
 | ------------- | ------------- | 
@@ -239,18 +240,18 @@ mouse_bm_data <-accordion_custom(mouse_bm_data, marker_table = in_im_resp_sig,  
                                      condition_group_info = "condition", celltype_group_info = "accordion_per_cluster", annotation_name = "innate_immune_response_celltype_condition")
 head(mouse_bm_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]], n = 10)
 ```
-| innate_immune_response_celltype_condition_per_cell | condition | accordion_per_cluster             | marker | marker_type | gene_impact_score_per_celltype_cell | weight | SPs |
-|---------------------------------------------------|-----------|----------------------------------|--------|-------------|------------------------------------|--------|-----|
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Cd74   | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | H2-Aa  | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | H2-Eb1 | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Lgals3 | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | conventional dendritic cell      | Mpeg1  | positive    | 9.889319                           | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Ccr1   | positive    | 10.000000                          | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Nlrc3  | positive    | 5.484863                           | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Ccl2   | positive    | 4.973215                           | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Tarm1  | positive    | 4.969851                           | 1      | 1   |
-| innate_immune_response                           | Vehicle   | mast cell                        | Ulbp1  | positive    | 4.477746                           | 1      | 1   |
+| innate_immune_response | condition | celltype                     | marker  | marker_type | gene_impact_score | weight | SPs |
+|------------------------|-----------|-----------------------------|---------|-------------|-------------------|--------|-----|
+| innate_immune_response | Vehicle   | dendritic cell              | H2-Ab1  | positive    | 8.443083          | 1      | 1   |
+| innate_immune_response | Vehicle   | dendritic cell              | Rnase6  | positive    | 6.746420          | 1      | 1   |
+| innate_immune_response | Vehicle   | dendritic cell              | Irf8    | positive    | 5.249773          | 1      | 1   |
+| innate_immune_response | Vehicle   | dendritic cell              | Unc93b1 | positive    | 4.886153          | 1      | 1   |
+| innate_immune_response | Vehicle   | dendritic cell              | Grn     | positive    | 4.766681          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Stat1   | positive    | 6.115051          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Isg15   | positive    | 5.217695          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Gbp7    | positive    | 5.029485          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Isg20   | positive    | 4.258571          | 1      | 1   |
+| innate_immune_response | STM2457   | plasmacytoid dendritic cell | Irgm1   | positive    | 4.122629          | 1      | 1   |
 
 
 We can extract the annotation results from the misc slot and visualize the top 5 genes for common lymphoid progenitor and megakaryocyte populations for vehicle- and STM245-treated mice respectively.
@@ -355,7 +356,7 @@ Additional columns can be included:
 Load a custom set of marker genes:
 ```bash
 load(system.file("extdata", "custom_markers_to_integrate.rda", package = "cellmarkeraccordion"))
-head(custom_markers_to_integrate)
+head(custom_markers_to_integrate, 10)
 ```
 
 | species | Uberon_tissue | CL_celltype         | marker  | resource     |
