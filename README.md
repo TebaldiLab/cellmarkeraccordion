@@ -76,7 +76,7 @@ data <- FindNeighbors(data, dims = 1:10)
 data <- FindClusters(data, resolution = 0.4)
 data <- RunUMAP(data, dims = 1:10)
 ```
-##Annotate and interpret single-cell and spatial omics data with the built-in Cell Marker Accordion database
+## Annotate and interpret single-cell and spatial omics data with the built-in Cell Marker Accordion database
 <strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissues in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 
@@ -86,7 +86,7 @@ available_tissue<-list_tissues(species = "Human")
 available_tissue[1:20]
 ```
 
-To perform cell types identification by cluster and obtain detailed annotation information simply run:
+To perform cell types identification by cluster (*annotation_resolution = "cluster" by default) and obtain detailed annotation information simply run:
 ```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
@@ -153,7 +153,7 @@ head(retina_markers)
 load(system.file("extdata", "retinal_data.rda", package = "cellmarkeraccordion")) 
 ```
 
-To perform the annotation with the custom marker genes run:
+To perform the annotation by cluster with the custom marker genes run:
 ```bash
 retinal_data <-accordion_custom(retinal_data, annotation_resolution = "cluster", marker_table  = retina_markers, category_column = "cell_type", marker_column = "marker", min_n_marker = 2, plot=T, annotation_name = "cell_type_retina")
 
@@ -180,7 +180,7 @@ head(marker_table_pathway, 10)
 | apoptosis | AKT1 |
 | apoptosis | AKT2 |
 
-And simply run: 
+And simply run the *accordion_custom* function by setting *annotation_resolution = cell*: 
 ```bash
 retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
 
