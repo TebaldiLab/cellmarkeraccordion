@@ -15,7 +15,7 @@ We developed Cell Marker Accordion, a user-friendly platform that includes both 
 Cell Marker Accordion enhances annotation accuracy in single-cell and spatial omics datasets across various human and murine tissues. Additionally, it can identify disease-critical cells and pathological processes, helping to extract potential biomarkers across diverse disease contexts.
 
 ## Citing the cellmarkeraccordion package
-Please cite the following article when using the cellmarkeraccordion:
+Please cite the following article when using the cellmarkeraccordion package:
 
 <strong>Cell Marker Accordion: interpretable single-cell and spatial omics annotation in health and disease</strong>
 
