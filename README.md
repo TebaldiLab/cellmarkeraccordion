@@ -14,7 +14,7 @@ applicability to disease.
 We developed Cell Marker Accordion, a user-friendly platform that includes both an R package and a [Shiny app](https://rdds.it/CellMarkerAccordion/). This tool provides automated annotation and biological interpretation of single-cell populations using consistency-weighted markers.
 Cell Marker Accordion enhances annotation accuracy in single-cell and spatial omics datasets across various human and murine tissues. Additionally, it can identify disease-critical cells and pathological processes, helping to extract potential biomarkers across diverse disease contexts.
 
-## Citing the cellmarkeraccordion
+## Citing the cellmarkeraccordion package
 Please cite the following article when using the cellmarkeraccordion:
 
 <strong>Cell Marker Accordion: interpretable single-cell and spatial omics annotation in health and disease</strong>
