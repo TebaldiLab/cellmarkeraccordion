@@ -82,7 +82,7 @@ data <- RunUMAP(data, dims = 1:10)
 <strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissues in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 
-Run list_tissues() function to explore which tissues are available in the Cell Marker Accordion:
+Run ``` list_tissues()```   function to explore which tissues are available in the Cell Marker Accordion:
 ```bash  
 available_tissue<-list_tissues(species = "Human")
 available_tissue[1:20]
