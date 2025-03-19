@@ -10,9 +10,11 @@ Single-cell technologies offer a unique opportunity to explore cellular heteroge
 disease. However, reliable identification of cell types and states represents a bottleneck. Available
 databases and analysis tools employ dissimilar markers, leading to inconsistent annotations and
 poor interpretability. Furthermore, current tools focus mostly on physiological cell types, limiting their
-applicability to disease.
+applicability to disease. <br>
 We developed Cell Marker Accordion, a user-friendly platform that includes both an R package and a [Shiny app](https://rdds.it/CellMarkerAccordion/). This tool provides automated annotation and biological interpretation of single-cell populations using consistency-weighted markers.
-Cell Marker Accordion enhances annotation accuracy in single-cell and spatial omics datasets across various human and murine tissues. Additionally, it can identify disease-critical cells and pathological processes, helping to extract potential biomarkers across diverse disease contexts.
+Cell Marker Accordion enhances annotation accuracy in single-cell and spatial omics datasets across various human and murine tissues. Additionally, it can identify disease-critical cells and pathological processes, helping to extract potential biomarkers across diverse disease contexts. <br>
+
+To explore, filter and download the Cell Marker database we recommend using our [Shiny app](https://rdds.it/CellMarkerAccordion/).
 
 ## Citing the cellmarkeraccordion package
 Please cite the following article when using the cellmarkeraccordion package:
