@@ -26,7 +26,7 @@ Emma Busarello, Giulia Biancon, Ilaria Cimignolo, Fabio Lauria, Zuhairia Ibnat, 
 bioRxiv 2024.03.08.584053; doi: https://doi.org/10.1101/2024.03.08.584053 
 
 ## Installation 
-To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run
+To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run:
 ```bash
 install.packages("devtools")
 ```
@@ -62,13 +62,13 @@ Alternatively, download the "AccordionDB.xlsb" file from the Shiny app’s GitHu
 ## Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
 As an example we used a dataset of Peripheral Blood Mononuclear Cells (PBMC) freely available from 10X Genomics. 
-Load the raw counts and create a Seurat object
+Load the raw counts and create a Seurat object:
 ```bash
 load(system.file("extdata", "counts.rda", package = "cellmarkeraccordion")) #counts data
 # Create Seurat Object
 data <- CreateSeuratObject(counts = counts, min.cells = 3, min.features = 200)
 ```
-Process and cluster the data
+Process and cluster the data:
 ```bash
 data <- NormalizeData(data)
 data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000)
@@ -82,13 +82,13 @@ data <- RunUMAP(data, dims = 1:10)
 <strong>cellmarkeraccordion</strong> allows to automatically identifies cell populations in multiple tissues in single-cell dataset by running function ``` accordion ```. 
 It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns. The cell types annotation is performed by exploiting the built-in Cell Marker Accordion database of marker genes. In addition, this function provides an easy interpretation of the results by reporting for each group of cells the top marker genes which mostly impacted the annotation, together with the top cell types and their relationship based on the cell ontology tree (thanks to the *include_detailed_annotation_info* and *plot* parameters). 
 
-Run list_tissues() function to explore which tissues are available in the Cell Marker Accordion. 
+Run list_tissues() function to explore which tissues are available in the Cell Marker Accordion:
 ```bash  
 available_tissue<-list_tissues(species = "Human")
 available_tissue[1:20]
 ```
 
-To perform cell types identification by cluster (*annotation_resolution = "cluster" by default) and obtain detailed annotation information simply run:
+To perform cell types identification by cluster (*annotation_resolution = "cluster"* by default) and obtain detailed annotation information simply run:
 ```bash  
 # Input: Seurat object
 # Output: Seurat object with annotation results 
@@ -100,7 +100,7 @@ DimPlot(data, group.by = "accordion_per_cluster")
 ```
 ![Annotation_pbmc](https://github.com/user-attachments/assets/9fea9931-a0b7-47bf-8748-b6ef614acfc5)
 
-Or you can use raw counts matrix and specify cluster's id for each cell.
+Or you can use raw counts matrix and specify cluster's id for each cell:
 ```bash
 # Input: raw counts and clusters id  
 raw_counts <- GetAssayData(data, assay="RNA", slot='counts')
@@ -110,8 +110,7 @@ output <- accordion(counts, assay ="RNA", species ="Human", tissue="blood", clus
 ```
 
 ## Improve the biological interpretation of the results
-The Cell Marker Accordion has been developed to improve the biological interpretation of the results, by returning a dot plot listing the top N cell types for each cluster. The dot size is proportional to the impact score, and the winning annotation is highlighted.
-
+The Cell Marker Accordion has been developed to improve the biological interpretation of the results, by returning a dot plot listing the top N cell types for each cluster. The dot size is proportional to the impact score, and the winning annotation is highlighted. Detailed annotation information is stored in the *misc* slot of the Seurat object:
 ```bash
 data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["global"]]
 ```
@@ -119,14 +118,14 @@ data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][[
 ![Top_ct_global](https://github.com/user-attachments/assets/4ecdcf91-de64-4edc-8e04-20e61de99379)
 
 
-Further insight is provided by looking at the percentage of cells assigned to the top scoring cell types, and their similarity based on the Cell Ontology hierarchy
+Further insight is provided by looking at the percentage of cells assigned to the top scoring cell types, and their similarity based on the Cell Ontology hierarchy:
 ```bash
 data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes_plot"]][["3_B cell"]]
 ```
 ![Top_ct_Bcell](https://github.com/user-attachments/assets/61301129-3d0c-43b3-9fc2-bc81c570b5a5)
 
 
-Finally the top N marker genes contributing to the annotation of each specific cell type can be explored 
+Finally the top N marker genes contributing to the annotation of each specific cell type can be explored:
 ```bash
 data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cluster_plot"]][["global"]]
 ```
@@ -136,6 +135,7 @@ data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][[
 ## Cell type or pathways identification with custom genes sets
 <strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```. It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. We used a published human retinal dataset (Lu et al., Dev Cell. 2020) and we included a table of well-known markers associated to retinal cell types.
 
+Load custom markers:
 ```bash
 load(system.file("extdata", "retina_markers.rda", package = "cellmarkeraccordion"))
 head(retina_markers)
@@ -150,7 +150,7 @@ head(retina_markers)
 | Bipolar cells	 | CA10 |
 | Bipolar cells	 | CADPS |
 
-
+Load the already processed Seurat object:
 ```bash
 load(system.file("extdata", "retinal_data.rda", package = "cellmarkeraccordion")) 
 ```
@@ -182,7 +182,7 @@ head(marker_table_pathway, 10)
 | apoptosis | AKT1 |
 | apoptosis | AKT2 |
 
-And simply run the *accordion_custom* function by setting *annotation_resolution = cell*: 
+And simply run the *accordion_custom* function by setting *annotation_resolution = cell* : 
 ```bash
 retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
 
@@ -227,8 +227,7 @@ DimPlot(mouse_bm_data, group.by = "accordion_per_cluster")
 ```
 ![Mouse_anno](https://github.com/user-attachments/assets/7a862144-7bcc-4129-acf1-b4a7f558d393)
 
-Next, the ```accordion_custom``` function can be used to explore the expression of innate immune response genes following Mettl3 inhibition. To identify the most impactful condition-specific genes in vehicle- and STM245-treated mice respectively, we can specify in the *condition_group_info* parameter the column name in the metadata of the Seurat object that contains the cell condition information. 
-
+Next, the ```accordion_custom``` function can be used to explore the expression of innate immune response genes following Mettl3 inhibition. To identify the most impactful condition-specific genes in vehicle- and STM245-treated mice respectively, we can specify in the *condition_group_info* parameter the column name in the metadata of the Seurat object that contains the cell condition information:
 ```bash
 mouse_bm_data <-accordion_custom(mouse_bm_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
                                      condition_group_info = "condition", annotation_name = "innate_immune_response_condition")
@@ -239,8 +238,7 @@ mouse_bm_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["
 ![Top_markers_cond](https://github.com/user-attachments/assets/bf6d0c95-447a-437d-b857-3a465a1bae17)
 
 
-Moreover, the <strong>cellmarkeraccordion</strong> allows to furhter identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata.
-
+Moreover, the <strong>cellmarkeraccordion</strong> allows to furhter identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata:
 ```bash
 mouse_bm_data <-accordion_custom(mouse_bm_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
                                      condition_group_info = "condition", celltype_group_info = "accordion_per_cluster", annotation_name = "innate_immune_response_celltype_condition")
@@ -260,7 +258,7 @@ head(mouse_bm_data@misc[["innate_immune_response_celltype_condition"]][["cell_re
 | innate_immune_response | STM2457   | plasmacytoid dendritic cell | Irgm1   | positive    | 4.122629          | 1      | 1   |
 
 
-We can extract the annotation results from the misc slot and visualize the top 5 genes for common lymphoid progenitor and megakaryocyte populations for vehicle- and STM245-treated mice respectively.
+We can extract the annotation results from the misc slot and visualize the top 5 genes for common lymphoid progenitor and megakaryocyte populations for vehicle- and STM245-treated mice respectively:
 ```bash
 #extract annotation results for common lymphoid progenitor and megakaryocyte populations
 dt <- mouse_bm_data@misc[["innate_immune_response_celltype_condition"]][["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]]
@@ -304,6 +302,7 @@ DimPlot(mouse_bm_data, group.by="accordion_cell_cycle_per_cell")
 <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
 This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specify both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
 
+Load the already processed Seurat object:
 ```bash
 load(system.file("extdata", "bone_marrow_data.rda", package = "cellmarkeraccordion"))
 ```
@@ -359,7 +358,7 @@ Additional columns can be included:
 
 <strong>Running the Integration</strong>
 
-Load a custom set of marker genes:
+Load custom set of marker genes:
 ```bash
 load(system.file("extdata", "custom_markers_to_integrate.rda", package = "cellmarkeraccordion"))
 head(custom_markers_to_integrate, 10)
@@ -379,7 +378,6 @@ head(custom_markers_to_integrate, 10)
 | Mouse   | brain        | pyramidal neuron     | Pde1a   | custom_set_3 |
 
 To integrate the custom table with the healthy Accordion database, use:
-
 ```bash
 database_integrated<-marker_database_integration(marker_table = custom_markers_to_integrate,
                            database = "healthy",
@@ -396,7 +394,8 @@ To perform automatic cell type annotation using the previously integrated marker
 
 ## Annotate and interpret single-cell and spatial omics data with the integrated marker database
 As an example we used an adult mouse brain MERFISH dataset (Zhuang et al., 2024) with a panel of 1122 genes. 
-Load the brain seurat object:
+
+Load already processed Seurat object:
 ```bash
 load(system.file("extdata", "brain_data.rda", package = "cellmarkeraccordion"))
 ```
@@ -408,9 +407,12 @@ DimPlot(brain_data, group.by="accordion_per_cluster")
 ```
 ![Merfish_anno_accordion](https://github.com/user-attachments/assets/d2a9e34d-d63a-43e2-83a5-f8ae0b9cfdb5)
 
-Then, perform cell with the integrated database by setting *database = table_integrated* and compare the result. We can notice that glutamatergic neuron are now identified.
+Then, perform cell with the integrated database by setting *database = table_integrated* and compare the result:
 ```bash
 brain_data <- accordion(brain_data, assay ="SCT",database=database_integrated, species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F, allow_unknown = F, annotation_name = "integrated_database")
+```
+We can notice that glutamatergic neuron are now identified:
+```bash
 DimPlot(brain_data, group.by="integrated_database_per_cluster")
 ```
 ![Merfish_anno_integratedDB](https://github.com/user-attachments/assets/902c2a4d-6e14-4db4-885b-58cfb9db9e4d)
