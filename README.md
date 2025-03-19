@@ -407,7 +407,7 @@ DimPlot(brain_data, group.by="accordion_per_cluster")
 ```
 ![Merfish_anno_accordion](https://github.com/user-attachments/assets/d2a9e34d-d63a-43e2-83a5-f8ae0b9cfdb5)
 
-Then, perform cell with the integrated database by setting *database = table_integrated* and compare the result:
+Then, perform cell with the integrated database by setting *database = database_integrated* and compare the result:
 ```bash
 brain_data <- accordion(brain_data, assay ="SCT",database=database_integrated, species ="Mouse", tissue="brain", annotation_resolution = "cluster", max_n_marker = 30, include_detailed_annotation_info = F, plot = F, allow_unknown = F, annotation_name = "integrated_database")
 ```
