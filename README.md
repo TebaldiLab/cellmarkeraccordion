@@ -57,7 +57,7 @@ To download the Accordion database as an Excel file click the Download button in
 <img src= https://github.com/user-attachments/assets/ea25a808-68ed-406f-a655-16f1ebbe00ac style="width:30%; height:30%;"> <br />
 
 
-Alternatively, download the "AccordionDB.xlsb" file from the Shiny app’s GitHub repository: [Download AccordionDB from Shiny app repo](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/AccordionDB.xlsb).
+Alternatively, download the "TheCellMarkerAccordion_database_v0.9.5.xlsx" file from the Shiny app’s GitHub repository stored in the "data" folder: [Download TheCellMarkerAccordion_database from Shiny app repo](https://github.com/TebaldiLab/shiny_cellmarkeraccordion/blob/main/data/TheCellMarkerAccordion_database_v0.9.5.xlsx).
 
 ## Input data
 All the functions of the <strong>cellmarkeraccordion</strong> accept as input either a Seurat object or a raw or normalized count matrix. 
