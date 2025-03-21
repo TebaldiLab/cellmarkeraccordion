@@ -132,8 +132,8 @@ data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][[
 ![Top_marker_global](https://github.com/user-attachments/assets/aedc38ec-9cdc-4e03-a9c1-c682d0ecd582)
 
 
-## Cell type or pathways identification with custom genes sets
-<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running function ```accordion_custom ```. It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. We used a published human retinal dataset (Lu et al., Dev Cell. 2020) and we included a table of well-known markers associated to retinal cell types.
+## Cell type or pathways identification with custom gene sets
+<strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running the ```accordion_custom ``` function. It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. We used a published human retinal dataset (Lu et al., Dev Cell. 2020) and we included a table of well-known markers associated to retinal cell types.
 
 Load custom markers:
 ```bash
@@ -238,7 +238,7 @@ mouse_bm_data@misc[["innate_immune_response_condition"]][["cell_resolution"]][["
 ![Top_markers_cond](https://github.com/user-attachments/assets/bf6d0c95-447a-437d-b857-3a465a1bae17)
 
 
-Moreover, the <strong>cellmarkeraccordion</strong> allows to furhter identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata:
+Moreover, the <strong>cellmarkeraccordion</strong> allows to further identify the top N (5 by default) cell type-condition-specific genes, by specifying in the *condition_group_info* and *celltype_group_info* parameters both the condition and the cell type annotation columns of the metadata:
 ```bash
 mouse_bm_data <-accordion_custom(mouse_bm_data, marker_table = in_im_resp_sig,  category_column= "terms", marker_column ="Symbol",  annotation_resolution = "cell", 
                                      condition_group_info = "condition", celltype_group_info = "accordion_per_cluster", annotation_name = "innate_immune_response_celltype_condition")
@@ -288,7 +288,7 @@ ggplot(dt_filt, aes(gene_impact_score_per_celltype_cell, marker)) +
 
 
 
-## Automatically identify and interpreting cell cycle state of single-cell populations
+## Automatically identify and interpret cell cycle state of single-cell populations
 <strong>cellmarkeraccordion</strong> provides the ```accordion_cellcycle``` function to automatically assign cell cycle state to cell populations. This function exploits the built-in collection of
 marker genes associated to each cell cycle phase (G0, G1, G2M, S). It takes in input either a Seurat object or a raw or normalized count matrix. 
 To perform cell cycle identification run: 
@@ -298,7 +298,7 @@ DimPlot(mouse_bm_data, group.by="accordion_cell_cycle_per_cell")
 ```
 ![Cellcycle](https://github.com/user-attachments/assets/c603f14f-00d1-4bc9-948d-5ae283b561a5)
 
-## Annotate and interprete aberrant single-cell populations with the built-in Cell Marker Accordion disease database
+## Annotate and interpret aberrant single-cell populations with the built-in Cell Marker Accordion disease database
 <strong>cellmarkeraccordion</strong> includes the ```accordion_disease``` function which allows the identification of aberrant populations exploiting the built-in Accordion gene marker disease database. 
 This function requires in input either a Seurat object or a raw or normalized count matrix. It is possible to specify both disease and critical cells to identify, thanks to *disease* and *cell_types* parameters. We analyzed a published scRNA-seq dataset of CD34+ bone marrow cells from 5 healthy controls and 14 acute myeloid leukemia patients.
 
