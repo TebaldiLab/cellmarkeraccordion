@@ -51,6 +51,10 @@ Default is “cell_type”.}
 Default is “marker”.}
 
 \item{marker_type_column}{String characters specifying the name of the
+\code{marker_table} column containing marker types.
+Default is “marker_type”.}
+
+\item{resource_column}{String characters specifying the name of the
 \code{marker_table} column containing resources.
 Default is “resource”.}
 }

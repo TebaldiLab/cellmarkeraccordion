@@ -13,8 +13,8 @@ accordion(
   species = "Human",
   tissue = NULL,
   include_descendants = FALSE,
-  evidence_consistency_score_threshold = NULL,
-  SPs_score_threshold = NULL,
+  ECs_threshold = NULL,
+  SPs_threshold = NULL,
   log2FC_threshold = NULL,
   min_n_marker = 5,
   max_n_marker = NULL,
@@ -80,13 +80,13 @@ tissues that are descendants of the selected tissue(s) according to the uberon
 ontology. If TRUE,cell types and markers from the selected tissues and their
 descendants are aggregated. Default is FALSE}
 
-\item{evidence_consistency_score_threshold}{Integer value (currently in (1,17))
-specifying the minimum evidence consistency (EC) score for each
+\item{ECs_threshold}{Integer value (currently in (1,17))
+specifying the minimum evidence consistency score (ECs) for each
 marker. Only markers >= this threshold are kept. If NULL, no filter is
 applied. Default is NULL.}
 
-\item{SPs_score_threshold}{numeric value in (0,1) specifying the
-minimum SPs score for each marker. Only markers <= this threshold
+\item{SPs_threshold}{numeric value in (0,1) specifying the
+minimum specificity score (SPs) for each marker. Only markers <= this threshold
 are kept. If  NULL, no filter is applied. Default is NULL.}
 
 \item{log2FC_threshold}{numeric value specifying the
