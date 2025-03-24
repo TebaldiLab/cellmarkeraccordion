@@ -6,16 +6,10 @@
 \title{uberon_onto: Uberon anatomy ontology}
 \format{
 Uberon ontology
-
-data table
 }
 \usage{
 data(uberon_onto)
-
-data(gene_description)
 }
 \description{
 uberon_onto: Uberon anatomy ontology
-
-gene_description: table containg gene description for human and mouse genes (human112_GRCh38.p14 and mouse112_GRCm39)
 }
