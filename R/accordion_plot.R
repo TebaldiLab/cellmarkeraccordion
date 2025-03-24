@@ -8,7 +8,7 @@
 #' top cell types (or pathways) and top markers It takes in input either a
 #' Seurat object or a raw or normalized count matrix and a table of marker genes
 #' associated to cell types or even to pathways and return in output the cell
-#' types/pathways assignment and the detailed informations of the annotation
+#' types/pathways assignment and the detailed information of the annotation
 #' results (added to the Seurat object or as a list).
 #'
 #' @param data A Seurat object or a list containing “detailed_annotation_info”,
@@ -334,15 +334,15 @@ accordion_plot<-function(data,
 
         if("condition" %in% colnames(top_dt_cl) & "celltype_group_info" %in% colnames(top_dt_cl)){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(celltype_group_info ~ condition, scale="free_y")
+          pl<- pl + facet_grid(celltype_group_info ~ condition, scales="free_y")
         }
         if("condition" %in% colnames(top_dt_cl) & !("celltype_group_info" %in% colnames(top_dt_cl))){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(. ~ condition, scale="free_y")
+          pl<- pl + facet_grid(. ~ condition, scales="free_y")
         }
         if(!("condition" %in% colnames(top_dt_cl)) & "celltype_group_info" %in% colnames(top_dt_cl)){
           col<-hue_pal()(uniqueN(top_dt_cl))
-          pl<- pl + facet_grid(celltype_group_info ~ ., scale="free_y")
+          pl<- pl + facet_grid(celltype_group_info ~ ., scales="free_y")
         }
         if(data_type == "seurat"){
             data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][[name]]<-pl

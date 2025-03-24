@@ -7,7 +7,7 @@ utils::globalVariables(c("include_detailed_annotation_info_helper","include_deta
                          "condition"          , "node1.name",          "node2.name"       ,   "x",                   "y"                 ,  "NCIT_celltype" ,      "accordion_marker" ,
                          "ncell_celltype_cluster","perc_celltype_cluster","quantile_score_cluster","annotation_per_cluster","quantile_score_marker","quantile_diff_score",
                          "quantile_combined_score","perc_celltype_cluster","annotation_per_cluster",
-                         "weight_scaled","dt_top_marker","ECs_NCIT_global","DO_diseasetype","SPs_ratio","SPs_range","SPs_positive","SPs_negative",
+                         "weight_scaled","dt_top_marker","ECs_NCIT_global","DO_diseasetype","SPs_ratio","SPs_range","SPs_positive","SPs_negative","CL_cell_definition",
                          "tot_cell_ct_cluster","disease_accordion_marker", "cell_onto","uberon_onto", "species", "original_tissue", "resource","original_celltype", "p.value","adjusted_p.value", "pct1","gene_description",
                          "cell_definition","tissue_definition", "SPs_global","SPs_tissue_specific","original_diseasetype","DO_definition","NCIT_cell_definition","SPs_disease_specific","SPs_disease_tissue_specific","ECs_reg","SPs_reg",""
 
