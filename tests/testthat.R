@@ -10,4 +10,3 @@ library(testthat)
 library(cellmarkeraccordion)
 
 test_check("cellmarkeraccordion")
-devtools::test()
