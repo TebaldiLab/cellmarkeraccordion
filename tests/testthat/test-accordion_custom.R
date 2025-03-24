@@ -51,11 +51,11 @@
 #'@param max_n_marker Integer value specifying the maximum number of markers to
 #'  keep for each cell type. For the selection, markers are ranked according to
 #'  their combined score, obtained by multiplying evidence consistency score and
-#'  specificity score. If  NULL, no filter is applied. Default is NULL.
+#'  SPs score. If  NULL, no filter is applied. Default is NULL.
 #' @param combined_score_quantile_threshold numeric value in (0,1] specifying
 #'   the combined score quantile threshold. For the selection, markers are
 #'   ranked according to their combined score,  obtained by multiplying weight
-#'   and specificity score. Only markers > the
+#'   and SPs score. Only markers > the
 #'   quantile_threshold are kept. If  NULL, no filter is applied. Default is
 #'   NULL.
 #'@param annotation_resolution Character string or character string vector
@@ -98,10 +98,10 @@
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
 #'   the condition id’s for each cell.  Default is NULL.
-#'@param cell_type_group_info in case \code{data} is a Seurat object,
-#'  \code{cell_type_group_info} should be need to be a character string specifying the
+#'@param celltype_group_info in case \code{data} is a Seurat object,
+#'  \code{celltype_group_info} should be need to be a character string specifying the
 #'  name of the column in the metadata that contains cell types ids for each cell;
-#'  if \code{data} is a count matrix, \code{cell_type_group_info} should be need to be a
+#'  if \code{data} is a count matrix, \code{celltype_group_info} should be need to be a
 #'   data frame or data table containing cell types identity for each cell. The
 #'   data frame or data table should contain at least two columns, one  named
 #'   “cell”, which specifies cell id’s, and one named “cell_type”, which specifies
@@ -200,7 +200,7 @@ accordion_custom<-function(data,
                            annotation_name = "accordion_custom",
                            include_detailed_annotation_info = TRUE,
                            condition_group_info = NULL,
-                           cell_type_group_info = NULL,
+                           celltype_group_info = NULL,
                            group_markers_by = "celltype_cluster",
                            top_cell_score_quantile_threshold = 0.90,
                            n_top_celltypes = 5,
@@ -314,7 +314,7 @@ accordion_custom<-function(data,
 
   #check input table
   if(nrow(marker_table) < 2){
-    stop("Insufficient number of columns. The marker table must contains at least \"cell_type\"  and \"marker\" columns ")
+    stop("Insufficient number of columns. The marker table must contains at least \"category\" and \"marker\" columns")
   } else {
     if(category_column %in% colnames(marker_table) & marker_column %in% colnames(marker_table)){
       if(!marker_type_column %in% colnames(marker_table)){
@@ -380,24 +380,24 @@ accordion_custom<-function(data,
   #Evidence consistency score log-transformed
   marker_table[,weight_scaled := log10(weight)+1]
 
-  #compute specificity for positive and negative markers
+  #compute SPs for positive and negative markers
   mark_spec<-ddply(marker_table,.(marker,marker_type),nrow)
-  colnames(mark_spec)<-c("marker","marker_type","specificity")
+  colnames(mark_spec)<-c("marker","marker_type","SPs")
   marker_table<-merge(marker_table,mark_spec,by=c("marker","marker_type"),all.x = TRUE)
 
   length_ct_pos<-uniqueN(marker_table[marker_type=="positive"]$cell_type)
   length_ct_neg<-uniqueN(marker_table[marker_type=="negative"]$cell_type)
 
-  #scale and log transforme specificity
-  marker_table<-marker_table[marker_type=="positive",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
-  ][marker_type=="negative",specificity_scaled := scales::rescale(as.numeric(specificity), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
-  ][,c("cell_type","marker","marker_type","specificity","specificity_scaled","weight_scaled","weight")]
-  marker_table[,specificity_scaled:=log10(specificity_scaled)+1]
+  #scale and log transforme SPs
+  marker_table<-marker_table[marker_type=="positive",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
+  ][marker_type=="negative",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
+  ][,c("cell_type","marker","marker_type","SPs","SPs_reg","weight_scaled","weight")]
+  marker_table[,SPs_reg:=log10(SPs_reg)+1]
 
   setkey(marker_table,marker,cell_type)
 
   # merge Z_scaled_dt and accordion table
-  marker_table[,combined_score := specificity_scaled * weight_scaled]
+  marker_table[,combined_score := SPs_reg * weight_scaled]
 
   # filter markers according to the quantile threshold set
   if(!is.null(combined_score_quantile_threshold)){
@@ -439,7 +439,7 @@ accordion_custom<-function(data,
   sum_dt <- dt_score[data.table("cell_type" = rep(dt_score_ct$cell_type, each = 2),
                                 "cell" = rep(dt_score_ct$cell, each = 2),
                                 "marker_type" = c("positive", "negative")),
-                     .(score= (sum(score)/(sqrt((sum(weight_scaled * specificity_scaled)))))), by = .EACHI]
+                     .(score= (sum(score)/(sqrt((sum(weight_scaled * SPs_reg)))))), by = .EACHI]
 
 
   sum_dt<-unique(sum_dt)
@@ -552,7 +552,7 @@ accordion_custom<-function(data,
                                                       top_marker_score_quantile_threshold,
                                                       top_cell_score_quantile_threshold,
                                                       condition_group_info,
-                                                      cell_type_group_info)
+                                                      celltype_group_info)
     } else{
       accordion_output<-include_detailed_annotation_info_helper_custom(accordion_output,
                                                                 data_type,
@@ -570,7 +570,7 @@ accordion_custom<-function(data,
                                                                 top_marker_score_quantile_threshold,
                                                                 top_cell_score_quantile_threshold,
                                                                 condition_group_info,
-                                                                cell_type_group_info)
+                                                                celltype_group_info)
     }
 
   }
@@ -584,9 +584,9 @@ accordion_custom<-function(data,
 
   if(include_detailed_annotation_info==T & plot == T){
     if(data_type == "seurat"){
-      data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
+      data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by, condition_group_info = condition_group_info, celltype_group_info=celltype_group_info)
     } else{
-      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
+      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by,condition_group_info = condition_group_info, celltype_group_info=celltype_group_info)
 
     }
   }

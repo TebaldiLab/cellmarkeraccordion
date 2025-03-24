@@ -12,7 +12,7 @@
 list_tissues<-function(species = c("Human","Mouse"),
                        celltype = NULL
 ){
-  data("disease_accordion_marker", package = "cellmarkeraccordion",envir = environment())
+  data("accordion_marker", package = "cellmarkeraccordion",envir = environment())
 
   input_species<-species
   if(!is.null(celltype)){
