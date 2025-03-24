@@ -40,12 +40,12 @@
 #'  tissues that are descendants of the selected tissue(s) according to the uberon
 #'  ontology. If TRUE,cell types and markers from the selected tissues and their
 #'  descendants are aggregated. Default is FALSE
-#' @param evidence_consistency_score_threshold Integer value (currently in (1,17))
-#'   specifying the minimum evidence consistency (EC) score for each
+#' @param ECs_threshold Integer value (currently in (1,17))
+#'   specifying the minimum evidence consistency score (ECs) for each
 #'   marker. Only markers >= this threshold are kept. If NULL, no filter is
 #'   applied. Default is NULL.
-#' @param SPs_score_threshold numeric value in (0,1) specifying the
-#'   minimum SPs score for each marker. Only markers <= this threshold
+#' @param SPs_threshold numeric value in (0,1) specifying the
+#'   minimum specificity score (SPs) for each marker. Only markers <= this threshold
 #'   are kept. If  NULL, no filter is applied. Default is NULL.
 #' @param log2FC_threshold numeric value specifying the
 #'   minimum log2FC threshold for each marker reporting this information.
@@ -201,8 +201,8 @@ accordion<-function(data,
                     species = "Human",
                     tissue = NULL,
                     include_descendants = FALSE,
-                    evidence_consistency_score_threshold = NULL,
-                    SPs_score_threshold = NULL,
+                    ECs_threshold = NULL,
+                    SPs_threshold = NULL,
                     log2FC_threshold = NULL,
                     min_n_marker = 5,
                     max_n_marker = NULL,
@@ -563,11 +563,11 @@ accordion<-function(data,
 
   accordion_marker<-unique(accordion_marker[,c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","marker","marker_type", "ECs")])
   #keep only marker genes with EC score above the selected threshold
-  if(!is.null(evidence_consistency_score_threshold)){
-    if(!is.numeric(evidence_consistency_score_threshold) | !(evidence_consistency_score_threshold %in% 1 == 0)){
-      warning("Invalid evidence_consistency_score_threshold type. Parameter evidence_consistency_score_threshold must be an integer value (currently in [1,16]). No filter is applied")
+  if(!is.null(ECs_threshold)){
+    if(!is.numeric(ECs_threshold) | !(ECs_threshold %in% 1 == 0)){
+      warning("Invalid ECs_threshold type. Parameter ECs_threshold must be an integer value (currently in [1,17]). No filter is applied")
     } else{
-      accordion_marker<-accordion_marker[ECs >= evidence_consistency_score_threshold]
+      accordion_marker<-accordion_marker[ECs >= ECs_threshold]
     }
   }
 
@@ -597,11 +597,11 @@ accordion<-function(data,
 
 
   #keep only marker genes with SPs score above the selected threshold
-  if(!is.null(SPs_score_threshold)){
-    if(!is.numeric(SPs_score_threshold)){
-      warning("Invalid SPs_score_threshold type. Parameter SPs_score_threshold must be a numeric value in (0,1]. No filter is applied")
+  if(!is.null(SPs_threshold)){
+    if(!is.numeric(SPs_threshold)){
+      warning("Invalid SPs_threshold type. Parameter SPs_threshold must be a numeric value in (0,1]. No filter is applied")
     } else{
-      accordion_marker<-accordion_marker[SPs >= SPs_score_threshold]
+      accordion_marker<-accordion_marker[SPs >= SPs_threshold]
     }
   }
 

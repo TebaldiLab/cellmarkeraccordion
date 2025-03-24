@@ -45,12 +45,12 @@
 #'   species. Currently, either “Human” and/or “Mouse” are supported. If
 #'   multiple species are selected, marker genes are merged together. Default is
 #'   “Human”.
-#' @param evidence_consistency_score_threshold Integer value
-#'   specifying the minimum evidence consistency (EC) score for each
+#' @param ECs_threshold Integer value
+#'   specifying the minimum evidence consistency score (ECs) for each
 #'   marker. Only markers >= this threshold are kept. If NULL, no filter is
 #'   applied. Default is NULL.
-#' @param SPs_score_threshold numeric value in (0,1) specifying the
-#'   minimum SPs score for each marker. Only markers <= this threshold
+#' @param SPs_threshold numeric value in (0,1) specifying the
+#'   minimum specificity score (SPs) for each marker. Only markers <= this threshold
 #'   are kept. If  NULL, no filter is applied. Default is NULL.
 #' @param log2FC_threshold numeric value specifying the
 #'   minimum log2FC threshold for each marker reporting this information.
@@ -221,8 +221,8 @@ accordion_disease<-function(data,
                             NCIT_celltypes = NULL,
                             species = "Human",
                             include_descendants = FALSE,
-                            evidence_consistency_score_threshold = NULL,
-                            SPs_score_threshold = NULL,
+                            ECs_threshold = NULL,
+                            SPs_threshold = NULL,
                             log2FC_threshold = NULL,
                             malignant_quantile_threshold = 0.95,
                             min_n_marker = 5,
@@ -598,11 +598,11 @@ accordion_disease<-function(data,
 
   disease_accordion_marker<-unique(disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type", "ECs")])
   #keep only marker genes with EC score above the selected threshold
-  if(!is.null(evidence_consistency_score_threshold)){
-    if(!is.numeric(evidence_consistency_score_threshold) | !(evidence_consistency_score_threshold %in% 1 == 0)){
-      warning("Invalid evidence_consistency_score_threshold type. Parameter evidence_consistency_score_threshold must be an integer value (currently in [1,16]). No filter is applied")
+  if(!is.null(ECs_threshold)){
+    if(!is.numeric(ECs_threshold) | !(ECs_threshold %in% 1 == 0)){
+      warning("Invalid ECs_threshold type. Parameter ECs_threshold must be an integer value (currently in [1,16]). No filter is applied")
     } else{
-      disease_accordion_marker<-disease_accordion_marker[ECs >= evidence_consistency_score_threshold]
+      disease_accordion_marker<-disease_accordion_marker[ECs >= ECs_threshold]
     }
   }
 
@@ -632,11 +632,11 @@ accordion_disease<-function(data,
 
 
   #keep only marker genes with EC score above the selected threshold
-  if(!is.null(evidence_consistency_score_threshold)){
-    if(!is.numeric(evidence_consistency_score_threshold) | !is.integer(evidence_consistency_score_threshold)){
-      warning("Invalid evidence_consistency_score_threshold type. Parameter evidence_consistency_score_threshold must be an integer value (currently in [1,7]). No filter is applied")
+  if(!is.null(ECs_threshold)){
+    if(!is.numeric(ECs_threshold) | !is.integer(ECs_threshold)){
+      warning("Invalid ECs_threshold type. Parameter ECs_threshold must be an integer value (currently in [1,7]). No filter is applied")
     } else{
-      disease_accordion_marker<-disease_accordion_marker[ECs >= evidence_consistency_score_threshold]
+      disease_accordion_marker<-disease_accordion_marker[ECs >= ECs_threshold]
     }
   }
 

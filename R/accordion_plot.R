@@ -34,6 +34,22 @@
 #' @param color_by Character string specifying if the plot reporting the top
 #' cell types for each cluster/cell is colored based on the assigned cell type
 #' ("cell_type") or on cluster id ("cluster"). Default is "cell_type.
+#' @param condition_group_info in case \code{data} is a Seurat object,
+#'  \code{condition_group_info} should be need to be a character string specifying the
+#'  name of the column in the metadata that contains condition ids for each cell;
+#'  if \code{data} is a count matrix, \code{condition_group_info} should be need to be a
+#'   data frame or data table containing condition identity for each cell. The
+#'   data frame or data table should contain at least two columns, one  named
+#'   “cell”, which specifies cell id’s, and one named “condition”, which specifies
+#'   the condition id’s for each cell.  Default is NULL.
+#' @param celltype_group_info in case \code{data} is a Seurat object,
+#'  \code{celltype_group_info} should be need to be a character string specifying the
+#'  name of the column in the metadata that contains cell types ids for each cell;
+#'  if \code{data} is a count matrix, \code{celltype_group_info} should be need to be a
+#'   data frame or data table containing cell types identity for each cell. The
+#'   data frame or data table should contain at least two columns, one  named
+#'   “cell”, which specifies cell id’s, and one named “CL_celltype” or "NCIT_celltype", which specifies
+#'   the cell types for each cell.  Default is NULL.
 #' @return A Seurat object or a list.
 #' @details If a Seurat object was provided in input, the function returns the
 #' Seurat object with a list of ggplot objects added to the "misc" slot in the
