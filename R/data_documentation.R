@@ -38,10 +38,10 @@ NULL
 #' @format Uberon ontology
 NULL
 
-#' gene_description: table containg gene description for human and mouse genes (human112_GRCh38.p14 and mouse112_GRCm39)
+#' gene_description: table containing gene description for human and mouse genes (human112_GRCh38.p14 and mouse112_GRCm39)
 #'
 #' @docType data
-#' @name uberon_onto
+#' @name gene_description
 #' @usage data(gene_description)
 #' @format data table
 NULL

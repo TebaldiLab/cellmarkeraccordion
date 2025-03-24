@@ -74,7 +74,7 @@ functions.
 top cell types (or pathways) and top markers It takes in input either a
 Seurat object or a raw or normalized count matrix and a table of marker genes
 associated to cell types or even to pathways and return in output the cell
-types/pathways assignment and the detailed informations of the annotation
+types/pathways assignment and the detailed information of the annotation
 results (added to the Seurat object or as a list).
 
 If a Seurat object was provided in input, the function returns the
