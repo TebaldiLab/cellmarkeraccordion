@@ -199,10 +199,10 @@ A Seurat object or a list
 }
 \description{
 This function performs cell types or signatures/pathways annotation based on
-cusom marker genes set. It takes in input either a Seurat object or a raw or
+custom marker genes set. It takes in input either a Seurat object or a raw or
 normalized count matrix and a table of marker genes associated to cell types
 or even to pathways and return in output the cell types/pathways assignment
-and the detailed informations of the annotation results (added to the Seurat
+and the detailed information of the annotation results (added to the Seurat
 object or as a list).
 }
 \details{
