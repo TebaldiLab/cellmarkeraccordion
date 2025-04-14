@@ -12,6 +12,7 @@ accordion(
   CL_celltypes = NULL,
   species = "Human",
   tissue = NULL,
+  root_cell_types = NULL,
   include_descendants = FALSE,
   ECs_threshold = NULL,
   SPs_threshold = NULL,
@@ -78,7 +79,7 @@ are aggregated. If NULL, all tissues are considered. Default is NULL.}
 \item{include_descendants}{Logical value indicating whether include all the
 tissues that are descendants of the selected tissue(s) according to the uberon
 ontology. If TRUE,cell types and markers from the selected tissues and their
-descendants are aggregated. Default is FALSE}
+descendants are aggregated. Default is FALSE.}
 
 \item{ECs_threshold}{Integer value (currently in (1,17))
 specifying the minimum evidence consistency score (ECs) for each
@@ -213,6 +214,11 @@ is TRUE.}
 \item{color_by}{Character string specifying if the plot reporting the top
 cell types for each cluster/cell is colored based on the assigned cell type
 ("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.}
+
+\item{root_cell_type}{Character string or vector specifying one or more cell types
+to be used as root terms. Only the descendant cell types of the specified roots
+will be use for the annotation, excluding the root terms themselves. Default
+is NULL.}
 }
 \value{
 A Seurat object or a list

@@ -36,10 +36,14 @@
 #'  Run the function "list_tissues()" to obtain the available tissues. If multiple
 #'  tissues are selected cell types and markers from the selected tissues
 #'  are aggregated. If NULL, all tissues are considered. Default is NULL.
+#' @param root_cell_type Character string or vector specifying one or more cell types
+#' to be used as root terms. Only the descendant cell types of the specified roots
+#' will be use for the annotation, excluding the root terms themselves. Default
+#' is NULL.
 #' @param include_descendants  Logical value indicating whether include all the
 #'  tissues that are descendants of the selected tissue(s) according to the uberon
 #'  ontology. If TRUE,cell types and markers from the selected tissues and their
-#'  descendants are aggregated. Default is FALSE
+#'  descendants are aggregated. Default is FALSE.
 #' @param ECs_threshold Integer value (currently in (1,17))
 #'   specifying the minimum evidence consistency score (ECs) for each
 #'   marker. Only markers >= this threshold are kept. If NULL, no filter is
@@ -200,6 +204,7 @@ accordion<-function(data,
                     CL_celltypes = NULL,
                     species = "Human",
                     tissue = NULL,
+                    root_cell_types = NULL,
                     include_descendants = FALSE,
                     ECs_threshold = NULL,
                     SPs_threshold = NULL,
@@ -382,8 +387,23 @@ accordion<-function(data,
       stop("Database not found. Please set database as NULL to run the annotation with the Accordion database, otherwise use the integrated table returns from the marker_database_integration() function.")
     }
   }
+
   accordion_marker<-accordion_marker[marker %in% rownames(data)]
-  #load the Cell Marker Accordion database based on the condition selected
+
+  if(nrow(accordion_marker)==0){
+    stop("No marker genes were detected in your dataset. Please try again using different parameters. Ensure that gene names (not Ensembl IDs) are used in your input data.")
+  }
+  #filter only based on root_cell_types if selected
+  if(!is.null(root_cell_types)){
+    data("cell_onto", package = "cellmarkeraccordion",envir = environment())
+    ontology_celltype<-as.data.frame(cell_onto[["name"]])
+    colnames(ontology_celltype)<-"cell_type"
+    ontology_celltype<-as.data.table(ontology_celltype)[,CL_ID:=rownames(ontology_celltype)][cell_type %in% eval(root_cell_types)]
+    desc<-as.data.table(get_descendants(cell_onto, roots=unique(ontology_celltype$CL_ID), exclude_roots = TRUE))
+    accordion_marker<-accordion_marker[CL_ID %in% desc$V1]
+
+  }
+
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){
     if(!is.numeric(log2FC_threshold)){
@@ -660,8 +680,7 @@ accordion<-function(data,
 
   #check if the accordion table is empty
   if(nrow(accordion_marker) ==0){
-    stop("0 markers found in the expression data. Please try again by setting different parameters.")
-
+    stop("No marker genes were detected in your dataset. Please try again using different parameters")
   }
 
   # scale data based on markers used for the annotation

@@ -121,12 +121,17 @@ accordion_plot<-function(data,
     }
   }
 
-  if("NCIT_celltype" %in% colnames(top_CL_celltype_dt)){
-    func<-"disease"
-    names(top_CL_celltype_dt)[names(top_CL_celltype_dt) == 'NCIT_celltype'] <- 'CL_celltype'
-    names(top_marker_dt)[names(top_marker_dt) == 'NCIT_celltype'] <- 'CL_celltype'
-  } else{
+
+  data("cell_onto", package = "cellmarkeraccordion",envir = environment())
+  CL_celltype_annotation_column<-paste0(info_to_plot, "_per_", resolution)
+  ontology_celltype<-as.data.frame(cell_onto[["name"]])
+  colnames(ontology_celltype)<-"CL_celltype"
+  ct<-unique(top_CL_celltype_dt[,get(CL_celltype_annotation_column)])
+  if(all(ct %in% ontology_celltype$CL_celltype)){
     func<-"healthy"
+  }else{
+    func<-"disease"
+
   }
 
   if(!is.null(eval(condition_group_info))){
@@ -143,12 +148,8 @@ accordion_plot<-function(data,
   marker_slot_plot<-paste0(top_markers,"_plot")
   celltype_slot_plot<-"top_celltypes_plot"
 
-  CL_celltype_annotation_column<-paste0(info_to_plot, "_per_", resolution)
-  data("cell_onto", package = "cellmarkeraccordion",envir = environment())
 
     if("ECs" %in% colnames(top_marker_dt) & func == "healthy"){
-      ontology_celltype<-as.data.frame(cell_onto[["name"]])
-      colnames(ontology_celltype)<-"CL_celltype"
       ontology_celltype$CL_ID<-rownames(ontology_celltype)
       ontology_celltype<-as.data.table(ontology_celltype)
       if("cluster" %in% resolution){
