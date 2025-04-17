@@ -1,7 +1,9 @@
 
 [![R-CMD-check](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml)
 
-<img src= https://github.com/user-attachments/assets/6e6b64a8-c89a-462d-b299-c6ce21e7b75e style="width:30%; height:30%;"> <br />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6e6b64a8-c89a-462d-b299-c6ce21e7b75e" style="width:30%; height:30%;">
+</p>
 # cellmarkeraccordion
 
 ### R package for automated annotation and interpretation of single-cell and spatial omics data.
