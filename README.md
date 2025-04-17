@@ -2,6 +2,9 @@
 
 [![R-CMD-check](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml)
 
+---
+
+R package for automated annotation and interpretation of single-cell and spatial omics data.
 
 ### R package for automated annotation and interpretation of single-cell and spatial omics data.
 ## Overview
