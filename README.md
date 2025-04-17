@@ -1,5 +1,5 @@
 
-# The Cell Marker Accordion <img src="https://github.com/user-attachments/assets/6e6b64a8-c89a-462d-b299-c6ce21e7b75e" align="right" height="300" /></a>
+# The Cell Marker Accordion <img src="https://github.com/user-attachments/assets/6e6b64a8-c89a-462d-b299-c6ce21e7b75e" align="right" height="200" /></a>
 [![R-CMD-check](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml)
 
 ### R package for automated annotation and interpretation of single-cell and spatial omics data.
