@@ -1,4 +1,4 @@
-# The Cell Marker Accordion <img src="https://github.com/user-attachments/assets/6e6b64a8-c89a-462d-b299-c6ce21e7b75e" align="right" height="250" />
+# The Cell Marker Accordion <img src="https://github.com/user-attachments/assets/6e6b64a8-c89a-462d-b299-c6ce21e7b75e" align="right" height="250" style="margin-top: -20px;" />
 
 [![R-CMD-check](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml)
 
