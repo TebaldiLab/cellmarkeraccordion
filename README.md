@@ -5,6 +5,9 @@
 ---
 
 ### R package for automated annotation and interpretation of single-cell and spatial omics data.
+
+---
+
 ## Overview
 Single-cell technologies offer a unique opportunity to explore cellular heterogeneity in health and
 disease. However, reliable identification of cell types and states represents a bottleneck. Available
