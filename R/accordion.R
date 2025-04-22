@@ -61,11 +61,11 @@
 #' @param max_n_marker Integer value specifying the maximum number of markers to
 #'   keep for each cell type. For the selection, markers are ranked according to
 #'   their combined score, obtained by multiplying evidence consistency score
-#'   and SPs score. If  NULL, no filter is applied. Default is NULL.
+#'   and specificity score. If  NULL, no filter is applied. Default is NULL.
 #' @param combined_score_quantile_threshold numeric value in (0,1) specifying
 #'   the combined score quantile threshold. For the selection, markers are
 #'   ranked according to their combined score,  obtained by multiplying evidence
-#'   consistency score and SPs score. Only markers >  the
+#'   consistency score and specificity score. Only markers >  the
 #'   quantile_threshold are kept. If  NULL, no filter is applied. Default is
 #'   NULL.
 #' @param annotation_resolution Character string or character string vector
