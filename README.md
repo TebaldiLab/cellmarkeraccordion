@@ -1,10 +1,12 @@
+# The Cell Marker Accordion <img src="https://github.com/user-attachments/assets/6e6b64a8-c89a-462d-b299-c6ce21e7b75e" align="right" height="250" style="margin-top: -60px;" />
 
 [![R-CMD-check](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/TebaldiLab/cellmarkeraccordion/actions/workflows/R-CMD-check.yaml)
 
-![Logo](https://github.com/TebaldiLab/cellmarkeraccordion/assets/68125242/f71d49b1-72c9-4c45-99d8-e682248154ab)
-# cellmarkeraccordion
+---
 
 ### R package for automated annotation and interpretation of single-cell and spatial omics data.
+
+
 ## Overview
 Single-cell technologies offer a unique opportunity to explore cellular heterogeneity in health and
 disease. However, reliable identification of cell types and states represents a bottleneck. Available
