@@ -384,7 +384,7 @@ accordion_disease<-function(data,
     #check
     if(ncol(database) == 27){
       disease_accordion_marker<-database
-      setnames(dt, "ECs_NCIT_global", "ECs_global")
+      setnames(disease_accordion_marker, "ECs_NCIT_global", "ECs_global")
 
       } else{
       stop("Database not found. Please set database as NULL to run the annotation with the Accordion database, otherwise use the integrated table returns from the marker_database_integration() function.")
