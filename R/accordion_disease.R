@@ -379,11 +379,14 @@ accordion_disease<-function(data,
 
   if(is.null(database)){
     data("disease_accordion_marker", package = "cellmarkeraccordion",envir = environment())
+
   } else{
     #check
     if(ncol(database) == 27){
       disease_accordion_marker<-database
-    } else{
+      setnames(dt, "ECs_NCIT_global", "ECs_global")
+
+      } else{
       stop("Database not found. Please set database as NULL to run the annotation with the Accordion database, otherwise use the integrated table returns from the marker_database_integration() function.")
     }
   }
