@@ -340,7 +340,7 @@ accordion_cellcycle<-function(data,
     suppressMessages({
 
     data<-ScaleData(data, features = unique(cell_cycle_markers$marker))
-    )}
+    })
     Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
     Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
     setkey(Zscaled_data, marker)
