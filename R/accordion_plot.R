@@ -431,6 +431,16 @@ accordion_plot<-function(data,
 
           }
 
+          if("condition" %in% colnames(top_dt_cl) & "celltype_group_info" %in% colnames(top_dt_cl)){
+            dotplot_ct<- dotplot_ct + facet_grid(celltype_group_info ~ condition, scales="free_y")
+          }
+          if("condition" %in% colnames(top_dt_cl) & !("celltype_group_info" %in% colnames(top_dt_cl))){
+            dotplot_ct<- dotplot_ct + facet_grid(. ~ condition, scales="free_y")
+          }
+          if(!("condition" %in% colnames(top_dt_cl)) & "celltype_group_info" %in% colnames(top_dt_cl)){
+            dotplot_ct<- dotplot_ct + facet_grid(celltype_group_info ~ ., scales="free_y")
+          }
+
           if(data_type == "seurat"){
             data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[celltype_slot_plot]][["global"]]<-dotplot_ct
           } else {
@@ -474,8 +484,6 @@ accordion_plot<-function(data,
 
             }
 
-            if(func =="healthy"){
-
               dotplot<- ggplot(top_marker_dt, aes(x=marker, y = group, color = group, size = impact_score)) +
                 geom_point() +
                 theme_bw(base_size = bs) +
@@ -497,34 +505,16 @@ accordion_plot<-function(data,
                       axis.text.x = element_text(angle = 45, hjust=1))+
                 scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
                                                                width = 20))
-            } else {
 
-              dotplot<- ggplot(top_marker_dt, aes(x=marker, y = group, color = group, alpha= condition, size = impact_score, group=condition)) +
-                geom_point(position=position_dodge(width=0.3)) +
-                scale_alpha_discrete(range = c(0.6, 1))  +
-                theme_bw(base_size = bs) +
-                scale_size(range=c(4,10))+
-                guides(colour="none")+
-                scale_color_manual(values=hex)+
-                theme(panel.border = element_blank(),
-                      axis.title.x = element_blank(),
-                      axis.title.y = element_blank(),
-                      panel.grid.major = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      axis.ticks.y = element_blank(),
-                      strip.background = element_blank(),
-                      strip.text = element_text(size=bs),
-                      text = element_text(size = bs),
-                      axis.text.y = element_text(size = bs),
-                      legend.position = "right", legend.margin = margin(10,0,0,0), legend.box.margin = margin(-5,-5,-5,5),
-                      legend.text = element_text(margin = margin(l = 0, unit = "pt")), legend.key.size = unit(1.2,"line"),
-                      axis.text.x = element_text(angle = 45, hjust=1))+
-                scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, "foo" , "_"),
-                                                               width = 20))
-            }
-
-
-
+              if("condition" %in% colnames(top_dt_cl) & "celltype_group_info" %in% colnames(top_dt_cl)){
+                dotplot<- dotplot + facet_grid(celltype_group_info ~ condition, scales="free_y")
+              }
+              if("condition" %in% colnames(top_dt_cl) & !("celltype_group_info" %in% colnames(top_dt_cl))){
+                dotplot<- dotplot + facet_grid(. ~ condition, scales="free_y")
+              }
+              if(!("condition" %in% colnames(top_dt_cl)) & "celltype_group_info" %in% colnames(top_dt_cl)){
+                dotplot<- dotplot + facet_grid(celltype_group_info ~ ., scales="free_y")
+              }
             if(data_type == "seurat"){
               data@misc[[info_to_plot]][[resolution_slot]][["detailed_annotation_info"]][[marker_slot_plot]][["global"]]<-dotplot
             } else {
@@ -579,11 +569,6 @@ accordion_plot<-function(data,
               V(onto_igraph)$CL_ID<-adj$CL_ID
               V(onto_igraph)[V(onto_igraph)$CL_ID %in% top_celltypes_cl$CL_ID]$color <- "#8B1A1A"
               V(onto_igraph)[!V(onto_igraph)$CL_ID %in% top_celltypes_cl$CL_ID]$color <- "gray50"
-
-
-              #V(onto_igraph)$CL<- str_split_i(onto_plot@nodes, "CL:", i= -1)
-               #V(onto_igraph)[V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1)]$color <- "#8B1A1A"
-               #V(onto_igraph)[!(V(onto_igraph)$CL %in% str_split_i(top_celltypes_cl$CL_ID, "CL:", i= -1))]$color <- "gray50"
 
                 pl <- ggplot(top_celltypes_cl, aes(impact_score, CL_celltype)) +
                   geom_vline(xintercept = 0, linetype = 2) +
