@@ -709,7 +709,9 @@ accordion_disease<-function(data,
   }
 
   # scale data based on markers used for the annotation
+  suppressMessages({
   data<-ScaleData(data, features = unique(disease_accordion_marker$marker))
+  })
   Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
   Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
   setkey(Zscaled_data, marker)

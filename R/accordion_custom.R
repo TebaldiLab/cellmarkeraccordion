@@ -426,7 +426,9 @@ accordion_custom<-function(data,
   }
 
   # scale data based on markers used for the annotation
-  data<-ScaleData(data, features = unique(marker_table$marker))
+  suppressMessages({
+    data<-ScaleData(data, features = unique(marker_table$marker))
+  )}
   Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
   Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
   setkey(Zscaled_data, marker)

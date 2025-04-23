@@ -245,7 +245,7 @@ accordion_plot<-function(data,
         vec_neg<-top_dt_cl[marker_type=="negative"]$color_combo
         names(vec_neg)<-top_dt_cl[marker_type=="negative"]$SPs_range
         vec_neg<-vec_neg[!duplicated(vec_neg)]
-        suppressWarnings({
+        suppressMessages({
         if("ECs" %in% colnames(top_marker_dt)){
           top_dt_cl[, ECs_range:= ECs][ECs > 5, ECs_range:=5]
           pl <- ggplot(top_dt_cl, aes(impact_score, marker)) +
