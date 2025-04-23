@@ -337,7 +337,7 @@ accordion_cellcycle<-function(data,
     }
 
     # scale data based on markers used for the annotation
-    suppressMessages({
+    suppressWarnings({
 
     data<-ScaleData(data, features = unique(cell_cycle_markers$marker))
     })
