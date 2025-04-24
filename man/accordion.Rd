@@ -76,6 +76,11 @@ Run the function "list_tissues()" to obtain the available tissues. If multiple
 tissues are selected cell types and markers from the selected tissues
 are aggregated. If NULL, all tissues are considered. Default is NULL.}
 
+\item{root_cell_types}{Character string or vector specifying one or more cell types
+to be used as root terms. Only the descendant cell types of the specified roots
+will be use for the annotation, excluding the root terms themselves. Default
+is NULL.}
+
 \item{include_descendants}{Logical value indicating whether include all the
 tissues that are descendants of the selected tissue(s) according to the uberon
 ontology. If TRUE,cell types and markers from the selected tissues and their
@@ -214,11 +219,6 @@ is TRUE.}
 \item{color_by}{Character string specifying if the plot reporting the top
 cell types for each cluster/cell is colored based on the assigned cell type
 ("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.}
-
-\item{root_cell_type}{Character string or vector specifying one or more cell types
-to be used as root terms. Only the descendant cell types of the specified roots
-will be use for the annotation, excluding the root terms themselves. Default
-is NULL.}
 }
 \value{
 A Seurat object or a list
