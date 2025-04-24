@@ -36,7 +36,7 @@
 #'  Run the function "list_tissues()" to obtain the available tissues. If multiple
 #'  tissues are selected cell types and markers from the selected tissues
 #'  are aggregated. If NULL, all tissues are considered. Default is NULL.
-#' @param root_cell_type Character string or vector specifying one or more cell types
+#' @param root_cell_types Character string or vector specifying one or more cell types
 #' to be used as root terms. Only the descendant cell types of the specified roots
 #' will be use for the annotation, excluding the root terms themselves. Default
 #' is NULL.

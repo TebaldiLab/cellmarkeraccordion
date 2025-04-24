@@ -1,6 +1,6 @@
 Package: cellmarkeraccordion
 Title: Single-cell and spatial omics annotation in health and disease
-Version: 0.9.7
+Version: 1.0.0
 Authors@R: c(
     person("Emma", "Busarello", email = "emma.busarello@unitn.it", role = c("aut", "cre")),
     person("Toma", "Tebaldi", email = "toma.tebaldi@unitn.it", role = "aut"),
