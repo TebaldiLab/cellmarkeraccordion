@@ -20,9 +20,8 @@ accordion_disease(
   log2FC_threshold = NULL,
   malignant_quantile_threshold = 0.95,
   min_n_marker = 5,
-  max_n_marker = NULL,
+  max_n_marker = 30,
   combined_score_quantile_threshold = NULL,
-  disease_vs_healthy = TRUE,
   annotation_resolution = "cluster",
   cluster_score_quantile_threshold = 0.75,
   allow_unknown = TRUE,
@@ -116,7 +115,7 @@ threshold are kept.  Default is 5.}
 \item{max_n_marker}{Integer value specifying the maximum number of markers to
 keep for each cell type. For the selection, markers are ranked according to
 their combined score, obtained by multiplying evidence consistency score
-and SPs score. If  NULL, no filter is applied. Default is NULL.}
+and SPs score. If  NULL, no filter is applied. Default is 30.}
 
 \item{combined_score_quantile_threshold}{numeric value in (0,1) specifying
 the combined score quantile threshold. For the selection, marers are
@@ -124,14 +123,6 @@ ranked according to their combined score,  obtained by multiplying evidence
 consistency score and SPs score. Only markers >  the
 quantile_threshold are kept. If  NULL, no filter is applied. Default is
 NULL.}
-
-\item{disease_vs_healthy}{Logical value indicating whether to compare the
-markers associated with disease cell types with respect to the markers
-associated with the corresponding healthy cell types. If TRUE the
-SPs score is calculated considering if a gene is also a marker for
-the corresponding healthy cell type. For each cell, a specific score for
-disease cell types and another score for the healthy types (named as the
-cell types label) are returned. Default is TRUE.}
 
 \item{annotation_resolution}{Character string or character string vector
 specifying the resolution of the annotation. Either “cluster” and/or “cell”

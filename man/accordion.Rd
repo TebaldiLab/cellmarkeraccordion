@@ -18,7 +18,7 @@ accordion(
   SPs_threshold = NULL,
   log2FC_threshold = NULL,
   min_n_marker = 5,
-  max_n_marker = NULL,
+  max_n_marker = 30,
   combined_score_quantile_threshold = NULL,
   annotation_resolution = "cluster",
   cluster_score_quantile_threshold = 0.75,
@@ -107,7 +107,7 @@ threshold are kept.  Default is 5.}
 \item{max_n_marker}{Integer value specifying the maximum number of markers to
 keep for each cell type. For the selection, markers are ranked according to
 their combined score, obtained by multiplying evidence consistency score
-and specificity score. If  NULL, no filter is applied. Default is NULL.}
+and specificity score. If  NULL, no filter is applied. Default is 30.}
 
 \item{combined_score_quantile_threshold}{numeric value in (0,1) specifying
 the combined score quantile threshold. For the selection, markers are

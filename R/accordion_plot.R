@@ -5,7 +5,7 @@
 #' \code{accordion_disease_annotation} and \code{accordion_custom_annotation}
 #' functions.
 #'
-#' top cell types (or pathways) and top markers It takes in input either a
+#' Display the top cell types (or pathways) and top markers. It takes in input either a
 #' Seurat object or a raw or normalized count matrix and a table of marker genes
 #' associated to cell types or even to pathways and return in output the cell
 #' types/pathways assignment and the detailed information of the annotation
@@ -101,7 +101,7 @@ accordion_plot<-function(data,
   top_markers<-paste0("top_markers_per_",group_markers_by)
 
 
-  # check di input data
+  # check input data
   if(!(inherits(data, "Seurat"))){
     data_type <- "matrix"
 
@@ -176,8 +176,7 @@ accordion_plot<-function(data,
       group<-as.vector(unique(top_marker_dt[, get(info_to_plot_per_cell)]))
     }
       for (gr in group){
-      #lolliplot with top N markers per cluster
-        #lolliplot with top N markers per cluster
+      #lollipop plot with top N markers per cluster
         if("cluster" %in% group_markers_by){
           top_dt_cl<-top_marker_dt[get(cluster_column_name) == gr]
           colnames(top_dt_cl)[colnames(top_dt_cl) == "gene_impact_score_per_cluster"] <- "impact_score"
@@ -253,7 +252,7 @@ accordion_plot<-function(data,
             geom_segment(aes(x = 0, xend = impact_score, y = marker, yend = marker, color=SPs_range),linewidth = bs/10, show.legend = F) +
             geom_point(aes(size=ECs_range,color=SPs_range), alpha= 1, shape = 16) +
             theme_bw(base_size = bs) +
-            scale_size("EC score",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
+            scale_size("ECs",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
             scale_color_manual("SPs\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
             if(length(unique(top_dt_cl$SPs_negative)) > 0){
@@ -264,7 +263,7 @@ accordion_plot<-function(data,
                 geom_point(aes(size=ECs_range,color=SPs_range),data = subset(top_dt_cl, !is.na(SPs_negative)),alpha= 1, shape = 16) + #, stroke = NA
                 theme_bw(base_size = bs) +
                 scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-                scale_size("EC score",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
+                scale_size("ECs",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
                 scale_color_manual("SPs\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
             }
@@ -529,7 +528,7 @@ accordion_plot<-function(data,
         }
 
         for (gr in group){
-          #lolliplot with top N cell types per cluster
+          #lollipop plot with top N cell types per cluster
 
            if("cluster" %in% resolution){
               top_celltypes_cl<-top_celltypes[group == gr]
@@ -542,9 +541,6 @@ accordion_plot<-function(data,
             top_celltypes_cl[,CL_celltype:=factor(CL_celltype,levels = unique(CL_celltype))]
 
             if("ECs" %in% colnames(top_marker_dt) & length(top_celltypes_cl$CL_ID) > 1){
-              # onto_plot<-onto_plot2(cell_onto, top_celltypes_cl$CL_ID)
-              # onto_plot@nodes<-gsub("(.{10,}?)\\s", "\\1\n", onto_plot@nodes, perl = TRUE)
-              #
               p<-onto_plot(cell_onto, term_sets  = top_celltypes_cl$CL_ID)
               attr<-as.data.table(p[["node_attributes"]])
               attr[,CL_ID:=names(p[["node_attributes"]]$label)]

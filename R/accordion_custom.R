@@ -51,7 +51,7 @@
 #'@param max_n_marker Integer value specifying the maximum number of markers to
 #'  keep for each cell type. For the selection, markers are ranked according to
 #'  their combined score, obtained by multiplying evidence consistency score and
-#'  SPs score. If  NULL, no filter is applied. Default is NULL.
+#'  SPs score. If  NULL, no filter is applied. Default is 30.
 #' @param combined_score_quantile_threshold numeric value in (0,1] specifying
 #'   the combined score quantile threshold. For the selection, markers are
 #'   ranked according to their combined score,  obtained by multiplying weight
@@ -192,7 +192,7 @@ accordion_custom<-function(data,
                            cluster_info = "seurat_clusters",
                            assay = "RNA",
                            min_n_marker = 5,
-                           max_n_marker = NULL,
+                           max_n_marker = 30,
                            combined_score_quantile_threshold = NULL,
                            annotation_resolution = "cluster",
                            cluster_score_quantile_threshold = 0.75,
@@ -429,14 +429,14 @@ accordion_custom<-function(data,
   suppressWarnings({
     data<-ScaleData(data, features = unique(marker_table$marker))
   })
-  Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
-  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
-  setkey(Zscaled_data, marker)
-  Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
-  colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
+  SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
+  setkey(SE_data, marker)
+  SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
+  colnames(SE_m_data)<-c("marker","cell","expr_scaled")
 
   # compute the score for each cell
-  dt_score<-merge.data.table(Zscaled_m_data,marker_table, by="marker",allow.cartesian = TRUE)
+  dt_score<-merge.data.table(SE_m_data,marker_table, by="marker",allow.cartesian = TRUE)
   dt_score[,score := expr_scaled * combined_score]
   dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
   setkey(dt_score, cell_type, cell, marker_type)

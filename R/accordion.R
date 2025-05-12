@@ -61,7 +61,7 @@
 #' @param max_n_marker Integer value specifying the maximum number of markers to
 #'   keep for each cell type. For the selection, markers are ranked according to
 #'   their combined score, obtained by multiplying evidence consistency score
-#'   and specificity score. If  NULL, no filter is applied. Default is NULL.
+#'   and specificity score. If  NULL, no filter is applied. Default is 30.
 #' @param combined_score_quantile_threshold numeric value in (0,1) specifying
 #'   the combined score quantile threshold. For the selection, markers are
 #'   ranked according to their combined score,  obtained by multiplying evidence
@@ -210,7 +210,7 @@ accordion<-function(data,
                     SPs_threshold = NULL,
                     log2FC_threshold = NULL,
                     min_n_marker = 5,
-                    max_n_marker = NULL,
+                    max_n_marker = 30,
                     combined_score_quantile_threshold = NULL,
                     annotation_resolution = "cluster",
                     cluster_score_quantile_threshold = 0.75,
@@ -521,7 +521,6 @@ accordion<-function(data,
   }
 
   # keep only cell types gives in input and markers found in data
-  # assigned the parameter CL_celltype to the more specific "input_CL_celltype"
   if(is.null(CL_celltypes)){
     accordion_marker<-accordion_marker[marker %in% rownames(data)]
   } else {
@@ -627,7 +626,6 @@ accordion<-function(data,
 
   setkey(accordion_marker,marker,CL_celltype)
 
-  # merge Z_scaled_dt and accordion table
   accordion_marker[,combined_score := SPs_reg * ECs_reg]
 
   # filter markers according to the quantile threshold set
@@ -641,7 +639,6 @@ accordion<-function(data,
   }
 
   # keep only the min_n_marker genes for each cell type
-  # number of markers for each cell type
   accordion_marker[,length:= .N, by="CL_celltype"]
   if(!is.null(min_n_marker)){
     if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
@@ -687,13 +684,13 @@ accordion<-function(data,
   suppressWarnings({
   data<-ScaleData(data, features = unique(accordion_marker$marker))
   })
-  Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
-  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
-  setkey(Zscaled_data, marker)
+  SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
+  setkey(SE_data, marker)
 
-  Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
-  colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
-  dt_score<-merge.data.table(Zscaled_m_data,accordion_marker, by="marker",allow.cartesian = TRUE)
+  SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
+  colnames(SE_m_data)<-c("marker","cell","expr_scaled")
+  dt_score<-merge.data.table(SE_m_data,accordion_marker, by="marker",allow.cartesian = TRUE)
 
   # compute the score for each cell
   dt_score[,score := expr_scaled * combined_score]

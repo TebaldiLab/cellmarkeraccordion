@@ -69,20 +69,13 @@
 #' @param max_n_marker Integer value specifying the maximum number of markers to
 #'   keep for each cell type. For the selection, markers are ranked according to
 #'   their combined score, obtained by multiplying evidence consistency score
-#'   and SPs score. If  NULL, no filter is applied. Default is NULL.
+#'   and SPs score. If  NULL, no filter is applied. Default is 30.
 #' @param combined_score_quantile_threshold numeric value in (0,1) specifying
 #'   the combined score quantile threshold. For the selection, marers are
 #'   ranked according to their combined score,  obtained by multiplying evidence
 #'   consistency score and SPs score. Only markers >  the
 #'   quantile_threshold are kept. If  NULL, no filter is applied. Default is
 #'   NULL.
-#' @param disease_vs_healthy Logical value indicating whether to compare the
-#'   markers associated with disease cell types with respect to the markers
-#'   associated with the corresponding healthy cell types. If TRUE the
-#'   SPs score is calculated considering if a gene is also a marker for
-#'   the corresponding healthy cell type. For each cell, a specific score for
-#'   disease cell types and another score for the healthy types (named as the
-#'   cell types label) are returned. Default is TRUE.
 #' @param annotation_resolution Character string or character string vector
 #'   specifying the resolution of the annotation. Either “cluster” and/or “cell”
 #'   are supported. Default is “cluster”.
@@ -226,9 +219,8 @@ accordion_disease<-function(data,
                             log2FC_threshold = NULL,
                             malignant_quantile_threshold = 0.95,
                             min_n_marker = 5,
-                            max_n_marker = NULL,
+                            max_n_marker = 30,
                             combined_score_quantile_threshold = NULL,
-                            disease_vs_healthy = TRUE,
                             annotation_resolution = "cluster",
                             cluster_score_quantile_threshold = 0.75,
                             allow_unknown = TRUE,
@@ -527,7 +519,6 @@ accordion_disease<-function(data,
   }
 
   # keep only cell types gives in input and markers found in data
-  # assigned the parameter NCIT_celltype to the more specific "input_NCIT_celltype"
   input_NCIT_celltype <- NCIT_celltypes
   if(is.null(input_NCIT_celltype)){
     disease_accordion_marker<-disease_accordion_marker[marker %in% rownames(data)]
@@ -577,7 +568,7 @@ accordion_disease<-function(data,
   }
 
 
-  #penalized discordant markers (ex. CD38 positive and CD38 negative for B cell)
+  #penalized discordant markers
   disease_accordion_marker[,group:=paste0(NCIT_celltype, "_", marker)]
   dup<-unique(disease_accordion_marker[,-"resource"])
   discordant_marker<-dup[duplicated(dup[,c("group")])]
@@ -642,25 +633,8 @@ accordion_disease<-function(data,
     }
   }
 
-    if(disease_vs_healthy == T){   # compare the healthy and the disease cell types if compare is set to TRUE
-      #disease_accordion_marker[,cellID_healthy:= tstrsplit(NCIT_ID, "-", keep=2)]
-      data("accordion_marker", package = "cellmarkeraccordion",envir = environment())
-      accordion_healthy<-accordion_marker
-      accordion_healthy<-accordion_healthy[species %in% input_species & Uberon_tissue %in% tissue & CL_ID %in% unique(disease_accordion_marker$CL_ID) & marker %in% rownames(data)]
-      accordion_healthy<-accordion_healthy[!is.na(CL_ID)]
-      accordion_healthy[,DO_diseasetype:=NA][,DO_ID:=NA][,NCIT_celltype:=CL_celltype][,NCIT_ID:=CL_ID]
-      accordion_healthy<-unique(accordion_healthy)
-      if(nrow(accordion_healthy)>0){
-        disease_accordion_marker<-rbind(disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs")],accordion_healthy[,c("species","DO_diseasetype","DO_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs")])
-      }
-    } else if (disease_vs_healthy == F){
-      disease_accordion_marker<- disease_accordion_marker
-    }
-
-
   setkey(disease_accordion_marker,marker,NCIT_celltype)
 
-  # merge Z_scaled_dt and accordion table
   disease_accordion_marker[,combined_score := SPs_reg * ECs_reg]
 
   # filter markers according to the quantile threshold set
@@ -712,14 +686,14 @@ accordion_disease<-function(data,
   suppressWarnings({
   data<-ScaleData(data, features = unique(disease_accordion_marker$marker))
   })
-  Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
-  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
-  setkey(Zscaled_data, marker)
-  Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
-  colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
+  SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
+  setkey(SE_data, marker)
+  SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
+  colnames(SE_m_data)<-c("marker","cell","expr_scaled")
 
   # compute the score for each cell
-  dt_score<-merge.data.table(Zscaled_m_data,disease_accordion_marker, by="marker",allow.cartesian = TRUE)
+  dt_score<-merge.data.table(SE_m_data,disease_accordion_marker, by="marker",allow.cartesian = TRUE)
   dt_score[,score := expr_scaled * combined_score]
   dt_score_ct <- unique(dt_score[, c("NCIT_celltype", "cell")])
   setkey(dt_score, NCIT_celltype, cell, marker_type)

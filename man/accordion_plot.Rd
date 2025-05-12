@@ -71,7 +71,7 @@ results obtained with the \code{accordion_annotation},
 functions.
 }
 \details{
-top cell types (or pathways) and top markers It takes in input either a
+Display the top cell types (or pathways) and top markers. It takes in input either a
 Seurat object or a raw or normalized count matrix and a table of marker genes
 associated to cell types or even to pathways and return in output the cell
 types/pathways assignment and the detailed information of the annotation

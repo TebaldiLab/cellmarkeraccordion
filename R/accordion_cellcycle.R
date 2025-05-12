@@ -328,7 +328,6 @@ accordion_cellcycle<-function(data,
 
     setkey(cell_cycle_markers,marker,cell_type)
 
-    # merge Z_scaled_dt and accordion table
     cell_cycle_markers[,combined_score := SPs_reg * weight_scaled]
 
     # store original scale.data slot if present
@@ -341,14 +340,14 @@ accordion_cellcycle<-function(data,
 
     data<-ScaleData(data, features = unique(cell_cycle_markers$marker))
     })
-    Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
-    Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
-    setkey(Zscaled_data, marker)
-    Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
-    colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
+    SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+    SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
+    setkey(SE_data, marker)
+    SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
+    colnames(SE_m_data)<-c("marker","cell","expr_scaled")
 
     # compute the score for each cell
-    dt_score<-merge.data.table(Zscaled_m_data,cell_cycle_markers, by="marker",allow.cartesian = TRUE)
+    dt_score<-merge.data.table(SE_m_data,cell_cycle_markers, by="marker",allow.cartesian = TRUE)
     dt_score[,score := expr_scaled * combined_score]
     dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
     setkey(dt_score, cell_type, cell, marker_type)
