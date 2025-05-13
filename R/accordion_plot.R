@@ -352,7 +352,7 @@ accordion_plot<-function(data,
 
         }
       }
-
+  suppressMessages({
         if("cluster" %in% resolution){
           group<-as.vector(unique(top_celltypes[, get(cluster_column_name)]))
           #global cell types
@@ -431,6 +431,7 @@ accordion_plot<-function(data,
 
           }
 
+
           if("condition" %in% colnames(top_dt_cl) & "celltype_group_info" %in% colnames(top_dt_cl)){
             dotplot_ct<- dotplot_ct + facet_grid(celltype_group_info ~ condition, scales="free_y")
           }
@@ -448,7 +449,7 @@ accordion_plot<-function(data,
 
           }
         }
-
+  })
           if(!"cell" %in% group_markers_by){
             #global plot markers
             if("cluster" %in% group_markers_by){
