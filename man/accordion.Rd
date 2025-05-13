@@ -218,7 +218,7 @@ is TRUE.}
 
 \item{color_by}{Character string specifying if the plot reporting the top
 cell types for each cluster/cell is colored based on the assigned cell type
-("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.}
+("cell_type") or on cluster id ("cluster"). Default is "cell_type.}
 }
 \value{
 A Seurat object or a list

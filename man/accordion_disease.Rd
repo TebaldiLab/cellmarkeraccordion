@@ -82,7 +82,7 @@ multiple species are selected, marker genes are merged together. Default is
 “Human”.}
 
 \item{include_descendants}{Logical value indicating whether include all the
-tissues that are descendants of the selected tissue(s) according to the uberon
+tissues that are descendants of the selected tissue(s) according to the Uberon
 ontology. If TRUE,cell types and markers from the selected tissues and their
 descendants are aggregated. Default is FALSE}
 
@@ -226,7 +226,7 @@ is TRUE.}
 
 \item{color_by}{Character string specifying if the plot reporting the top
 cell types for each cluster/cell is colored based on the assigned cell type
-("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.}
+("cell_type") or on cluster id ("cluster"). Default is "cell_type".}
 }
 \value{
 A Seurat object or a list
