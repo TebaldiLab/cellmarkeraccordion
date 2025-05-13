@@ -528,7 +528,7 @@ accordion_plot<-function(data,
           if ("cell" %in% resolution){
           group<-unique(top_celltypes$cell)
         }
-  suppressMessages({
+  suppressWarnings({
         for (gr in group){
           #lollipop plot with top N cell types per cluster
 
