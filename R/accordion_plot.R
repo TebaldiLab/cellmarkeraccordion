@@ -244,6 +244,7 @@ accordion_plot<-function(data,
         vec_neg<-top_dt_cl[marker_type=="negative"]$color_combo
         names(vec_neg)<-top_dt_cl[marker_type=="negative"]$SPs_range
         vec_neg<-vec_neg[!duplicated(vec_neg)]
+
         suppressMessages({
         if("ECs" %in% colnames(top_marker_dt)){
           top_dt_cl[, ECs_range:= ECs][ECs > 5, ECs_range:=5]
@@ -255,7 +256,7 @@ accordion_plot<-function(data,
             scale_size("ECs",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
             scale_color_manual("SPs\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
-            if(length(unique(top_dt_cl$SPs_negative)) > 0){
+            if(any(!is.na(top_dt_cl$SPs_negative))){
               pl <- pl + new_scale("color") +
                 new_scale("size") +
                 geom_vline(xintercept = 0, linetype = 2) +
@@ -264,7 +265,7 @@ accordion_plot<-function(data,
                 theme_bw(base_size = bs) +
                 scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
                 scale_size("ECs",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-                scale_color_manual("SPs\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
+                scale_color_manual("SPs\n(negative)", values=vec_neg, breaks = names(vec_neg), limits = force)
 
             }
 
@@ -295,7 +296,7 @@ accordion_plot<-function(data,
             scale_color_manual("SPs\n(positive)", values=vec_pos, breaks = names(vec_pos), limits = force)
 
 
-            if(length(unique(top_dt_cl$SPs_negative)) > 0){
+            if(any(!is.na(top_dt_cl$SPs_negative))){
             pl <- pl + new_scale("color") +
                       new_scale("size") +
                       geom_vline(xintercept = 0, linetype = 2) +
@@ -304,7 +305,7 @@ accordion_plot<-function(data,
                       theme_bw(base_size = bs) +
               scale_size(range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
               scale_size("Weight",range=c(4,13), breaks = c(1,2,3,4,5), limits=c(1,5))+
-              scale_color_manual("SPs\n(negative)", values=vec_pos, breaks = names(vec_pos), limits = force)
+              scale_color_manual("SPs\n(negative)", values=vec_neg, breaks = names(vec_neg), limits = force)
             }
 
             pl <- pl + theme(panel.border = element_blank()) +

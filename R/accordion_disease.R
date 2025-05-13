@@ -19,7 +19,7 @@
 #'  tissues are selected cell types and markers from the selected tissues
 #'  are aggregated. If NULL, all tissues are considered. Default is NULL.
 #' @param include_descendants  Logical value indicating whether include all the
-#'  tissues that are descendants of the selected tissue(s) according to the uberon
+#'  tissues that are descendants of the selected tissue(s) according to the Uberon
 #'  ontology. If TRUE,cell types and markers from the selected tissues and their
 #'  descendants are aggregated. Default is FALSE
 #' @param cluster_info in case \code{data} is a Seurat object,
@@ -165,7 +165,7 @@
 #'   is TRUE.
 #' @param color_by Character string specifying if the plot reporting the top
 #' cell types for each cluster/cell is colored based on the assigned cell type
-#' ("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.
+#' ("cell_type") or on cluster id ("cluster"). Default is "cell_type".
 #'
 #'
 #' @return A Seurat object or a list
