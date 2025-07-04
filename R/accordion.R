@@ -390,9 +390,11 @@ accordion<-function(data,
 
   accordion_marker<-accordion_marker[marker %in% rownames(data)]
 
-  if(nrow(accordion_marker)==0){
-    stop("No marker genes were detected in your dataset. Please try again using different parameters. Ensure that gene names (not Ensembl IDs) are used in your input data.")
+  #check that markers are present in the data
+  if (nrow(accordion_marker)==0){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
   }
+
   #filter only based on root_cell_types if selected
   if(!is.null(root_cell_types)){
     data("cell_onto", package = "cellmarkeraccordion",envir = environment())
@@ -588,6 +590,12 @@ accordion<-function(data,
     } else{
       accordion_marker<-accordion_marker[ECs >= ECs_threshold]
     }
+  }
+
+
+  #check that markers are present in the data
+  if(!any(unique(accordion_marker$marker)) %in% rownames(data)){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
   }
 
 

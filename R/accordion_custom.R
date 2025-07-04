@@ -377,6 +377,11 @@ accordion_custom<-function(data,
   # subselect genes only found in data
   marker_table<-marker_table[marker %in% rownames(data)]
 
+  #check that markers are present in the data
+  if (nrow(marker_table)==0){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
+  }
+
   #Evidence consistency score log-transformed
   marker_table[,weight_scaled := log10(weight)+1]
 

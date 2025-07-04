@@ -599,6 +599,10 @@ accordion_disease<-function(data,
     }
   }
 
+  #check that markers are present in the data
+  if (nrow(disease_accordion_marker)==0){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
+  }
 
   #evidence consistency score log-transformed
   disease_accordion_marker[,ECs_reg := log10(ECs)+1]
