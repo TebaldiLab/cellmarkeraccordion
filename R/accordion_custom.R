@@ -393,6 +393,10 @@ accordion_custom<-function(data,
   ][marker_type=="negative",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
   ][,c("cell_type","marker","marker_type","SPs","SPs_reg","weight_scaled","weight")]
 
+  marker_table<-marker_table[marker_type=="positive",SPs_reg := scales::rescale(as.numeric(SPs_reg), to = c(min(marker_table[marker_type=="positive"]$weight),max(marker_table[marker_type=="positive"]$weight)))
+  ][marker_type=="negative",SPs_reg := scales::rescale(as.numeric(SPs_reg), to = c(min(marker_table[marker_type=="negative"]$weight),max(marker_table[marker_type=="negative"]$weight)))
+  ][,c("cell_type","marker","marker_type","SPs","SPs_reg","weight_scaled","weight")]
+
   marker_table[,SPs:=as.numeric(format(round(1/SPs,2), nsmall=2))]
   marker_table[,SPs_reg:=log10(SPs_reg)+1]
 
