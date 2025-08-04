@@ -186,7 +186,7 @@ head(marker_table_pathway, 10)
 
 And simply run the *accordion_custom* function by setting *annotation_resolution = cell* : 
 ```bash
-retinal_data<-accordion_custom(retinal_data, marker_table_pathway, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
+retinal_data<-accordion_custom(retinal_data, marker_table_pathway, max_n_marker =NULL, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
 
 FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score", reduction="umap.integrated",order = T, max.cutoff = "q90")
 ```
