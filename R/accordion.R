@@ -440,7 +440,7 @@ accordion<-function(data,
     accordion_marker[,species:=paste(input_species,collapse=", ")]
     accordion_marker<-merge(accordion_marker,ECs, by=c("CL_celltype","marker","marker_type"))
     accordion_marker<-unique(accordion_marker[,c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","marker","marker_type","ECs_sum","resource")])
-    colnames(accordion_marker)<-c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","marker","marker_type","ECs","resource")
+    colnames(accordion_marker)<-c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","marker","marker_type","ECs_global","resource")
   }
 
   #accordion_marker<-accordion_marker[,c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","ECs","marker","marker_type")]

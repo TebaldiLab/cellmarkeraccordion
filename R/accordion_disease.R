@@ -422,7 +422,7 @@ accordion_disease<-function(data,
     disease_accordion_marker[,species:=paste(input_species,collapse=", ")]
     disease_accordion_marker<-merge(disease_accordion_marker,ECs, by=c("NCIT_celltype","marker","marker_type"))
     disease_accordion_marker<-unique(disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs_sum","resource")])
-    colnames(disease_accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs","resource")
+    colnames(disease_accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs_global","resource")
   }
 
   #check disease selected
@@ -513,7 +513,7 @@ accordion_disease<-function(data,
   } else{
     disease_accordion_marker[, Uberon_ID:="ALL"]
     disease_accordion_marker[, Uberon_tissue:="ALL"]
-    disease_accordion_marker<-disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs", "resource")]
+    disease_accordion_marker<-disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs_global", "resource")]
     colnames(disease_accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs","resource")
 
   }
