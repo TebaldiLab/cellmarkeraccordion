@@ -108,7 +108,7 @@ Or you can use raw counts matrix and specify cluster's id for each cell:
 raw_counts <- GetAssayData(data, assay="RNA", slot='counts')
 clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$seurat_clusters)
 # Output: list with annotation results 
-output <- accordion(counts, assay ="RNA", species ="Human", tissue="blood", cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+output <- accordion(raw_counts, assay ="RNA", species ="Human", tissue="blood", cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 ## Improve the biological interpretation of the results
