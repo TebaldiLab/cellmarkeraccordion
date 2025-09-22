@@ -184,9 +184,9 @@ head(marker_table_pathway, 10)
 | apoptosis | AKT1 |
 | apoptosis | AKT2 |
 
-And simply run the *accordion_custom* function by setting *annotation_resolution = cell* : 
+And simply run the *accordion_custom* function by setting *annotation_resolution = cell*. The default value of *max_n_marker* is 30. To ensure all genes in your list are considered, set *max_n_marker = NULL*.
 ```bash
-retinal_data<-accordion_custom(retinal_data, marker_table_pathway, max_n_marker =NULL, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
+retinal_data<-accordion_custom(retinal_data, marker_table_pathway, max_n_marker = NULL, category_column = "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
 
 FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score", reduction="umap.integrated",order = T, max.cutoff = "q90")
 ```
