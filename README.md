@@ -108,7 +108,7 @@ Or you can use raw counts matrix and specify cluster's id for each cell:
 raw_counts <- GetAssayData(data, assay="RNA", slot='counts')
 clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$seurat_clusters)
 # Output: list with annotation results 
-output <- accordion(counts, assay ="RNA", species ="Human", tissue="blood", cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
+output <- accordion(raw_counts, assay ="RNA", species ="Human", tissue="blood", cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
 ```
 
 ## Improve the biological interpretation of the results
@@ -184,9 +184,9 @@ head(marker_table_pathway, 10)
 | apoptosis | AKT1 |
 | apoptosis | AKT2 |
 
-And simply run the *accordion_custom* function by setting *annotation_resolution = cell* : 
+And simply run the *accordion_custom* function by setting *annotation_resolution = cell*. The default value of *max_n_marker* is 30. To ensure all genes in your list are considered, set *max_n_marker = NULL*.
 ```bash
-retinal_data<-accordion_custom(retinal_data, marker_table_pathway, max_n_marker =NULL, category_column= "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
+retinal_data<-accordion_custom(retinal_data, marker_table_pathway, max_n_marker = NULL, category_column = "pathway", marker_column ="genes", annotation_resolution = "cell",annotation_name = "apoptosis_signature")
 
 FeaturePlot(retinal_data, features = "apoptosis_signature_per_cell_score", reduction="umap.integrated",order = T, max.cutoff = "q90")
 ```
