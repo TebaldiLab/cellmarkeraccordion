@@ -411,7 +411,7 @@ accordion_disease<-function(data,
     }
     #if more than one species is selected aggregate genes and in case of common genes between the species the relative EC score are summed
   } else if(length(species) >=2){
-    if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){ #convert to human
+    if(all(grepl("^[A-Z0-9/-]+$", rownames(data)[1:10]))){ #convert to human
       disease_accordion_marker[,marker:= toupper(marker)] # convert lower case in upper case (human symbol)
     } else{
       disease_accordion_marker[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
@@ -513,9 +513,8 @@ accordion_disease<-function(data,
   } else{
     disease_accordion_marker[, Uberon_ID:="ALL"]
     disease_accordion_marker[, Uberon_tissue:="ALL"]
-    disease_accordion_marker<-disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs_global", "resource")]
+    disease_accordion_marker<-disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs", "resource")]
     colnames(disease_accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs","resource")
-
   }
 
   # keep only cell types gives in input and markers found in data
@@ -651,25 +650,26 @@ accordion_disease<-function(data,
     }
   }
 
+  # minimum number of markers for each cell type
+  disease_accordion_marker[,length:= .N, by="NCIT_celltype"]
+  if(!is.null(min_n_marker)){
+    if(!is.numeric(min_n_marker) | !(min_n_marker %% 1 == 0)){
+      warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
+    } else{
+      disease_accordion_marker<-disease_accordion_marker[length >= min_n_marker]
+    }
+    if (nrow(disease_accordion_marker) == 0){
+      stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
+    }
+  }
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
       disease_accordion_marker<-disease_accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="NCIT_celltype"]
     }
   }
-
-  # number of markers for each cell type
-  disease_accordion_marker[,length:= .N, by="NCIT_celltype"]
-  if(!is.null(min_n_marker)){
-    if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
-    } else{
-      disease_accordion_marker<-disease_accordion_marker[length >= min_n_marker]
-    }
-  }
-
 
   if(!is.numeric(cluster_score_quantile_threshold) | cluster_score_quantile_threshold >1 | cluster_score_quantile_threshold <= 0){
     warning("Invalid cluster_score_quantile_threshold type. Parameter cluster_score_quantile_threshold must be a numeric value in (0,1]. Default 0.75 will be used.")
@@ -684,6 +684,11 @@ accordion_disease<-function(data,
   # store original scale.data slot if present
   if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
     orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  }
+
+  #check that markers are present in the data
+  if (nrow(disease_accordion_marker)==0){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
   }
 
   # scale data based on markers used for the annotation

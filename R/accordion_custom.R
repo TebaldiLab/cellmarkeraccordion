@@ -51,7 +51,7 @@
 #'@param max_n_marker Integer value specifying the maximum number of markers to
 #'  keep for each cell type. For the selection, markers are ranked according to
 #'  their combined score, obtained by multiplying evidence consistency score and
-#'  SPs score. If  NULL, no filter is applied. Default is 30.
+#'  SPs score. If  NULL, no filter is applied. Default is NULL.
 #' @param combined_score_quantile_threshold numeric value in (0,1] specifying
 #'   the combined score quantile threshold. For the selection, markers are
 #'   ranked according to their combined score,  obtained by multiplying weight
@@ -192,7 +192,7 @@ accordion_custom<-function(data,
                            cluster_info = "seurat_clusters",
                            assay = "RNA",
                            min_n_marker = 5,
-                           max_n_marker = 30,
+                           max_n_marker = NULL,
                            combined_score_quantile_threshold = NULL,
                            annotation_resolution = "cluster",
                            cluster_score_quantile_threshold = 0.75,
@@ -331,21 +331,6 @@ accordion_custom<-function(data,
 
   }
 
-  # number of markers for each cell type
-  marker_table[,length:= .N, by="cell_type"]
-  if(!is.null(min_n_marker)){
-    if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      if(min_n_marker != 1){
-        warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
-      }
-    } else{
-      marker_table<-marker_table[length >= min_n_marker]
-    }
-    if (nrow(marker_table) == 0){
-      stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
-    }
-  }
-
   # check group_markers_by input
   if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
     warning("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\", \"celltype_cell\" or \"score_cell\"")
@@ -421,9 +406,24 @@ accordion_custom<-function(data,
     }
   }
 
+  # number of markers for each cell type
+  marker_table[,length:= .N, by="cell_type"]
+  if(!is.null(min_n_marker)){
+    if(!is.numeric(min_n_marker) | !(min_n_marker %% 1 == 0)){
+      if(min_n_marker != 1){
+        warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
+      }
+    } else{
+      marker_table<-marker_table[length >= min_n_marker]
+    }
+    if (nrow(marker_table) == 0){
+      stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
+    }
+  }
+
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
       marker_table<-marker_table[order(-combined_score)][,head(.SD, max_n_marker), by="cell_type"]

@@ -429,7 +429,7 @@ accordion<-function(data,
     }
     #if more than one species is selected aggregate genes and in case of common genes between the species the relative EC score are summed
   } else if(length(species) >=2){
-    if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){ #convert to human
+    if(all(grepl("^[A-Z0-9/-]+$", rownames(data)[1:10]))){ #convert to human
       accordion_marker[,marker:= toupper(marker)] # convert lower case in upper case (human symbol)
     } else{
       accordion_marker[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
@@ -642,18 +642,19 @@ accordion<-function(data,
   # keep only the min_n_marker genes for each cell type
   accordion_marker[,length:= .N, by="CL_celltype"]
   if(!is.null(min_n_marker)){
-    if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      if(min_n_marker != 1){
+    if(!is.numeric(min_n_marker) | !(min_n_marker %% 1 == 0)){
         warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
-      }
     } else{
       accordion_marker<-accordion_marker[length >= min_n_marker]
+    }
+    if (nrow(accordion_marker) == 0){
+      stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
     }
   }
 
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
       accordion_marker<-accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="CL_celltype"]
