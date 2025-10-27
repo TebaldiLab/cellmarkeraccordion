@@ -197,7 +197,7 @@
 #' @importFrom methods as
 #' @importFrom stats quantile
 #' @export
-accordion<-function(data,
+accordion_new<-function(data,
                     cluster_info = "seurat_clusters",
                     assay = "RNA",
                     database = NULL,
@@ -266,6 +266,8 @@ accordion<-function(data,
             warning("cluster column not found in cluster_info. Please provide a data table or data frame with a column named cluster contaning cluster ids. Cell types annotation will be perform only with per cell resolution.")
           } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
             cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
+            colnames(cluster_table)<-c("cell","seurat_clusters")
+
           }
         }
       }
@@ -317,12 +319,6 @@ accordion<-function(data,
           col<-c("cell",eval(cluster_info))
           cluster_table<-cluster_table[, ..col]
           colnames(cluster_table)<-c("cell","seurat_clusters")
-          if(cluster_info !="seurat_clusters"){
-            if("seurat_clusters" %in% colnames(data@meta.data)){
-              data@meta.data$orig.seurat_clusters<-data@meta.data$seurat_clusters
-            }
-            data@meta.data$seurat_clusters<-data@meta.data$cluster_info
-          }
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
         if(!(inherits(cluster_info, "character"))){
@@ -334,13 +330,6 @@ accordion<-function(data,
           col<-c("cell",eval(cluster_info))
           cluster_table<-cluster_table[, ..col]
           colnames(cluster_table)<-c("cell","seurat_clusters")
-
-          if(cluster_info !="seurat_clusters"){
-            if("seurat_clusters" %in% colnames(data@meta.data)){
-              data@meta.data$orig.seurat_clusters<-data@meta.data$seurat_clusters
-            }
-            data@meta.data$seurat_clusters<-data@meta.data$cluster_info
-          }
         }
       }
     }
@@ -742,10 +731,11 @@ accordion<-function(data,
       data@meta.data[,name_score] = ""
 
       for (cl in unique(anno_dt_cl$seurat_clusters)){
-        data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
-        data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
+        data@meta.data[which(data@meta.data[[cluster_info]] == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
+        data@meta.data[which(data@meta.data[[cluster_info]] == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
 
       }
+
     } else {
       cluster_table<-merge(cluster_table,anno_dt_cl[,c("seurat_clusters","annotation_per_cluster")], by="seurat_clusters")
       cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
@@ -796,6 +786,7 @@ accordion<-function(data,
 
   }
 
+  print(identical(data@meta.data$orig.seurat_clusters,data@meta.data$seurat_clusters))
 
   if(include_detailed_annotation_info == T){
     if(data_type == "seurat"){
@@ -846,8 +837,8 @@ accordion<-function(data,
     data[[assay]]$scale.data <- orig.scale_data
   }
   if("orig.seurat_clusters" %in% colnames(data@meta.data)){
-    data@meta.data$seurat_clusters<-data@meta.data$orig.seurat_clusters
-    data@meta.data$orig.seurat_clusters<-NULL
+    #data@meta.data$seurat_clusters<-data@meta.data$orig.seurat_clusters
+    #data@meta.data$orig.seurat_clusters<-NULL
   }
 
   if(include_detailed_annotation_info==T & plot == T){

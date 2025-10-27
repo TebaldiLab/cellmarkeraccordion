@@ -2,10 +2,10 @@
 #' marker genes sets
 #'
 #' This function performs cell types or signatures/pathways annotation based on
-#' cusom marker genes set. It takes in input either a Seurat object or a raw or
+#' custom marker genes set. It takes in input either a Seurat object or a raw or
 #' normalized count matrix and a table of marker genes associated to cell types
 #' or even to pathways and return in output the cell types/pathways assignment
-#' and the detailed informations of the annotation results (added to the Seurat
+#' and the detailed information of the annotation results (added to the Seurat
 #' object or as a list).
 #'@param data Either a  Seurat object (version 4 or 5) or a raw or normalized count
 #'  matrix with genes on rows and cells on columns. If raw counts are provided,
@@ -229,6 +229,7 @@ accordion_custom<-function(data,
 
     }
     data <- CreateSeuratObject(counts = data)
+    accordion_output<-list()
     #check that cluster_info is present if cluster is in annotation_resolution
     #if both cluster and cell resolution are set if the cluster_info is not provided or is not correct, only the per cell annotation is performed
     if("cluster" %in% annotation_resolution & "cell" %in% annotation_resolution){
@@ -245,6 +246,8 @@ accordion_custom<-function(data,
             warning("cluster column not found in cluster_info. Please provide a data table or data frame with a column named cluster contaning cluster ids. Cell types annotation will be perform only with per cell resolution.")
           } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
             cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
+            colnames(cluster_table)<-c("cell","seurat_clusters")
+
           }
         }
       }
@@ -293,7 +296,10 @@ accordion_custom<-function(data,
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
         } else if (cluster_info %in% colnames(data@meta.data)){
-          seurat_clusters<-cluster_info
+          cluster_table<-as.data.table(data@meta.data)[,cell:=rownames(data@meta.data)]
+          col<-c("cell",eval(cluster_info))
+          cluster_table<-cluster_table[, ..col]
+          colnames(cluster_table)<-c("cell","seurat_clusters")
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
         if(!(inherits(cluster_info, "character"))){
@@ -330,21 +336,6 @@ accordion_custom<-function(data,
 
   }
 
-  # number of markers for each cell type
-  marker_table[,length:= .N, by="cell_type"]
-  if(!is.null(min_n_marker)){
-    if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      if(min_n_marker != 1){
-        warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
-      }
-    } else{
-      marker_table<-marker_table[length >= min_n_marker]
-    }
-    if (nrow(marker_table) == 0){
-      stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
-    }
-  }
-
   # check group_markers_by input
   if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
     warning("invalid group_by. Please select \"cluster\",\"celltype_cluster\", \"cell\", \"celltype_cell\" or \"score_cell\"")
@@ -377,6 +368,11 @@ accordion_custom<-function(data,
   # subselect genes only found in data
   marker_table<-marker_table[marker %in% rownames(data)]
 
+  #check that markers are present in the data
+  if (nrow(marker_table)==0){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
+  }
+
   #Evidence consistency score log-transformed
   marker_table[,weight_scaled := log10(weight)+1]
 
@@ -392,6 +388,12 @@ accordion_custom<-function(data,
   marker_table<-marker_table[marker_type=="positive",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
   ][marker_type=="negative",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
   ][,c("cell_type","marker","marker_type","SPs","SPs_reg","weight_scaled","weight")]
+
+  marker_table<-marker_table[marker_type=="positive",SPs_reg := scales::rescale(as.numeric(SPs_reg), to = c(min(marker_table[marker_type=="positive"]$weight),max(marker_table[marker_type=="positive"]$weight)))
+  ][marker_type=="negative",SPs_reg := scales::rescale(as.numeric(SPs_reg), to = c(min(marker_table[marker_type=="negative"]$weight),max(marker_table[marker_type=="negative"]$weight)))
+  ][,c("cell_type","marker","marker_type","SPs","SPs_reg","weight_scaled","weight")]
+
+  marker_table[,SPs:=as.numeric(format(round(1/SPs,2), nsmall=2))]
   marker_table[,SPs_reg:=log10(SPs_reg)+1]
 
   setkey(marker_table,marker,cell_type)
@@ -409,9 +411,24 @@ accordion_custom<-function(data,
     }
   }
 
+  # number of markers for each cell type
+  marker_table[,length:= .N, by="cell_type"]
+  if(!is.null(min_n_marker)){
+    if(!is.numeric(min_n_marker) | !(min_n_marker %% 1 == 0)){
+      if(min_n_marker != 1){
+        warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
+      }
+    } else{
+      marker_table<-marker_table[length >= min_n_marker]
+    }
+    if (nrow(marker_table) == 0){
+      stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
+    }
+  }
+
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
       marker_table<-marker_table[order(-combined_score)][,head(.SD, max_n_marker), by="cell_type"]
@@ -424,15 +441,17 @@ accordion_custom<-function(data,
   }
 
   # scale data based on markers used for the annotation
-  data<-ScaleData(data, features = unique(marker_table$marker))
-  Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
-  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
-  setkey(Zscaled_data, marker)
-  Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
-  colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
+  suppressWarnings({
+    data<-ScaleData(data, features = unique(marker_table$marker))
+  })
+  SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
+  setkey(SE_data, marker)
+  SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
+  colnames(SE_m_data)<-c("marker","cell","expr_scaled")
 
   # compute the score for each cell
-  dt_score<-merge.data.table(Zscaled_m_data,marker_table, by="marker",allow.cartesian = TRUE)
+  dt_score<-merge.data.table(SE_m_data,marker_table, by="marker",allow.cartesian = TRUE)
   dt_score[,score := expr_scaled * combined_score]
   dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
   setkey(dt_score, cell_type, cell, marker_type)
@@ -481,8 +500,8 @@ accordion_custom<-function(data,
       data@meta.data[,name_score] = ""
 
       for (cl in unique(anno_dt_cl$seurat_clusters)){
-        data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
-        data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
+        data@meta.data[which(data@meta.data[[cluster_info]] == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
+        data@meta.data[which(data@meta.data[[cluster_info]] == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
 
       }
     } else {
@@ -537,40 +556,40 @@ accordion_custom<-function(data,
   if(include_detailed_annotation_info == T){
     if(data_type == "seurat"){
       data <- include_detailed_annotation_info_helper_custom(data,
-                                                      data_type,
-                                                      annotation_resolution,
-                                                      final_dt_cluster,
-                                                      anno_dt_cl,
-                                                      dt_score,
-                                                      annotation_name,
-                                                      group_markers_by,
-                                                      cluster_info,
-                                                      final_dt,
-                                                      anno_dt_cell,
-                                                      n_top_celltypes,
-                                                      n_top_markers,
-                                                      top_marker_score_quantile_threshold,
-                                                      top_cell_score_quantile_threshold,
-                                                      condition_group_info,
-                                                      celltype_group_info)
+                                                             data_type,
+                                                             annotation_resolution,
+                                                             final_dt_cluster,
+                                                             anno_dt_cl,
+                                                             dt_score,
+                                                             annotation_name,
+                                                             group_markers_by,
+                                                             cluster_info,
+                                                             final_dt,
+                                                             anno_dt_cell,
+                                                             n_top_celltypes,
+                                                             n_top_markers,
+                                                             top_marker_score_quantile_threshold,
+                                                             top_cell_score_quantile_threshold,
+                                                             condition_group_info,
+                                                             celltype_group_info)
     } else{
       accordion_output<-include_detailed_annotation_info_helper_custom(accordion_output,
-                                                                data_type,
-                                                                annotation_resolution,
-                                                                final_dt_cluster,
-                                                                anno_dt_cl,
-                                                                dt_score,
-                                                                annotation_name,
-                                                                group_markers_by,
-                                                                cluster_info,
-                                                                final_dt,
-                                                                anno_dt_cell,
-                                                                n_top_celltypes,
-                                                                n_top_markers,
-                                                                top_marker_score_quantile_threshold,
-                                                                top_cell_score_quantile_threshold,
-                                                                condition_group_info,
-                                                                celltype_group_info)
+                                                                       data_type,
+                                                                       annotation_resolution,
+                                                                       final_dt_cluster,
+                                                                       anno_dt_cl,
+                                                                       dt_score,
+                                                                       annotation_name,
+                                                                       group_markers_by,
+                                                                       cluster_info,
+                                                                       final_dt,
+                                                                       anno_dt_cell,
+                                                                       n_top_celltypes,
+                                                                       n_top_markers,
+                                                                       top_marker_score_quantile_threshold,
+                                                                       top_cell_score_quantile_threshold,
+                                                                       condition_group_info,
+                                                                       celltype_group_info)
     }
 
   }

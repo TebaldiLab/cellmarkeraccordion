@@ -198,6 +198,8 @@ accordion_cellcycle<-function(data,
             warning("cluster column not found in cluster_info. Please provide a data table or data frame with a column named cluster contaning cluster ids. Cell types annotation will be perform only with per cell resolution.")
           } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
             cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
+            colnames(cluster_table)<-c("cell","seurat_clusters")
+
           }
         }
       }
@@ -246,7 +248,10 @@ accordion_cellcycle<-function(data,
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
         } else if (cluster_info %in% colnames(data@meta.data)){
-          seurat_clusters<-cluster_info
+          cluster_table<-as.data.table(data@meta.data)[,cell:=rownames(data@meta.data)]
+          col<-c("cell",eval(cluster_info))
+          cluster_table<-cluster_table[, ..col]
+          colnames(cluster_table)<-c("cell","seurat_clusters")
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
         if(!(inherits(cluster_info, "character"))){

@@ -1,5 +1,2 @@
-^cellmarkeraccordion\.Rproj$
-^\.github$
+^.*\.Rproj$
 ^\.Rproj\.user$
-^LICENSE\.md$
-^cellmarkeraccordion_0.9.5\\.pdf$

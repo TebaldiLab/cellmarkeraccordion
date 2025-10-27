@@ -2,7 +2,7 @@
 #'
 #' This function performs cell types annotation exploiting the built-in Accordion gene marker database.
 #' It takes in input either a Seurat object or a raw or normalized count matrix and return in output
-#' the cell types assignment and the detailed informations of the annotation results (added to the Seurat object or as a list).
+#' the cell types assignment and the detailed information of the annotation results (added to the Seurat object or as a list).
 #'
 #' @param data Either a  Seurat object (version 4 or 5) or a raw or normalized
 #'   count matrix with genes on rows and cells on columns. If raw counts are
@@ -36,10 +36,14 @@
 #'  Run the function "list_tissues()" to obtain the available tissues. If multiple
 #'  tissues are selected cell types and markers from the selected tissues
 #'  are aggregated. If NULL, all tissues are considered. Default is NULL.
+#' @param root_cell_types Character string or vector specifying one or more cell types
+#' to be used as root terms. Only the descendant cell types of the specified roots
+#' will be use for the annotation, excluding the root terms themselves. Default
+#' is NULL.
 #' @param include_descendants  Logical value indicating whether include all the
 #'  tissues that are descendants of the selected tissue(s) according to the uberon
 #'  ontology. If TRUE,cell types and markers from the selected tissues and their
-#'  descendants are aggregated. Default is FALSE
+#'  descendants are aggregated. Default is FALSE.
 #' @param ECs_threshold Integer value (currently in (1,17))
 #'   specifying the minimum evidence consistency score (ECs) for each
 #'   marker. Only markers >= this threshold are kept. If NULL, no filter is
@@ -57,11 +61,11 @@
 #' @param max_n_marker Integer value specifying the maximum number of markers to
 #'   keep for each cell type. For the selection, markers are ranked according to
 #'   their combined score, obtained by multiplying evidence consistency score
-#'   and SPs score. If  NULL, no filter is applied. Default is NULL.
+#'   and specificity score. If  NULL, no filter is applied. Default is 30.
 #' @param combined_score_quantile_threshold numeric value in (0,1) specifying
 #'   the combined score quantile threshold. For the selection, markers are
 #'   ranked according to their combined score,  obtained by multiplying evidence
-#'   consistency score and SPs score. Only markers >  the
+#'   consistency score and specificity score. Only markers >  the
 #'   quantile_threshold are kept. If  NULL, no filter is applied. Default is
 #'   NULL.
 #' @param annotation_resolution Character string or character string vector
@@ -153,7 +157,7 @@
 #'   is TRUE.
 #' @param color_by Character string specifying if the plot reporting the top
 #' cell types for each cluster/cell is colored based on the assigned cell type
-#' ("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.
+#' ("cell_type") or on cluster id ("cluster"). Default is "cell_type.
 #'
 #' @return A Seurat object or a list
 #' @details If a Seurat object was provided in input, the function returns the
@@ -200,12 +204,13 @@ accordion<-function(data,
                     CL_celltypes = NULL,
                     species = "Human",
                     tissue = NULL,
+                    root_cell_types = NULL,
                     include_descendants = FALSE,
                     ECs_threshold = NULL,
                     SPs_threshold = NULL,
                     log2FC_threshold = NULL,
                     min_n_marker = 5,
-                    max_n_marker = NULL,
+                    max_n_marker = 30,
                     combined_score_quantile_threshold = NULL,
                     annotation_resolution = "cluster",
                     cluster_score_quantile_threshold = 0.75,
@@ -261,6 +266,8 @@ accordion<-function(data,
             warning("cluster column not found in cluster_info. Please provide a data table or data frame with a column named cluster contaning cluster ids. Cell types annotation will be perform only with per cell resolution.")
           } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
             cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
+            colnames(cluster_table)<-c("cell","seurat_clusters")
+
           }
         }
       }
@@ -312,12 +319,6 @@ accordion<-function(data,
           col<-c("cell",eval(cluster_info))
           cluster_table<-cluster_table[, ..col]
           colnames(cluster_table)<-c("cell","seurat_clusters")
-          if(cluster_info !="seurat_clusters"){
-            if("seurat_clusters" %in% colnames(data@meta.data)){
-              data@meta.data$orig.seurat_clusters<-data@meta.data$seurat_clusters
-            }
-            data@meta.data$seurat_clusters<-data@meta.data$cluster_info
-          }
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
         if(!(inherits(cluster_info, "character"))){
@@ -329,13 +330,6 @@ accordion<-function(data,
           col<-c("cell",eval(cluster_info))
           cluster_table<-cluster_table[, ..col]
           colnames(cluster_table)<-c("cell","seurat_clusters")
-
-          if(cluster_info !="seurat_clusters"){
-            if("seurat_clusters" %in% colnames(data@meta.data)){
-              data@meta.data$orig.seurat_clusters<-data@meta.data$seurat_clusters
-            }
-            data@meta.data$seurat_clusters<-data@meta.data$cluster_info
-          }
         }
       }
     }
@@ -382,8 +376,20 @@ accordion<-function(data,
       stop("Database not found. Please set database as NULL to run the annotation with the Accordion database, otherwise use the integrated table returns from the marker_database_integration() function.")
     }
   }
+
   accordion_marker<-accordion_marker[marker %in% rownames(data)]
-  #load the Cell Marker Accordion database based on the condition selected
+
+  #filter only based on root_cell_types if selected
+  if(!is.null(root_cell_types)){
+    data("cell_onto", package = "cellmarkeraccordion",envir = environment())
+    ontology_celltype<-as.data.frame(cell_onto[["name"]])
+    colnames(ontology_celltype)<-"cell_type"
+    ontology_celltype<-as.data.table(ontology_celltype)[,CL_ID:=rownames(ontology_celltype)][cell_type %in% eval(root_cell_types)]
+    desc<-as.data.table(get_descendants(cell_onto, roots=unique(ontology_celltype$CL_ID), exclude_roots = TRUE))
+    accordion_marker<-accordion_marker[CL_ID %in% desc$V1]
+
+  }
+
   #for those markers with log2FC keep only the genes with log2FC above the threshold selected
   if(!is.null(log2FC_threshold)){
     if(!is.numeric(log2FC_threshold)){
@@ -412,7 +418,7 @@ accordion<-function(data,
     }
     #if more than one species is selected aggregate genes and in case of common genes between the species the relative EC score are summed
   } else if(length(species) >=2){
-    if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){ #convert to human
+    if(all(grepl("^[A-Z0-9/-]+$", rownames(data)[1:10]))){ #convert to human
       accordion_marker[,marker:= toupper(marker)] # convert lower case in upper case (human symbol)
     } else{
       accordion_marker[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
@@ -423,7 +429,7 @@ accordion<-function(data,
     accordion_marker[,species:=paste(input_species,collapse=", ")]
     accordion_marker<-merge(accordion_marker,ECs, by=c("CL_celltype","marker","marker_type"))
     accordion_marker<-unique(accordion_marker[,c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","marker","marker_type","ECs_sum","resource")])
-    colnames(accordion_marker)<-c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","marker","marker_type","ECs","resource")
+    colnames(accordion_marker)<-c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","marker","marker_type","ECs_global","resource")
   }
 
   #accordion_marker<-accordion_marker[,c("species","Uberon_tissue","Uberon_ID","CL_celltype","CL_ID","ECs","marker","marker_type")]
@@ -501,7 +507,6 @@ accordion<-function(data,
   }
 
   # keep only cell types gives in input and markers found in data
-  # assigned the parameter CL_celltype to the more specific "input_CL_celltype"
   if(is.null(CL_celltypes)){
     accordion_marker<-accordion_marker[marker %in% rownames(data)]
   } else {
@@ -571,6 +576,10 @@ accordion<-function(data,
     }
   }
 
+  #check that markers are present in the data
+  if (nrow(accordion_marker)==0){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
+  }
 
   #evidence consistency score log-transformed
   accordion_marker[,ECs_reg := log10(ECs)+1]
@@ -607,7 +616,6 @@ accordion<-function(data,
 
   setkey(accordion_marker,marker,CL_celltype)
 
-  # merge Z_scaled_dt and accordion table
   accordion_marker[,combined_score := SPs_reg * ECs_reg]
 
   # filter markers according to the quantile threshold set
@@ -621,21 +629,21 @@ accordion<-function(data,
   }
 
   # keep only the min_n_marker genes for each cell type
-  # number of markers for each cell type
   accordion_marker[,length:= .N, by="CL_celltype"]
   if(!is.null(min_n_marker)){
-    if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      if(min_n_marker != 1){
-        warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
-      }
+    if(!is.numeric(min_n_marker) | !(min_n_marker %% 1 == 0)){
+      warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
     } else{
       accordion_marker<-accordion_marker[length >= min_n_marker]
+    }
+    if (nrow(accordion_marker) == 0){
+      stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
     }
   }
 
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
       accordion_marker<-accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="CL_celltype"]
@@ -660,19 +668,20 @@ accordion<-function(data,
 
   #check if the accordion table is empty
   if(nrow(accordion_marker) ==0){
-    stop("0 markers found in the expression data. Please try again by setting different parameters.")
-
+    stop("No marker genes were detected in your dataset. Please try again using different parameters")
   }
 
   # scale data based on markers used for the annotation
-  data<-ScaleData(data, features = unique(accordion_marker$marker))
-  Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
-  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
-  setkey(Zscaled_data, marker)
+  suppressWarnings({
+    data<-ScaleData(data, features = unique(accordion_marker$marker))
+  })
+  SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
+  setkey(SE_data, marker)
 
-  Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
-  colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
-  dt_score<-merge.data.table(Zscaled_m_data,accordion_marker, by="marker",allow.cartesian = TRUE)
+  SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
+  colnames(SE_m_data)<-c("marker","cell","expr_scaled")
+  dt_score<-merge.data.table(SE_m_data,accordion_marker, by="marker",allow.cartesian = TRUE)
 
   # compute the score for each cell
   dt_score[,score := expr_scaled * combined_score]
@@ -722,10 +731,11 @@ accordion<-function(data,
       data@meta.data[,name_score] = ""
 
       for (cl in unique(anno_dt_cl$seurat_clusters)){
-        data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
-        data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
+        data@meta.data[which(data@meta.data[[cluster_info]] == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
+        data@meta.data[which(data@meta.data[[cluster_info]] == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
 
       }
+
     } else {
       cluster_table<-merge(cluster_table,anno_dt_cl[,c("seurat_clusters","annotation_per_cluster")], by="seurat_clusters")
       cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
@@ -776,6 +786,7 @@ accordion<-function(data,
 
   }
 
+  print(identical(data@meta.data$orig.seurat_clusters,data@meta.data$seurat_clusters))
 
   if(include_detailed_annotation_info == T){
     if(data_type == "seurat"){
@@ -826,8 +837,8 @@ accordion<-function(data,
     data[[assay]]$scale.data <- orig.scale_data
   }
   if("orig.seurat_clusters" %in% colnames(data@meta.data)){
-    data@meta.data$seurat_clusters<-data@meta.data$orig.seurat_clusters
-    data@meta.data$orig.seurat_clusters<-NULL
+    #data@meta.data$seurat_clusters<-data@meta.data$orig.seurat_clusters
+    #data@meta.data$orig.seurat_clusters<-NULL
   }
 
   if(include_detailed_annotation_info==T & plot == T){

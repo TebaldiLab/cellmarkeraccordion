@@ -15,7 +15,7 @@ accordion_custom(
   cluster_info = "seurat_clusters",
   assay = "RNA",
   min_n_marker = 5,
-  max_n_marker = 30,
+  max_n_marker = NULL,
   combined_score_quantile_threshold = NULL,
   annotation_resolution = "cluster",
   cluster_score_quantile_threshold = 0.75,
@@ -86,7 +86,7 @@ threshold are kept.  Default is 5.}
 \item{max_n_marker}{Integer value specifying the maximum number of markers to
 keep for each cell type. For the selection, markers are ranked according to
 their combined score, obtained by multiplying evidence consistency score and
-SPs score. If  NULL, no filter is applied. Default is 30.}
+SPs score. If  NULL, no filter is applied. Default is NULL.}
 
 \item{combined_score_quantile_threshold}{numeric value in (0,1] specifying
 the combined score quantile threshold. For the selection, markers are

@@ -4,7 +4,7 @@
 #' This function identified aberrant populations exploiting the built-in
 #' Accordion gene marker disease database. It takes in input either a Seurat
 #' object or a raw or normalized count matrix and return in output the cell
-#' types assignment and the detailed informations of the annotation results
+#' types assignment and the detailed information of the annotation results
 #' (added to the Seurat object or as a list).
 #'
 #' @param data Either a  Seurat object (version 4 or 5) or a raw or normalized
@@ -19,7 +19,7 @@
 #'  tissues are selected cell types and markers from the selected tissues
 #'  are aggregated. If NULL, all tissues are considered. Default is NULL.
 #' @param include_descendants  Logical value indicating whether include all the
-#'  tissues that are descendants of the selected tissue(s) according to the uberon
+#'  tissues that are descendants of the selected tissue(s) according to the Uberon
 #'  ontology. If TRUE,cell types and markers from the selected tissues and their
 #'  descendants are aggregated. Default is FALSE
 #' @param cluster_info in case \code{data} is a Seurat object,
@@ -69,20 +69,13 @@
 #' @param max_n_marker Integer value specifying the maximum number of markers to
 #'   keep for each cell type. For the selection, markers are ranked according to
 #'   their combined score, obtained by multiplying evidence consistency score
-#'   and SPs score. If  NULL, no filter is applied. Default is NULL.
+#'   and SPs score. If  NULL, no filter is applied. Default is 30.
 #' @param combined_score_quantile_threshold numeric value in (0,1) specifying
 #'   the combined score quantile threshold. For the selection, marers are
 #'   ranked according to their combined score,  obtained by multiplying evidence
 #'   consistency score and SPs score. Only markers >  the
 #'   quantile_threshold are kept. If  NULL, no filter is applied. Default is
 #'   NULL.
-#' @param disease_vs_healthy Logical value indicating whether to compare the
-#'   markers associated with disease cell types with respect to the markers
-#'   associated with the corresponding healthy cell types. If TRUE the
-#'   SPs score is calculated considering if a gene is also a marker for
-#'   the corresponding healthy cell type. For each cell, a specific score for
-#'   disease cell types and another score for the healthy types (named as the
-#'   cell types label) are returned. Default is TRUE.
 #' @param annotation_resolution Character string or character string vector
 #'   specifying the resolution of the annotation. Either “cluster” and/or “cell”
 #'   are supported. Default is “cluster”.
@@ -172,7 +165,7 @@
 #'   is TRUE.
 #' @param color_by Character string specifying if the plot reporting the top
 #' cell types for each cluster/cell is colored based on the assigned cell type
-#' ("CL_celltype") or on cluster id ("cluster"). Default is "CL_celltype.
+#' ("cell_type") or on cluster id ("cluster"). Default is "cell_type".
 #'
 #'
 #' @return A Seurat object or a list
@@ -226,9 +219,8 @@ accordion_disease<-function(data,
                             log2FC_threshold = NULL,
                             malignant_quantile_threshold = 0.95,
                             min_n_marker = 5,
-                            max_n_marker = NULL,
+                            max_n_marker = 30,
                             combined_score_quantile_threshold = NULL,
-                            disease_vs_healthy = TRUE,
                             annotation_resolution = "cluster",
                             cluster_score_quantile_threshold = 0.75,
                             allow_unknown = TRUE,
@@ -283,6 +275,8 @@ accordion_disease<-function(data,
             warning("cluster column not found in cluster_info. Please provide a data table or data frame with a column named cluster contaning cluster ids. Cell types annotation will be perform only with per cell resolution.")
           } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
             cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
+            colnames(cluster_table)<-c("cell","seurat_clusters")
+
           }
         }
       }
@@ -331,7 +325,10 @@ accordion_disease<-function(data,
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
         } else if (cluster_info %in% colnames(data@meta.data)){
-          seurat_clusters<-cluster_info
+          cluster_table<-as.data.table(data@meta.data)[,cell:=rownames(data@meta.data)]
+          col<-c("cell",eval(cluster_info))
+          cluster_table<-cluster_table[, ..col]
+          colnames(cluster_table)<-c("cell","seurat_clusters")
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
         if(!(inherits(cluster_info, "character"))){
@@ -379,6 +376,8 @@ accordion_disease<-function(data,
 
   if(is.null(database)){
     data("disease_accordion_marker", package = "cellmarkeraccordion",envir = environment())
+    setnames(disease_accordion_marker, "ECs_NCIT_global", "ECs_global")
+
   } else{
     #check
     if(ncol(database) == 27){
@@ -417,7 +416,7 @@ accordion_disease<-function(data,
     }
     #if more than one species is selected aggregate genes and in case of common genes between the species the relative EC score are summed
   } else if(length(species) >=2){
-    if(all(grepl("^[[:upper:]]+$", rownames(data)[1:10]))){ #convert to human
+    if(all(grepl("^[A-Z0-9/-]+$", rownames(data)[1:10]))){ #convert to human
       disease_accordion_marker[,marker:= toupper(marker)] # convert lower case in upper case (human symbol)
     } else{
       disease_accordion_marker[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
@@ -428,22 +427,22 @@ accordion_disease<-function(data,
     disease_accordion_marker[,species:=paste(input_species,collapse=", ")]
     disease_accordion_marker<-merge(disease_accordion_marker,ECs, by=c("NCIT_celltype","marker","marker_type"))
     disease_accordion_marker<-unique(disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs_sum","resource")])
-    colnames(disease_accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs","resource")
+    colnames(disease_accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs_global","resource")
   }
 
   #check disease selected
   if(is.null(disease)){
     warning("no specific disease selected. The entire disease Accordion database is considered")
   } else{
-      disease_accordion_marker<-disease_accordion_marker[toupper(DO_diseasetype) %in% toupper(disease)]
-      if(nrow(disease_accordion_marker) == 0){
-        warning("disease not found. The entire disease Accordion database is considered")
-        disease_accordion_marker<-disease_accordion_marker
-      }
-      if(length(disease)>1){
-        disease_accordion_marker[, DO_ID:="ALL"]
-        disease_accordion_marker[, DO_diseasetype:="ALL"]
-      }
+    disease_accordion_marker<-disease_accordion_marker[toupper(DO_diseasetype) %in% toupper(disease)]
+    if(nrow(disease_accordion_marker) == 0){
+      warning("disease not found. The entire disease Accordion database is considered")
+      disease_accordion_marker<-disease_accordion_marker
+    }
+    if(length(disease)>1){
+      disease_accordion_marker[, DO_ID:="ALL"]
+      disease_accordion_marker[, DO_diseasetype:="ALL"]
+    }
   }
   disease_accordion_marker<-disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs_global", "resource")]
   colnames(disease_accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs","resource")
@@ -521,11 +520,9 @@ accordion_disease<-function(data,
     disease_accordion_marker[, Uberon_tissue:="ALL"]
     disease_accordion_marker<-disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs", "resource")]
     colnames(disease_accordion_marker)<-c("species","DO_diseasetype","DO_ID","Uberon_tissue","Uberon_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs","resource")
-
   }
 
   # keep only cell types gives in input and markers found in data
-  # assigned the parameter NCIT_celltype to the more specific "input_NCIT_celltype"
   input_NCIT_celltype <- NCIT_celltypes
   if(is.null(input_NCIT_celltype)){
     disease_accordion_marker<-disease_accordion_marker[marker %in% rownames(data)]
@@ -575,7 +572,7 @@ accordion_disease<-function(data,
   }
 
 
-  #penalized discordant markers (ex. CD38 positive and CD38 negative for B cell)
+  #penalized discordant markers
   disease_accordion_marker[,group:=paste0(NCIT_celltype, "_", marker)]
   dup<-unique(disease_accordion_marker[,-"resource"])
   discordant_marker<-dup[duplicated(dup[,c("group")])]
@@ -606,6 +603,10 @@ accordion_disease<-function(data,
     }
   }
 
+  #check that markers are present in the data
+  if (nrow(disease_accordion_marker)==0){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
+  }
 
   #evidence consistency score log-transformed
   disease_accordion_marker[,ECs_reg := log10(ECs)+1]
@@ -640,25 +641,8 @@ accordion_disease<-function(data,
     }
   }
 
-    if(disease_vs_healthy == T){   # compare the healthy and the disease cell types if compare is set to TRUE
-      #disease_accordion_marker[,cellID_healthy:= tstrsplit(NCIT_ID, "-", keep=2)]
-      data("accordion_marker", package = "cellmarkeraccordion",envir = environment())
-      accordion_healthy<-accordion_marker
-      accordion_healthy<-accordion_healthy[species %in% input_species & Uberon_tissue %in% tissue & CL_ID %in% unique(disease_accordion_marker$CL_ID) & marker %in% rownames(data)]
-      accordion_healthy<-accordion_healthy[!is.na(CL_ID)]
-      accordion_healthy[,DO_diseasetype:=NA][,DO_ID:=NA][,NCIT_celltype:=CL_celltype][,NCIT_ID:=CL_ID]
-      accordion_healthy<-unique(accordion_healthy)
-      if(nrow(accordion_healthy)>0){
-        disease_accordion_marker<-rbind(disease_accordion_marker[,c("species","DO_diseasetype","DO_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs")],accordion_healthy[,c("species","DO_diseasetype","DO_ID","NCIT_celltype","NCIT_ID","marker","marker_type","ECs")])
-      }
-    } else if (disease_vs_healthy == F){
-      disease_accordion_marker<- disease_accordion_marker
-    }
-
-
   setkey(disease_accordion_marker,marker,NCIT_celltype)
 
-  # merge Z_scaled_dt and accordion table
   disease_accordion_marker[,combined_score := SPs_reg * ECs_reg]
 
   # filter markers according to the quantile threshold set
@@ -671,25 +655,26 @@ accordion_disease<-function(data,
     }
   }
 
+  # minimum number of markers for each cell type
+  disease_accordion_marker[,length:= .N, by="NCIT_celltype"]
+  if(!is.null(min_n_marker)){
+    if(!is.numeric(min_n_marker) | !(min_n_marker %% 1 == 0)){
+      warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
+    } else{
+      disease_accordion_marker<-disease_accordion_marker[length >= min_n_marker]
+    }
+    if (nrow(disease_accordion_marker) == 0){
+      stop("Marker table is empty. Try to reduce the min_n_marker (default 5) parameter")
+    }
+  }
   # keep only the max_n_marker genes for each cell type
   if(!is.null(max_n_marker)){
-    if(!is.numeric(max_n_marker) | !(max_n_marker %in% 1 == 0)){
+    if(!is.numeric(max_n_marker) | !(max_n_marker %% 1 == 0)){
       warning("Invalid max_n_marker type. Parameter max_n_marker must be an integer value. No filter is applied")
     } else {
       disease_accordion_marker<-disease_accordion_marker[order(-combined_score)][,head(.SD, max_n_marker), by="NCIT_celltype"]
     }
   }
-
-  # number of markers for each cell type
-  disease_accordion_marker[,length:= .N, by="NCIT_celltype"]
-  if(!is.null(min_n_marker)){
-    if(!is.numeric(min_n_marker) | !(min_n_marker %in% 1 == 0)){
-      warning("Invalid min_n_marker type. Parameter min_n_marker must be an integer value. No filter is applied")
-    } else{
-      disease_accordion_marker<-disease_accordion_marker[length >= min_n_marker]
-    }
-  }
-
 
   if(!is.numeric(cluster_score_quantile_threshold) | cluster_score_quantile_threshold >1 | cluster_score_quantile_threshold <= 0){
     warning("Invalid cluster_score_quantile_threshold type. Parameter cluster_score_quantile_threshold must be a numeric value in (0,1]. Default 0.75 will be used.")
@@ -706,16 +691,23 @@ accordion_disease<-function(data,
     orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
   }
 
+  #check that markers are present in the data
+  if (nrow(disease_accordion_marker)==0){
+    stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
+  }
+
   # scale data based on markers used for the annotation
-  data<-ScaleData(data, features = unique(disease_accordion_marker$marker))
-  Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
-  Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
-  setkey(Zscaled_data, marker)
-  Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
-  colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
+  suppressWarnings({
+    data<-ScaleData(data, features = unique(disease_accordion_marker$marker))
+  })
+  SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
+  setkey(SE_data, marker)
+  SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
+  colnames(SE_m_data)<-c("marker","cell","expr_scaled")
 
   # compute the score for each cell
-  dt_score<-merge.data.table(Zscaled_m_data,disease_accordion_marker, by="marker",allow.cartesian = TRUE)
+  dt_score<-merge.data.table(SE_m_data,disease_accordion_marker, by="marker",allow.cartesian = TRUE)
   dt_score[,score := expr_scaled * combined_score]
   dt_score_ct <- unique(dt_score[, c("NCIT_celltype", "cell")])
   setkey(dt_score, NCIT_celltype, cell, marker_type)
@@ -731,49 +723,49 @@ accordion_disease<-function(data,
   ][, diff_score := score - sum_dt[marker_type == "negative", score]
   ][, marker_type := NULL][,score := NULL]
 
- # annotation per cluster
-    if ("cluster" %in% annotation_resolution){
-      setkey(cluster_table, cell)
-      final_dt_cluster<-merge.data.table(final_dt, cluster_table, by="cell")
-        final_dt_cluster[, quantile_score_cluster:= quantile(diff_score,probs = cluster_score_quantile_threshold, na.rm=TRUE), by=c("seurat_clusters","NCIT_celltype")]
-          if (allow_unknown == T){
-            final_dt_cluster[quantile_score_cluster < 0, annotation_per_cell:= "unknown"][quantile_score_cluster > 0, annotation_per_cell := NCIT_celltype]
-          } else {
-            final_dt_cluster[, annotation_per_cell := NCIT_celltype]
-          }
-       # add the annotation results in the metadata of the Seurat data
-        anno_dt_cell<-final_dt_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
-        anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
-        anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
-        anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
-        anno_dt_cl<-anno_dt_cell_ptc[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","NCIT_celltype","diff_score","ncell_tot_cluster","ncell_celltype_cluster")]
-        anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","perc_celltype_cluster")]
-        colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster","percentage")
+  # annotation per cluster
+  if ("cluster" %in% annotation_resolution){
+    setkey(cluster_table, cell)
+    final_dt_cluster<-merge.data.table(final_dt, cluster_table, by="cell")
+    final_dt_cluster[, quantile_score_cluster:= quantile(diff_score,probs = cluster_score_quantile_threshold, na.rm=TRUE), by=c("seurat_clusters","NCIT_celltype")]
+    if (allow_unknown == T){
+      final_dt_cluster[quantile_score_cluster < 0, annotation_per_cell:= "unknown"][quantile_score_cluster > 0, annotation_per_cell := NCIT_celltype]
+    } else {
+      final_dt_cluster[, annotation_per_cell := NCIT_celltype]
+    }
+    # add the annotation results in the metadata of the Seurat data
+    anno_dt_cell<-final_dt_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
+    anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
+    anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
+    anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
+    anno_dt_cl<-anno_dt_cell_ptc[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","NCIT_celltype","diff_score","ncell_tot_cluster","ncell_celltype_cluster")]
+    anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","perc_celltype_cluster")]
+    colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster","percentage")
 
-        #if less than 10% of cells are labeled as the top cell type assigned as unknown
-        if (allow_unknown == T){
-          anno_dt_cl[percentage < 10, annotation_per_cluster:= "unknown"]
-        }
-        name<-paste0(annotation_name,"_per_cluster")
-        name_score<-paste0(annotation_name,"_per_cluster_score")
+    #if less than 10% of cells are labeled as the top cell type assigned as unknown
+    if (allow_unknown == T){
+      anno_dt_cl[percentage < 10, annotation_per_cluster:= "unknown"]
+    }
+    name<-paste0(annotation_name,"_per_cluster")
+    name_score<-paste0(annotation_name,"_per_cluster_score")
 
-        if(data_type == "seurat"){
-          data@meta.data[,name] = ""
-          data@meta.data[,name_score] = ""
+    if(data_type == "seurat"){
+      data@meta.data[,name] = ""
+      data@meta.data[,name_score] = ""
 
-          for (cl in unique(anno_dt_cl$seurat_clusters)){
-            data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
-            data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
+      for (cl in unique(anno_dt_cl$seurat_clusters)){
+        data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
+        data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
 
-            }
-        } else {
-          cluster_table<-merge(cluster_table,anno_dt_cl[,c("seurat_clusters","annotation_per_cluster")], by="seurat_clusters")
-          cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
-          colnames(cluster_table)<-c("cell","cluster",eval(name))
+      }
+    } else {
+      cluster_table<-merge(cluster_table,anno_dt_cl[,c("seurat_clusters","annotation_per_cluster")], by="seurat_clusters")
+      cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
+      colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-          accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cluster_table)
-          names(accordion_output)<-c("scaled_matrix","cluster_annotation")
-        }
+      accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cluster_table)
+      names(accordion_output)<-c("scaled_matrix","cluster_annotation")
+    }
   }
 
   # annotation per cell

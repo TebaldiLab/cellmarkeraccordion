@@ -157,7 +157,7 @@ accordion_cellcycle<-function(data,
                               n_top_markers = 5,
                               top_marker_score_quantile_threshold = 0.75,
                               plot = FALSE
-                              ){
+){
 
 
   #count matrix  data
@@ -198,6 +198,8 @@ accordion_cellcycle<-function(data,
             warning("cluster column not found in cluster_info. Please provide a data table or data frame with a column named cluster contaning cluster ids. Cell types annotation will be perform only with per cell resolution.")
           } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
             cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
+            colnames(cluster_table)<-c("cell","seurat_clusters")
+
           }
         }
       }
@@ -246,7 +248,10 @@ accordion_cellcycle<-function(data,
         } else if (!cluster_info %in% colnames(data@meta.data)){
           warning(paste0(eval(cluster_info), " meta data column not found. Please provide a valid character string specifying the name of the column in the meta data containing cluster id's. Cell types annotation will be perform only with per cell resolution."))
         } else if (cluster_info %in% colnames(data@meta.data)){
-          seurat_clusters<-cluster_info
+          cluster_table<-as.data.table(data@meta.data)[,cell:=rownames(data@meta.data)]
+          col<-c("cell",eval(cluster_info))
+          cluster_table<-cluster_table[, ..col]
+          colnames(cluster_table)<-c("cell","seurat_clusters")
         }
       } else if ("cluster" %in% annotation_resolution & !("cell" %in% annotation_resolution)){
         if(!(inherits(cluster_info, "character"))){
@@ -306,210 +311,212 @@ accordion_cellcycle<-function(data,
     }
   })
 
-    # subselect genes only found in data
-    cell_cycle_markers<-cell_cycle_markers[marker %in% rownames(data)]
-    cell_cycle_markers[,weight:=1]
-    #Evidence consistency score log-transformed
-    cell_cycle_markers[,weight_scaled := log10(weight)+1]
+  # subselect genes only found in data
+  cell_cycle_markers<-cell_cycle_markers[marker %in% rownames(data)]
+  cell_cycle_markers[,weight:=1]
+  #Evidence consistency score log-transformed
+  cell_cycle_markers[,weight_scaled := log10(weight)+1]
 
-    #compute SPs for positive and negative markers
-    mark_spec<-ddply(cell_cycle_markers,.(marker,marker_type),nrow)
-    colnames(mark_spec)<-c("marker","marker_type","SPs")
-    cell_cycle_markers<-merge(cell_cycle_markers,mark_spec,by=c("marker","marker_type"),all.x = TRUE)
+  #compute SPs for positive and negative markers
+  mark_spec<-ddply(cell_cycle_markers,.(marker,marker_type),nrow)
+  colnames(mark_spec)<-c("marker","marker_type","SPs")
+  cell_cycle_markers<-merge(cell_cycle_markers,mark_spec,by=c("marker","marker_type"),all.x = TRUE)
 
-    length_ct_pos<-uniqueN(cell_cycle_markers[marker_type=="positive"]$cell_type)
-    length_ct_neg<-uniqueN(cell_cycle_markers[marker_type=="negative"]$cell_type)
+  length_ct_pos<-uniqueN(cell_cycle_markers[marker_type=="positive"]$cell_type)
+  length_ct_neg<-uniqueN(cell_cycle_markers[marker_type=="negative"]$cell_type)
 
-    #scale and log transforme SPs
-    cell_cycle_markers<-cell_cycle_markers[marker_type=="positive",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
-    ][marker_type=="negative",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
-    ][,c("cell_type","marker","marker_type","SPs","SPs_reg","weight_scaled","weight")]
-    cell_cycle_markers[,SPs_reg:=log10(SPs_reg)+1]
+  #scale and log transforme SPs
+  cell_cycle_markers<-cell_cycle_markers[marker_type=="positive",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_pos),from = c(length_ct_pos,1))
+  ][marker_type=="negative",SPs_reg := scales::rescale(as.numeric(SPs), to = c(1,length_ct_neg),from = c(length_ct_neg,1))
+  ][,c("cell_type","marker","marker_type","SPs","SPs_reg","weight_scaled","weight")]
+  cell_cycle_markers[,SPs_reg:=log10(SPs_reg)+1]
 
-    setkey(cell_cycle_markers,marker,cell_type)
+  setkey(cell_cycle_markers,marker,cell_type)
 
-    # merge Z_scaled_dt and accordion table
-    cell_cycle_markers[,combined_score := SPs_reg * weight_scaled]
+  cell_cycle_markers[,combined_score := SPs_reg * weight_scaled]
 
-    # store original scale.data slot if present
-    if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
-      orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
-    }
+  # store original scale.data slot if present
+  if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
+    orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  }
 
-    # scale data based on markers used for the annotation
+  # scale data based on markers used for the annotation
+  suppressWarnings({
+
     data<-ScaleData(data, features = unique(cell_cycle_markers$marker))
-    Zscaled_data<-GetAssayData(data, assay=assay, slot='scale.data')
-    Zscaled_data<-as.data.table(as.data.frame(Zscaled_data),keep.rownames = "marker")
-    setkey(Zscaled_data, marker)
-    Zscaled_m_data<-melt.data.table(Zscaled_data,id.vars = c("marker"))
-    colnames(Zscaled_m_data)<-c("marker","cell","expr_scaled")
+  })
+  SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
+  setkey(SE_data, marker)
+  SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
+  colnames(SE_m_data)<-c("marker","cell","expr_scaled")
 
-    # compute the score for each cell
-    dt_score<-merge.data.table(Zscaled_m_data,cell_cycle_markers, by="marker",allow.cartesian = TRUE)
-    dt_score[,score := expr_scaled * combined_score]
-    dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
-    setkey(dt_score, cell_type, cell, marker_type)
-    sum_dt <- dt_score[data.table("cell_type" = rep(dt_score_ct$cell_type, each = 2),
-                                  "cell" = rep(dt_score_ct$cell, each = 2),
-                                  "marker_type" = c("positive", "negative")),
-                       .(score= (sum(score)/(sqrt((sum(weight_scaled * SPs_reg)))))), by = .EACHI]
-
-
-    sum_dt<-unique(sum_dt)
-    sum_dt[is.na(score), score := 0]
-    final_dt <- sum_dt[marker_type == "positive"
-    ][, diff_score := score - sum_dt[marker_type == "negative", score]
-    ][, marker_type := NULL][,score := NULL]
+  # compute the score for each cell
+  dt_score<-merge.data.table(SE_m_data,cell_cycle_markers, by="marker",allow.cartesian = TRUE)
+  dt_score[,score := expr_scaled * combined_score]
+  dt_score_ct <- unique(dt_score[, c("cell_type", "cell")])
+  setkey(dt_score, cell_type, cell, marker_type)
+  sum_dt <- dt_score[data.table("cell_type" = rep(dt_score_ct$cell_type, each = 2),
+                                "cell" = rep(dt_score_ct$cell, each = 2),
+                                "marker_type" = c("positive", "negative")),
+                     .(score= (sum(score)/(sqrt((sum(weight_scaled * SPs_reg)))))), by = .EACHI]
 
 
-    # annotation per cluster
-    if ("cluster" %in% annotation_resolution){
-      setkey(cluster_table, cell)
-      final_dt_cluster<-merge.data.table(final_dt, cluster_table, by="cell")
-      final_dt_cluster[, quantile_score_cluster:= quantile(diff_score,probs = cluster_score_quantile_threshold, na.rm=TRUE), by=c("seurat_clusters","cell_type")]
-      if (allow_unknown == T){
-        final_dt_cluster[quantile_score_cluster < 0, annotation_per_cell:= "unknown"][quantile_score_cluster > 0, annotation_per_cell := cell_type]
-      } else {
-        final_dt_cluster[, annotation_per_cell := cell_type]
-      }
-      # add the annotation results in the metadata of the Seurat data
-      anno_dt_cell<-final_dt_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
-      anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
-      anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
-      anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
-      anno_dt_cl<-anno_dt_cell_ptc[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","cell_type","diff_score","ncell_tot_cluster","ncell_celltype_cluster")]
-      anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","perc_celltype_cluster")]
-      colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster","percentage")
+  sum_dt<-unique(sum_dt)
+  sum_dt[is.na(score), score := 0]
+  final_dt <- sum_dt[marker_type == "positive"
+  ][, diff_score := score - sum_dt[marker_type == "negative", score]
+  ][, marker_type := NULL][,score := NULL]
 
-      #if less than 10% of cells are labeled as the top cell type assigned as unknown
-      if (allow_unknown == T){
-        anno_dt_cl[percentage < 10, annotation_per_cluster:= "unknown"]
-      }
 
-      name<-paste0(annotation_name,"_per_cluster")
-      name_score<-paste0(annotation_name,"_per_cluster_score")
+  # annotation per cluster
+  if ("cluster" %in% annotation_resolution){
+    setkey(cluster_table, cell)
+    final_dt_cluster<-merge.data.table(final_dt, cluster_table, by="cell")
+    final_dt_cluster[, quantile_score_cluster:= quantile(diff_score,probs = cluster_score_quantile_threshold, na.rm=TRUE), by=c("seurat_clusters","cell_type")]
+    if (allow_unknown == T){
+      final_dt_cluster[quantile_score_cluster < 0, annotation_per_cell:= "unknown"][quantile_score_cluster > 0, annotation_per_cell := cell_type]
+    } else {
+      final_dt_cluster[, annotation_per_cell := cell_type]
+    }
+    # add the annotation results in the metadata of the Seurat data
+    anno_dt_cell<-final_dt_cluster[order(-diff_score)][,head(.SD, 1),"cell"]
+    anno_dt_cell_ptc<-anno_dt_cell[,ncell_celltype_cluster:= .N,by=c("seurat_clusters","annotation_per_cell")]
+    anno_dt_cell_ptc[,ncell_tot_cluster:= .N, by="seurat_clusters"]
+    anno_dt_cell_ptc[,perc_celltype_cluster:= round((ncell_celltype_cluster/ncell_tot_cluster)*100, digits = 2)]
+    anno_dt_cl<-anno_dt_cell_ptc[order(-quantile_score_cluster)][,head(.SD, 1),"seurat_clusters"][,-c("cell","cell_type","diff_score","ncell_tot_cluster","ncell_celltype_cluster")]
+    anno_dt_cl<-anno_dt_cl[,c("seurat_clusters","annotation_per_cell","quantile_score_cluster","perc_celltype_cluster")]
+    colnames(anno_dt_cl)<-c("seurat_clusters","annotation_per_cluster","quantile_score_cluster","percentage")
 
-      if(data_type == "seurat"){
-        data@meta.data[,name] = ""
-        data@meta.data[,name_score] = ""
-
-        for (cl in unique(anno_dt_cl$seurat_clusters)){
-          data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
-          data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
-
-        }
-      } else {
-        cluster_table<-merge(cluster_table,anno_dt_cl[,c("seurat_clusters","annotation_per_cluster")], by="seurat_clusters")
-        cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
-        colnames(cluster_table)<-c("cell","cluster",eval(name))
-
-        accordion_output<-list(data@assays[[assay]]@scale.data, cluster_table)
-        names(accordion_output)<-c("scaled_matrix","cluster_annotation")
-      }
-
+    #if less than 10% of cells are labeled as the top cell type assigned as unknown
+    if (allow_unknown == T){
+      anno_dt_cl[percentage < 10, annotation_per_cluster:= "unknown"]
     }
 
-    # annotation per cell
-    if ("cell" %in% annotation_resolution){
-      name<-paste0(annotation_name,"_per_cell")
-      name_score<-paste0(annotation_name,"_per_cell_score")
+    name<-paste0(annotation_name,"_per_cluster")
+    name_score<-paste0(annotation_name,"_per_cluster_score")
 
+    if(data_type == "seurat"){
       data@meta.data[,name] = ""
       data@meta.data[,name_score] = ""
-      anno_dt_cell<-final_dt[order(-diff_score)][,head(.SD, 1),"cell"]
-      if (allow_unknown == T){
-        anno_dt_cell[diff_score < 0, annotation_per_cell:= "allow"][diff_score > 0, annotation_per_cell := cell_type]
 
-      } else {
-        anno_dt_cell[, annotation_per_cell := cell_type]
+      for (cl in unique(anno_dt_cl$seurat_clusters)){
+        data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
+        data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
 
       }
+    } else {
+      cluster_table<-merge(cluster_table,anno_dt_cl[,c("seurat_clusters","annotation_per_cluster")], by="seurat_clusters")
+      cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
+      colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-      # add the annotation result to the data metadata
-      if(!identical(colnames(data),anno_dt_cell$cell)){
-        anno_dt_cell<-anno_dt_cell[order(match(anno_dt_cell$cell,colnames(data))),]
-      }
-      if(data_type == "seurat"){
-        data@meta.data[,name]<-anno_dt_cell$annotation_per_cell
-        data@meta.data[,name_score]<-anno_dt_cell$diff_score
-      } else{
-        cell_table<-anno_dt_cell[,c("cell","annotation_per_cell","diff_score")]
-        colnames(cell_table)<-c("cell",eval(name), eval(name_score))
-
-        if(!is_empty(accordion_output)){
-          accordion_output<-append(accordion_output,cell_table)
-          names(accordion_output)<-c(names(accordion_output), "cell_annotation")
-        } else {
-          accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cell_table)
-          names(accordion_output)<-c("scaled_matrix","cell_annotation")
-        }
-
-      }
-
-    }
-
-    if(include_detailed_annotation_info == T){
-      if(data_type == "seurat"){
-        data <- include_detailed_annotation_info_helper(data,
-                                                        data_type,
-                                                        annotation_resolution,
-                                                        final_dt_cluster,
-                                                        anno_dt_cl,
-                                                        dt_score,
-                                                        annotation_name,
-                                                        group_markers_by,
-                                                        dt_top_marker,
-                                                        cluster_info,
-                                                        final_dt,
-                                                        anno_dt_cell,
-                                                        n_top_celltypes,
-                                                        n_top_markers,
-                                                        top_marker_score_quantile_threshold,
-                                                        condition_group_info,
-                                                        celltype_group_info)
-      } else{
-        accordion_output<-include_detailed_annotation_info_helper(accordion_output,
-                                                                  data_type,
-                                                                  annotation_resolution,
-                                                                  final_dt_cluster,
-                                                                  anno_dt_cl,
-                                                                  dt_score,
-                                                                  annotation_name,
-                                                                  group_markers_by,
-                                                                  dt_top_marker,
-                                                                  cluster_info,
-                                                                  final_dt,
-                                                                  anno_dt_cell,
-                                                                  n_top_celltypes,
-                                                                  n_top_markers,
-                                                                  top_marker_score_quantile_threshold,
-                                                                  condition_group_info,
-                                                                  celltype_group_info)
-      }
-
-    }
-
-    #re-assigned the original scale.data slot
-    if(exists("orig.scale_data")){
-      accordion_scale.data<-list()
-      accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
-      data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
-      data[[assay]]$scale.data <- orig.scale_data
-    }
-
-    if(include_detailed_annotation_info==T & plot == T){
-      if(data_type == "seurat"){
-        data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
-      } else{
-        accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
-
-      }
-    }
-    if(data_type == "seurat"){
-      return(data)
-    } else{
-      return(accordion_output)
+      accordion_output<-list(data@assays[[assay]]@scale.data, cluster_table)
+      names(accordion_output)<-c("scaled_matrix","cluster_annotation")
     }
 
   }
+
+  # annotation per cell
+  if ("cell" %in% annotation_resolution){
+    name<-paste0(annotation_name,"_per_cell")
+    name_score<-paste0(annotation_name,"_per_cell_score")
+
+    data@meta.data[,name] = ""
+    data@meta.data[,name_score] = ""
+    anno_dt_cell<-final_dt[order(-diff_score)][,head(.SD, 1),"cell"]
+    if (allow_unknown == T){
+      anno_dt_cell[diff_score < 0, annotation_per_cell:= "allow"][diff_score > 0, annotation_per_cell := cell_type]
+
+    } else {
+      anno_dt_cell[, annotation_per_cell := cell_type]
+
+    }
+
+    # add the annotation result to the data metadata
+    if(!identical(colnames(data),anno_dt_cell$cell)){
+      anno_dt_cell<-anno_dt_cell[order(match(anno_dt_cell$cell,colnames(data))),]
+    }
+    if(data_type == "seurat"){
+      data@meta.data[,name]<-anno_dt_cell$annotation_per_cell
+      data@meta.data[,name_score]<-anno_dt_cell$diff_score
+    } else{
+      cell_table<-anno_dt_cell[,c("cell","annotation_per_cell","diff_score")]
+      colnames(cell_table)<-c("cell",eval(name), eval(name_score))
+
+      if(!is_empty(accordion_output)){
+        accordion_output<-append(accordion_output,cell_table)
+        names(accordion_output)<-c(names(accordion_output), "cell_annotation")
+      } else {
+        accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cell_table)
+        names(accordion_output)<-c("scaled_matrix","cell_annotation")
+      }
+
+    }
+
+  }
+
+  if(include_detailed_annotation_info == T){
+    if(data_type == "seurat"){
+      data <- include_detailed_annotation_info_helper(data,
+                                                      data_type,
+                                                      annotation_resolution,
+                                                      final_dt_cluster,
+                                                      anno_dt_cl,
+                                                      dt_score,
+                                                      annotation_name,
+                                                      group_markers_by,
+                                                      dt_top_marker,
+                                                      cluster_info,
+                                                      final_dt,
+                                                      anno_dt_cell,
+                                                      n_top_celltypes,
+                                                      n_top_markers,
+                                                      top_marker_score_quantile_threshold,
+                                                      condition_group_info,
+                                                      celltype_group_info)
+    } else{
+      accordion_output<-include_detailed_annotation_info_helper(accordion_output,
+                                                                data_type,
+                                                                annotation_resolution,
+                                                                final_dt_cluster,
+                                                                anno_dt_cl,
+                                                                dt_score,
+                                                                annotation_name,
+                                                                group_markers_by,
+                                                                dt_top_marker,
+                                                                cluster_info,
+                                                                final_dt,
+                                                                anno_dt_cell,
+                                                                n_top_celltypes,
+                                                                n_top_markers,
+                                                                top_marker_score_quantile_threshold,
+                                                                condition_group_info,
+                                                                celltype_group_info)
+    }
+
+  }
+
+  #re-assigned the original scale.data slot
+  if(exists("orig.scale_data")){
+    accordion_scale.data<-list()
+    accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
+    data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
+    data[[assay]]$scale.data <- orig.scale_data
+  }
+
+  if(include_detailed_annotation_info==T & plot == T){
+    if(data_type == "seurat"){
+      data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
+    } else{
+      accordion_output<-accordion_plot(accordion_output, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by)
+
+    }
+  }
+  if(data_type == "seurat"){
+    return(data)
+  } else{
+    return(accordion_output)
+  }
+
+}
 
