@@ -267,7 +267,6 @@ accordion<-function(data,
           } else if("cell" %in% colnames(cluster_info) & "cluster" %in% colnames(cluster_info)){
             cluster_table<-as.data.table(cluster_info)[,c("cell","cluster")]
             colnames(cluster_table)<-c("cell","seurat_clusters")
-
           }
         }
       }
