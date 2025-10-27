@@ -197,7 +197,7 @@
 #' @importFrom methods as
 #' @importFrom stats quantile
 #' @export
-accordion_new<-function(data,
+accordion<-function(data,
                     cluster_info = "seurat_clusters",
                     assay = "RNA",
                     database = NULL,
