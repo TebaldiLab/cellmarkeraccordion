@@ -133,6 +133,14 @@ data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][[
 ```
 ![Top_marker_global](https://github.com/user-attachments/assets/aedc38ec-9cdc-4e03-a9c1-c682d0ecd582)
 
+Cell types are sorted by their frequency. To reproduce the same ordering in your UMAP visualization, run:
+
+```bash
+celltype_order<-unique(data@misc$accordion$cluster_resolution$detailed_annotation_info$top_markers_per_celltype_cluster$accordion_per_cluster)
+data@meta.data$accordion_per_cluster<-factor(data@meta.data$accordion_per_cluster, levels = celltype_order)
+DimPlot(data, group.by="accordion_per_cluster")
+```
+![Annotation_pbmc](https://github.com/user-attachments/assets/1d4c3646-383f-47fb-81fb-2f7a319f091f)
 
 ## Cell type or pathways identification with custom gene sets
 <strong>cellmarkeraccordion</strong> performs automatic identification of cell populations based on a custom input set of marker genes by running the ```accordion_custom ``` function. It requires in input only a Seurat object or a raw or normalized count matrix with genes on rows and cells on columns and a table of marker genes associated to cell types or  to pathways. The marker table should contains at least two columns, the *category_column*,  which specifies cell types or categories, and the *marker_column*, which specifies the corresponding markers on each row. Columns indicating the marker type (either positive or negative), and the marker weight can be optionally included. We used a published human retinal dataset (Lu et al., Dev Cell. 2020) and we included a table of well-known markers associated to retinal cell types.
