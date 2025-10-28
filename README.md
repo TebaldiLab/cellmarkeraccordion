@@ -25,7 +25,7 @@ Please cite the following article when using the cellmarkeraccordion package:
 
 Emma Busarello, Giulia Biancon, Ilaria Cimignolo, Fabio Lauria, Zuhairia Ibnat, Christian Ramirez, Gabriele Tomè, Marianna Ciuffreda, Giorgia Bucciarelli, Alessandro Pilli, Stefano Maria Marino, Vittorio Bontempi, Federica Ress, Kristin R. Aass, Jennifer VanOudenhove, Luca Tiberi, Maria Caterina Mione, Therese Standal, Paolo Macchi, Gabriella Viero, Stephanie Halene, Toma Tebaldi
 
-bioRxiv 2024.03.08.584053; doi: https://doi.org/10.1101/2024.03.08.584053 
+Nat Commun 16, 5399 (2025). https://doi.org/10.1038/s41467-025-60900-4
 
 ## Installation 
 To install the `cellmarkeraccordion` package directly from GitHub the `devtools` package is required. If not already installed on your system, run:
