@@ -133,7 +133,7 @@ data@misc[["accordion"]][["cluster_resolution"]][["detailed_annotation_info"]][[
 ```
 ![Top_marker_global](https://github.com/user-attachments/assets/aedc38ec-9cdc-4e03-a9c1-c682d0ecd582)
 
-Cell types are sorted by their frequency. To reproduce the same ordering in your UMAP visualization, run:
+By default, cell types are sorted by overall frequency. To reproduce the same ordering in your UMAP visualization, run:
 
 ```bash
 celltype_order<-unique(data@misc$accordion$cluster_resolution$detailed_annotation_info$top_markers_per_celltype_cluster$accordion_per_cluster)
