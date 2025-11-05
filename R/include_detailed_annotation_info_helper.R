@@ -349,7 +349,6 @@ include_detailed_annotation_info_helper<-function(data,
         data<-append(data,info_list)
 
       }
-    }
   }
   return(data)
 
