@@ -319,22 +319,14 @@ include_detailed_annotation_info_helper_custom<-function(data,
       }
     }
     if("seurat" %in% data_type){
-      if(is_empty(data@misc[[annotation_name]])){
-        data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
-      } else {
-        data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], cell_res_detailed_annotation_info)
-      }
+      data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
     } else{
-      if(is_empty(info_list[[annotation_name]])){
-        info_list[[annotation_name]]<-cell_res_detailed_annotation_info
-        data<-append(data,info_list)
+      info_list[[annotation_name]]<-cell_res_detailed_annotation_info
+      data<-append(data,info_list)
 
-      } else{
-        info_list<-append(info_list,cell_res_detailed_annotation_info)
-        data<-append(data,info_list)
-      }
     }
   }
+}
   return(data)
 
 }
