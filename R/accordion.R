@@ -785,8 +785,6 @@ accordion<-function(data,
 
   }
 
-  print(identical(data@meta.data$orig.seurat_clusters,data@meta.data$seurat_clusters))
-
   if(include_detailed_annotation_info == T){
     if(data_type == "seurat"){
       data <- include_detailed_annotation_info_helper(data,
@@ -835,11 +833,6 @@ accordion<-function(data,
     data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
     data[[assay]]$scale.data <- orig.scale_data
   }
-  if("orig.seurat_clusters" %in% colnames(data@meta.data)){
-    #data@meta.data$seurat_clusters<-data@meta.data$orig.seurat_clusters
-    #data@meta.data$orig.seurat_clusters<-NULL
-  }
-
   if(include_detailed_annotation_info==T & plot == T){
     if(data_type == "seurat"){
       data<-accordion_plot(data, info_to_plot = annotation_name, resolution = annotation_resolution, group_markers_by = group_markers_by, color_by = color_by, condition_group_info=condition_group_info, celltype_group_info=celltype_group_info)
