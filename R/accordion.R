@@ -228,6 +228,10 @@ accordion<-function(data,
                     color_by = "cell_type"
 ){
 
+
+  #check Seurat version
+  seurat_version <- packageVersion("Seurat")
+
   #count matrix  data
   #check the type of input (Seurat data or raw count matrix)
   if(!inherits(data,"Seurat")){
@@ -303,8 +307,14 @@ accordion<-function(data,
       DefaultAssay(data)<-assay
       #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
-        if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
-          stop("Count matrix is empty")
+        if (seurat_version < "5.0.0") {
+          if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
+            stop("Count matrix is empty")
+          }
+        }else{
+          if(sum(dim(data[[assay]]$counts))==0){
+            stop("Count matrix is empty")
+          }
         }
       }
       #check that the cluster column is present in the data
@@ -357,10 +367,19 @@ accordion<-function(data,
 
   #avoid warnings
   suppressWarnings({
+    if (seurat_version < "5.0.0") {
     if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))!=0){
       #perform data normalization if not already performed
       if(identical(GetAssayData(data, assay=assay, slot='counts'), GetAssayData(data, assay=assay, slot='data')) | sum(dim(GetAssayData(data, assay=assay, slot='data')))==0){
         data <- NormalizeData(data)
+      }
+    }
+    } else{
+      if(sum(dim(data[[assay]]$counts))!=0){
+        #perform data normalization if not already performed
+        if(identical(data[[assay]]$counts, data[[assay]]$data) | sum(dim(data[[assay]]$data))==0){
+          data <- NormalizeData(data)
+        }
       }
     }
   })
@@ -660,8 +679,14 @@ accordion<-function(data,
   }
 
   # store original scale.data slot if present
-  if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
-    orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  if (seurat_version < "5.0.0") {
+    if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
+      orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
+    }
+    }else{
+      if(sum(dim(data[[assay]]$scale.data))!=0){
+        orig.scale_data<-data[[assay]]$scale.data
+      }
   }
 
 
@@ -674,7 +699,12 @@ accordion<-function(data,
   suppressWarnings({
   data<-ScaleData(data, features = unique(accordion_marker$marker))
   })
+  if (seurat_version < "5.0.0") {
   SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
+  }else{
+    SE_data<-data[[assay]]$scale.data
+
+  }
   SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
   setkey(SE_data, marker)
 
@@ -739,9 +769,13 @@ accordion<-function(data,
       cluster_table<-merge(cluster_table,anno_dt_cl[,c("seurat_clusters","annotation_per_cluster")], by="seurat_clusters")
       cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
       colnames(cluster_table)<-c("cell","cluster",eval(name))
-
+      if (seurat_version < "5.0.0") {
       accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cluster_table)
       names(accordion_output)<-c("scaled_matrix","cluster_annotation")
+      }else{
+        accordion_output<-list(data[[assay]]$scale.data, cluster_table)
+        names(accordion_output)<-c("scaled_matrix","cluster_annotation")
+      }
     }
 
   }
@@ -777,15 +811,18 @@ accordion<-function(data,
         accordion_output<-append(accordion_output,cell_table)
         names(accordion_output)<-c(names(accordion_output), "cell_annotation")
       } else {
+        if (seurat_version < "5.0.0") {
         accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cell_table)
         names(accordion_output)<-c("scaled_matrix","cell_annotation")
+        } else {
+          accordion_output<-list(data[[assay]]$scale.data, cell_table)
+          names(accordion_output)<-c("scaled_matrix","cell_annotation")
+        }
       }
 
     }
 
   }
-
-  print(identical(data@meta.data$orig.seurat_clusters,data@meta.data$seurat_clusters))
 
   if(include_detailed_annotation_info == T){
     if(data_type == "seurat"){
@@ -831,14 +868,23 @@ accordion<-function(data,
   #re-assigned the original scale.data slot
   if(exists("orig.scale_data")){
     accordion_scale.data<-list()
-    accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
+    if (seurat_version < "5.0.0") {
+      # Seurat 4
+      accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
+      data <- SetAssayData(
+        object = data,
+        assay = assay,
+        slot = "scale.data",
+        new.data = orig.scale_data
+      )
+    } else {
+      # Seurat 5
+      accordion_scale.data[["accordion_scale.data"]]<-data[[assay]]$scale.data
+      data[[assay]]$scale.data <- orig.scale_data
+    }
     data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
-    data[[assay]]$scale.data <- orig.scale_data
   }
-  if("orig.seurat_clusters" %in% colnames(data@meta.data)){
-    #data@meta.data$seurat_clusters<-data@meta.data$orig.seurat_clusters
-    #data@meta.data$orig.seurat_clusters<-NULL
-  }
+
 
   if(include_detailed_annotation_info==T & plot == T){
     if(data_type == "seurat"){
