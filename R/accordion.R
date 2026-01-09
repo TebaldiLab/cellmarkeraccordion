@@ -883,7 +883,6 @@ accordion<-function(data,
       data[[assay]]$scale.data <- orig.scale_data
     }
     data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
-    data[[assay]]$scale.data <- orig.scale_data
   }
 
     if(include_detailed_annotation_info==T & plot == T){
