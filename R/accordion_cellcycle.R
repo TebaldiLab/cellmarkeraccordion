@@ -160,6 +160,8 @@ accordion_cellcycle<-function(data,
                               ){
 
 
+  #check Seurat version
+  seurat_version <- packageVersion("Seurat")
   #count matrix  data
   #check the type of input (Seurat data or raw count matrix)
   if(!(inherits(data, "Seurat"))){

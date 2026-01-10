@@ -208,6 +208,9 @@ accordion_custom<-function(data,
                            top_marker_score_quantile_threshold = 0.75,
                            plot = TRUE
 ){
+
+  #check Seurat version
+  seurat_version <- packageVersion("Seurat")
   #count matrix  data
   #check the type of input (Seurat object or raw count matrix)
   if(!(inherits(data, "Seurat"))){
