@@ -227,9 +227,9 @@ accordion_custom<-function(data,
       rownames(data) <- data[[1]]
       data[[1]] <- NULL
     }
-    if(inherits(data,"dgCMatrix")){
-      data <- as(as.matrix(data), "sparseMatrix")
-
+    #check if data is a digitial count matrix
+    if(!inherits(data,"dgCMatrix")){
+      data <- as(as.matrix(data), "dgCMatrix")
     }
     data <- CreateSeuratObject(counts = data)
     accordion_output<-list()
