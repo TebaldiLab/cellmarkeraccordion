@@ -237,8 +237,6 @@ accordion_disease<-function(data,
                             color_by = "cell_type"
 ){
 
-  #check Seurat version
-  seurat_version <- packageVersion("Seurat")
   #count matrix  data
   #check the type of input (Seurat data or raw count matrix)
   if(!(inherits(data, "Seurat"))){
@@ -314,16 +312,12 @@ accordion_disease<-function(data,
     } else{
 
       DefaultAssay(data)<-assay
+      # hoin split layers (Seurat v5) so single-matrix accessors work
+      data <- .accordion_join_layers(data, assay)
       #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
-        if (seurat_version < "5.0.0") {
-          if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
-            stop("Count matrix is empty")
-          }
-        }else{
-          if(sum(dim(data[[assay]]$counts))==0){
-            stop("Count matrix is empty")
-          }
+        if(sum(dim(.accordion_get_layer(data, assay, 'counts')))==0){
+          stop("Count matrix is empty")
         }
       }
       #check that the cluster column is present in the data
@@ -374,19 +368,10 @@ accordion_disease<-function(data,
   }
   #avoid warnings
   suppressWarnings({
-    if (seurat_version < "5.0.0") {
-      if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))!=0){
-        #perform data normalization if not already performed
-        if(identical(GetAssayData(data, assay=assay, slot='counts'), GetAssayData(data, assay=assay, slot='data')) | sum(dim(GetAssayData(data, assay=assay, slot='data')))==0){
-          data <- NormalizeData(data)
-        }
-      }
-    } else{
-      if(sum(dim(data[[assay]]$counts))!=0){
-        #perform data normalization if not already performed
-        if(identical(data[[assay]]$counts, data[[assay]]$data) | sum(dim(data[[assay]]$data))==0){
-          data <- NormalizeData(data)
-        }
+    if(sum(dim(.accordion_get_layer(data, assay, 'counts')))!=0){
+      #perform data normalization if not already performed
+      if(identical(.accordion_get_layer(data, assay, 'counts'), .accordion_get_layer(data, assay, 'data')) | sum(dim(.accordion_get_layer(data, assay, 'data')))==0){
+        data <- NormalizeData(data)
       }
     }
   })
@@ -433,12 +418,24 @@ accordion_disease<-function(data,
     }
     #if more than one species is selected aggregate genes and in case of common genes between the species the relative EC score are summed
   } else if(length(species) >=2){
-    if(all(grepl("^[A-Z0-9/-]+$", rownames(data)[1:10]))){ #convert to human
-      disease_accordion_marker[,marker:= toupper(marker)] # convert lower case in upper case (human symbol)
-    } else{
-      disease_accordion_marker[,marker:= str_to_title(marker)] # convert upper case in lower case (mouse symbol)
-    }
     input_species<-species
+    invalid_species<.input_species[!(input_species %in% c("Human", "Mouse"))]
+    if(length(invalid_species) > 0){
+      warning(knitr::combine_words(invalid_species), " species is not supported. Only Human and Mouse are available and are indeed used.")
+      input_species<-input_species[input_species %in% c("Human","Mouse")]
+      if (length(input_species) == 0){
+        input_species<-c("Human", "Mouse")
+      }
+    }
+    disease_accordion_marker<-disease_accordion_marker[species %in% input_species]
+    #markers of the selected species are converted to a single nomenclature, i.e.
+    #the one used by the input dataset. The nomenclature is detected from the gene
+    #names of the dataset, so that both human and mouse datasets are supported
+    if(detect_gene_nomenclature(rownames(data), disease_accordion_marker$marker) == "Human"){ #convert to human
+      disease_accordion_marker[,marker.=toupper(marker)] #convert lower case in upper case (human symbol)
+    } else{
+      disease_accordion_marker[,marker:= str_to_title(marker)] #convert upper case to title case (mouse symbol)
+    }
     ECs<-unique(disease_accordion_marker[,c("NCIT_celltype","marker","marker_type","ECs_global")])
     ECs[,ECs_sum:= sum(ECs_global), by=c("NCIT_celltype","marker","marker_type")]
     disease_accordion_marker[,species:=paste(input_species,collapse=", ")]
@@ -704,14 +701,8 @@ accordion_disease<-function(data,
   }
 
   # store original scale.data slot if present
-  if (seurat_version < "5.0.0") {
-    if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
-      orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
-    }
-  }else{
-    if(sum(dim(data[[assay]]$scale.data))!=0){
-      orig.scale_data<-data[[assay]]$scale.data
-    }
+  if(sum(dim(.accordion_get_layer(data, assay, 'scale.data')))!=0){
+      orig.scale_data<-.accordion_get_layer(data, assay, 'scale.data')
   }
 
   #check that markers are present in the data
@@ -723,12 +714,7 @@ accordion_disease<-function(data,
   suppressWarnings({
   data<-ScaleData(data, features = unique(disease_accordion_marker$marker))
   })
-  if (seurat_version < "5.0.0") {
-    SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
-  }else{
-    SE_data<-data[[assay]]$scale.data
-
-  }
+  SE_data<-.accordion_get_layer(data, assay, 'scale.data')
   SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
   setkey(SE_data, marker)
   SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
@@ -791,13 +777,8 @@ accordion_disease<-function(data,
           cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
           colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-          if (seurat_version < "5.0.0") {
-            accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cluster_table)
-            names(accordion_output)<-c("scaled_matrix","cluster_annotation")
-          }else{
-            accordion_output<-list(data[[assay]]$scale.data, cluster_table)
-            names(accordion_output)<-c("scaled_matrix","cluster_annotation")
-          }
+          accordion_output<-list(.accordion_get_layer(data, assay, 'scale.data'), cluster_table)
+          names(accordion_output)<-c("scaled_matrix","cluster_annotation")
         }
 
     }
@@ -845,14 +826,9 @@ accordion_disease<-function(data,
         accordion_output<-append(accordion_output,cell_table)
         names(accordion_output)<-c(names(accordion_output), "cell_annotation")
       } else {
-        if (seurat_version < "5.0.0") {
-          accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cell_table)
-          names(accordion_output)<-c("scaled_matrix","cell_annotation")
-        } else {
-          accordion_output<-list(data[[assay]]$scale.data, cell_table)
-          names(accordion_output)<-c("scaled_matrix","cell_annotation")
-        }
-      }
+        accordion_output<-list(.accordion_get_layer(data, assay, 'scale.data'), cell_table)
+        names(accordion_output)<-c("scaled_matrix","cell_annotation")
+      } 
 
     }
 
@@ -903,22 +879,10 @@ accordion_disease<-function(data,
   #re-assigned the original scale.data slot
   if(exists("orig.scale_data")){
     accordion_scale.data<-list()
-    if (seurat_version < "5.0.0") {
-      # Seurat 4
-      accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
-      data <- SetAssayData(
-        object = data,
-        assay = assay,
-        slot = "scale.data",
-        new.data = orig.scale_data
-      )
-    } else {
-      # Seurat 5
-      accordion_scale.data[["accordion_scale.data"]]<-data[[assay]]$scale.data
-      data[[assay]]$scale.data <- orig.scale_data
-    }
+    accordion_scale.data[["accordion_scale.data"]]<-.accordion_get_layer(data, assay, "scale.data")
+    data <- .accordion_set_layer(data, assay, "scale.data", orig.scale_data)
     data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
-  }
+  } 
 
   if(include_detailed_annotation_info==T & plot == T){
     if(data_type == "seurat"){

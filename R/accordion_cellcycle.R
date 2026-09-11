@@ -160,8 +160,6 @@ accordion_cellcycle<-function(data,
                               ){
 
 
-  #check Seurat version
-  seurat_version <- packageVersion("Seurat")
   #count matrix  data
   #check the type of input (Seurat data or raw count matrix)
   if(!(inherits(data, "Seurat"))){
@@ -237,16 +235,12 @@ accordion_cellcycle<-function(data,
     } else{
 
       DefaultAssay(data)<-assay
+      # join split layers (Seurat v5) so single-matrix accessors work
+      data <- .accordion_join_layers(data, assay)
       #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
-        if (seurat_version < "5.0.0") {
-          if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
-            stop("Count matrix is empty")
-          }
-        }else{
-          if(sum(dim(data[[assay]]$counts))==0){
-            stop("Count matrix is empty")
-          }
+        if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
+          stop("Count matrix is empty")
         }
       }
       #check that the cluster column is present in the data
@@ -278,16 +272,15 @@ accordion_cellcycle<-function(data,
 
   data("cell_cycle_markers", package = "cellmarkeraccordion",envir = environment())
 
-  if((length(species) ==1 & !(species %in% c("Human","Mouse"))) | (length(species) == 2 & setequal(species, c("Human","Mouse")))){
-    warning("Invalid species type")
-    if(all(rownames(data)[1:10] %in% toupper(rownames(data)[1:10]))){
-      cell_cycle_markers<-cell_cycle_markers[species %in% "Human"]
-      warning("The dataset might be human. Human markers are indeed used.")
-    } else{
-      cell_cycle_markers<-cell_cycle_markers[species %in% "Mouse"]
-      warning("The dataset might be mouse. Mouse markers are indeed used.")
-    }
+  #the cell cycle marker table stores both human (upper case) and mouse (title case)
+  #gene symbols and has no species column, hence it cannot be subset by 
+  #species: markers not matching the nomenclature of the input dataset are 
+  #discarded belows, when only the markers found in the dataset are kept
+  invalid_species<-species[!(species %in% c("Human", "Mouse"))]
+  if(length(invalid_species) > 0){
+    warning(knitr::combine_words(invalid_species), "species not supported. Only Human and Mouse are avaiable. Markers are selected according to the gene nomenclature of the dataset, which seems to be  ", tolower(detect_gene_nomenclature(rownames(data), cell_cycle_markers$marker)), ".")
   }
+  cell_cycle_markers<-unique(cell_cycle_markers)
 
   # check group_markers_by input
   if(!(group_markers_by %in% c("cluster","celltype_cluster","cell","celltype_cell","score_cell"))){
@@ -311,19 +304,10 @@ accordion_cellcycle<-function(data,
 
   #avoid warnings
   suppressWarnings({
-    if (seurat_version < "5.0.0") {
-      if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))!=0){
-        #perform data normalization if not already performed
-        if(identical(GetAssayData(data, assay=assay, slot='counts'), GetAssayData(data, assay=assay, slot='data')) | sum(dim(GetAssayData(data, assay=assay, slot='data')))==0){
-          data <- NormalizeData(data)
-        }
-      }
-    } else{
-      if(sum(dim(data[[assay]]$counts))!=0){
-        #perform data normalization if not already performed
-        if(identical(data[[assay]]$counts, data[[assay]]$data) | sum(dim(data[[assay]]$data))==0){
-          data <- NormalizeData(data)
-        }
+    if(sum(dim(.accordion_get_layer(data, assay, 'counts')))!=0){
+      #perform data normalization if not already performed
+      if(identical(.accordion_get_layer(data, assay, 'couts'), .accordion_get_layer(data, assay, 'data')) | sum(dim(.accordion_get_layer(data, assay, 'data'))) == 0){
+        data <- NormalizeData(data)
       }
     }
   })
@@ -354,27 +338,16 @@ accordion_cellcycle<-function(data,
     cell_cycle_markers[,combined_score := SPs_reg * weight_scaled]
 
     # store original scale.data slot if present
-    if (seurat_version < "5.0.0") {
-      if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
-        orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
-      }
-    }else{
-      if(sum(dim(data[[assay]]$scale.data))!=0){
-        orig.scale_data<-data[[assay]]$scale.data
-      }
+    if(sum(dim(.accordion_get_layer(data, assay, 'scale.data')))!=0){
+      orig.scale_data<-.accordion_get_layer(data, assay, 'scale.data')
     }
 
     # scale data based on markers used for the annotation
     suppressWarnings({
 
-    data<-ScaleData(data, features = unique(cell_cycle_markers$marker))
+      data<-ScaleData(data, features = unique(cell_cycle_markers$marker))
     })
-    if (seurat_version < "5.0.0") {
-      SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
-    }else{
-      SE_data<-data[[assay]]$scale.data
-
-    }
+    SE_data<-.accordion_get_layer(data, assay, 'scale.data')
     SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
     setkey(SE_data, marker)
     SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
@@ -439,13 +412,8 @@ accordion_cellcycle<-function(data,
         cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
         colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-        if (seurat_version < "5.0.0") {
-          accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cluster_table)
-          names(accordion_output)<-c("scaled_matrix","cluster_annotation")
-        }else{
-          accordion_output<-list(data[[assay]]$scale.data, cluster_table)
-          names(accordion_output)<-c("scaled_matrix","cluster_annotation")
-        }
+        accordion_output<-list(.accordion_get_layer(data, assay, 'scale.data'), cluster_table)
+        names(accordion_output)<-c("scaled_matrix","cluster_annotation")
       }
 
     }
@@ -481,15 +449,10 @@ accordion_cellcycle<-function(data,
           accordion_output<-append(accordion_output,cell_table)
           names(accordion_output)<-c(names(accordion_output), "cell_annotation")
         } else {
-          if (seurat_version < "5.0.0") {
-            accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cell_table)
-            names(accordion_output)<-c("scaled_matrix","cell_annotation")
-          } else {
-            accordion_output<-list(data[[assay]]$scale.data, cell_table)
-            names(accordion_output)<-c("scaled_matrix","cell_annotation")
-          }
+          accordion_output<-list(.accordion_get_layer(data, assay, 'scale.data'), cell_table)
+          names(accordion_output)<-c("scaled_matrix","cell_annotation")
         }
-
+      
       }
 
     }
@@ -538,20 +501,8 @@ accordion_cellcycle<-function(data,
     #re-assigned the original scale.data slot
     if(exists("orig.scale_data")){
       accordion_scale.data<-list()
-      if (seurat_version < "5.0.0") {
-        # Seurat 4
-        accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
-        data <- SetAssayData(
-          object = data,
-          assay = assay,
-          slot = "scale.data",
-          new.data = orig.scale_data
-        )
-      } else {
-        # Seurat 5
-        accordion_scale.data[["accordion_scale.data"]]<-data[[assay]]$scale.data
-        data[[assay]]$scale.data <- orig.scale_data
-      }
+      accordion_scale.data[["accordion_scale.data"]]<-.accordion_get_layer(data, assay, 'scale.data')
+      data <- .accordion_set_layer(data, assay, "scale.data", orig.scale_data)
       data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
     }
 

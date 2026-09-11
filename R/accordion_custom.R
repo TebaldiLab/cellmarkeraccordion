@@ -209,8 +209,6 @@ accordion_custom<-function(data,
                            plot = TRUE
 ){
 
-  #check Seurat version
-  seurat_version <- packageVersion("Seurat")
   #count matrix  data
   #check the type of input (Seurat object or raw count matrix)
   if(!(inherits(data, "Seurat"))){
@@ -286,16 +284,12 @@ accordion_custom<-function(data,
     } else{
 
       DefaultAssay(data)<-assay
+      #join split layers (Seurat v5) so single-matrix accessors work
+      data<-accordion_join_layers(data, assay)
       #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
-        if (seurat_version < "5.0.0") {
-          if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
+        if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
             stop("Count matrix is empty")
-          }
-        }else{
-          if(sum(dim(data[[assay]]$counts))==0){
-            stop("Count matrix is empty")
-          }
         }
       }
       #check that the cluster column is present in the data
@@ -367,19 +361,10 @@ accordion_custom<-function(data,
 
   #avoid warnings
   suppressWarnings({
-    if (seurat_version < "5.0.0") {
-      if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))!=0){
-        #perform data normalization if not already performed
-        if(identical(GetAssayData(data, assay=assay, slot='counts'), GetAssayData(data, assay=assay, slot='data')) | sum(dim(GetAssayData(data, assay=assay, slot='data')))==0){
-          data <- NormalizeData(data)
-        }
-      }
-    } else{
-      if(sum(dim(data[[assay]]$counts))!=0){
-        #perform data normalization if not already performed
-        if(identical(data[[assay]]$counts, data[[assay]]$data) | sum(dim(data[[assay]]$data))==0){
-          data <- NormalizeData(data)
-        }
+    if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))!=0){
+      #perform data normalization if not already performed
+      if(identical(.accordion_get_layer(data, assay, 'counts'), .accordion_get_layer(data, assay, 'data')) | sum(dim(.accordion_get_layer(data, assay, 'data')))==0){
+        data <- NormalizeData(data)
       }
     }
   })
@@ -454,25 +439,14 @@ accordion_custom<-function(data,
   }
 
   # store original scale.data slot if present
-  if (seurat_version < "5.0.0") {
-    if(sum(dim(GetAssayData(data, assay=assay, slot='scale.data')))!=0){
-      orig.scale_data<-GetAssayData(data, assay=assay, slot='scale.data')
-    }
-  }else{
-    if(sum(dim(data[[assay]]$scale.data))!=0){
-      orig.scale_data<-data[[assay]]$scale.data
-    }
+  if(sum(dim(.accordion_get_layer(data, assay, 'scale.data')))!=0){
+      orig.scale_data<-.accordion_get_layer(data, assay, 'scale.data')
   }
   # scale data based on markers used for the annotation
   suppressWarnings({
     data<-ScaleData(data, features = unique(marker_table$marker))
   })
-  if (seurat_version < "5.0.0") {
-    SE_data<-GetAssayData(data, assay=assay, slot='scale.data')
-  }else{
-    SE_data<-data[[assay]]$scale.data
-
-  }
+  SE_data<-.accordion_get_layer(data, assay, 'scale.data')
   SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
   setkey(SE_data, marker)
   SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
@@ -537,13 +511,8 @@ accordion_custom<-function(data,
       cluster_table<-cluster_table[,c("cell","seurat_clusters","annotation_per_cluster")]
       colnames(cluster_table)<-c("cell","cluster",eval(name))
 
-      if (seurat_version < "5.0.0") {
-        accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cluster_table)
-        names(accordion_output)<-c("scaled_matrix","cluster_annotation")
-      }else{
-        accordion_output<-list(data[[assay]]$scale.data, cluster_table)
-        names(accordion_output)<-c("scaled_matrix","cluster_annotation")
-      }
+      accordion_output<-list(.accordion_get_layer(data, assay, 'scale.data'), cluster_table)
+      names(accordion_output)<-c("scaled_matrix","cluster_annotation")
     }
   }
 
@@ -578,13 +547,8 @@ accordion_custom<-function(data,
         accordion_output<-append(accordion_output,cell_table)
         names(accordion_output)<-c(names(accordion_output), "cell_annotation")
       } else {
-        if (seurat_version < "5.0.0") {
-          accordion_output<-list(GetAssayData(data, assay=assay, slot='scale.data'), cell_table)
-          names(accordion_output)<-c("scaled_matrix","cell_annotation")
-        } else {
-          accordion_output<-list(data[[assay]]$scale.data, cell_table)
-          names(accordion_output)<-c("scaled_matrix","cell_annotation")
-        }
+        accordion_output<-list(.accordion_get_layer(data, assay, 'scale.data'), cell_table)
+        names(accordion_output)<-c("scaled_matrix","cell_annotation")
       }
 
     }
@@ -634,20 +598,8 @@ accordion_custom<-function(data,
   #re-assigned the original scale.data slot
   if(exists("orig.scale_data")){
     accordion_scale.data<-list()
-    if (seurat_version < "5.0.0") {
-      # Seurat 4
-      accordion_scale.data[["accordion_scale.data"]]<-GetAssayData(object = data, assay = assay, slot = "scale.data")
-      data <- SetAssayData(
-        object = data,
-        assay = assay,
-        slot = "scale.data",
-        new.data = orig.scale_data
-      )
-    } else {
-      # Seurat 5
-      accordion_scale.data[["accordion_scale.data"]]<-data[[assay]]$scale.data
-      data[[assay]]$scale.data <- orig.scale_data
-    }
+    accordion_scale.data[["accordion_scale.data"]]<-.accordion_get_layer(data, assay, "scale.data")
+    data <- .accordion_set_layer(data, assay, 'scale.data', orig.scale_data)
     data@misc[[annotation_name]]<-append(data@misc[[annotation_name]], accordion_scale.data)
   }
 

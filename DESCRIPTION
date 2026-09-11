@@ -20,7 +20,7 @@ Description: cellmarkeraccordion is an R package designed to obtain a robust ide
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 Depends:
     R (>= 4.0.0)
 Imports:
@@ -40,7 +40,8 @@ Imports:
 	Rgraphviz (>= 2.42.0),
 	knitr (>= 1.45),
 	methods (>= 4.2.3),
-	stats (>= 4.2.3)
+	stats (>= 4.2.3),
+	SeuratObject
 biocViews:
 Suggests: 
     testthat (>= 3.0.0)
