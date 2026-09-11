@@ -104,8 +104,10 @@ DimPlot(data, group.by = "accordion_per_cluster")
 
 Or you can use raw counts matrix and specify cluster's id for each cell:
 ```bash
-# Input: raw counts and clusters id  
-raw_counts <- GetAssayData(data, assay="RNA", slot='counts')
+# Input: raw counts and clusters id
+# Seurat v5 (SeuratObject >= 5): use LayerData() with the "layer" argument
+raw_counts <- LayerData(data, assay="RNA", layer='counts')
+# Seurat v4: raw_counts <- GetAssayData(data, assay="RNA", slot='counts')
 clusters<- data.table(cell = rownames(data@meta.data), cluster = data@meta.data$seurat_clusters)
 # Output: list with annotation results 
 output <- accordion(raw_counts, assay ="RNA", species ="Human", tissue="blood", cluster_info = clusters, annotation_resolution= "cluster", max_n_marker = 30, include_detailed_annotation_info = TRUE, plot = TRUE)
