@@ -444,4 +444,86 @@ ggplot(brain_data@meta.data, aes(x=x, y=-y, color=integrated_database_per_cluste
 
 ![Merfish](https://github.com/user-attachments/assets/23d43cc0-aabd-4810-8bed-92e69009f10b)
 
+## Entropy metrics as a proxy of cellular heterogeneity
+
+Set `entropy` when running `accordion` at cluster resolution. `"all"` computes
+every metric, or pass only the ones you need:
+
+```bash
+data <- accordion(data, assay = "RNA", species = "Human", tissue = "blood",
+                  annotation_resolution = "cluster", max_n_marker = 30,
+                  entropy = "all",
+                  include_detailed_annotation_info = TRUE)
+```
+
+The results are stored next to the rest of the detailed annotation information,
+one table per metric:
+
+```bash
+names(data@misc$accordion$cluster_resolution$detailed_annotation_info)
+#> "top_celltypes"  "cluster_entropy_Shannon"  "cluster_entropy_Gini"
+#> "cluster_entropy_Ontology-sp-Rao"  "cluster_entropy_Ontology-Lin-Rao"
+#> "cluster_entropy_Jaccard-Rao"  "cluster_entropy_Overlap-Rao"  ...
+
+data@misc$accordion$cluster_resolution$detailed_annotation_info$cluster_entropy_Shannon
+```
+
+Entropy at cluster resolution requires `include_detailed_annotation_info = TRUE`,
+since it is computed from the candidate cell types and their impact scores. By
+default (`entropy = NULL`) no entropy is computed.
+
+### The six metrics
+
+They answer two different questions, and are meant to be read together.
+
+**How many candidates, and how evenly matched?** These two look only at the
+distribution of the candidates' weights, not at who the candidates are.
+
+| metric | range | notes |
+|---|---|---|
+| `Shannon` | 0–1 | normalised by `log2(n)`, so it does not grow just because a cluster has more candidates |
+| `Gini` | 0–1 | reported raw (`1 - sum(p²)`), already bounded by 1 for any `n` |
+
+**How different are the candidates from each other?** These are Rao's quadratic
+entropies: they weight each pair of candidates by how far apart the two cell
+types actually are.
+
+| metric | range | distance between two cell types |
+|---|---|---|
+| `Ontology-sp-Rao` | 0-1 | shortest path on the Cell Ontology graph |
+| `Ontology-Lin-Rao` | 0-1 | Lin semantic similarity on the Cell Ontology |
+| `Jaccard-Rao` | 0-1 | overlap of their marker sets (Jaccard) |
+| `Overlap-Rao` | 0-1 | overlap of their marker sets (overlap coefficient) |
+
+### Reading the output
+
+On the PBMC dataset above:
+
+| cluster | annotation | % of cells | Shannon | Gini | Ontology-sp-Rao | Ontology-Lin-Rao | Jaccard-Rao | Overlap-Rao |
+|---|---|---|---|---|---|---|---|---|
+| 0 | naive thymus-derived CD4⁺ αβ T cell | 21.98 | 0.819 | 0.549 | 0.070 | 0.158 | 0.340 | 0.243 |
+| 1 | monocyte | 31.98 | 0.888 | 0.674 | 0.100 | 0.146 | 0.506 | 0.365 |
+| 2 | CD4⁺ αβ T cell | 15.09 | 0.899 | 0.682 | 0.123 | 0.222 | 0.505 | 0.376 |
+| 3 | B cell | 57.88 | 0.577 | 0.409 | 0.084 | 0.075 | 0.318 | 0.238 |
+| 4 | CD8⁺ αβ T cell | 30.79 | 0.793 | 0.508 | 0.112 | 0.230 | 0.402 | 0.256 |
+| 5 | CD14-low, CD16⁺ monocyte | 88.61 | **0.000** | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
+| 6 | natural killer cell | 70.95 | 0.397 | 0.211 | 0.091 | 0.094 | 0.135 | 0.081 |
+| 7 | dendritic cell | 55.88 | 0.697 | 0.507 | 0.109 | 0.136 | 0.459 | 0.356 |
+| 8 | megakaryocyte | 86.67 | 0.367 | 0.190 | 0.045 | 0.164 | 0.126 | 0.049 |
+
+Note that a high entropy is not the same as a bad annotation. Clusters 0 and 2
+are both CD4⁺ T populations, and the candidates competing for them are their
+close relatives in the Cell Ontology — which is why their Shannon is high while
+`Ontology-Lin-Rao` stays low.
+
+### Visualising it
+
+The dot plot of the top cell types carries one heatmap row per entropy metric
+underneath:
+
+```bash
+plot_top_celltypes_per_cluster(data, annotation_name = "accordion")
+```
+
+![Entropy dot plot](man/figures/entropy_dotplot.png)
 
