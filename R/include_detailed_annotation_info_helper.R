@@ -16,7 +16,10 @@ include_detailed_annotation_info_helper<-function(data,
                                             top_marker_score_quantile_threshold,
                                             top_cell_score_quantile_threshold,
                                             condition_group_info,
-                                            celltype_group_info){
+                                            celltype_group_info,
+                                            entropy = NULL,
+                                            ontology = NULL,
+                                            min_percentage_celltype_entropy = 0.05){
   if(data_type == "matrix"){
     info_list<-list()
   }
@@ -63,6 +66,45 @@ include_detailed_annotation_info_helper<-function(data,
     }
     cluster_res_detailed_annotation_info<-list()
     cluster_res_detailed_annotation_info[["cluster_resolution"]][["detailed_annotation_info"]][["top_celltypes"]] <- as.data.table(anno_dt_cl_rank)
+
+    # Cluster-level entropies. Python is the reference for these metrics, so the
+    # inputs are built to match it exactly:
+    #  * p is percentage x celltype_impact_score renormalized, where percentage is
+    #    rounded to 3 decimals as Python does. The table above keeps R's own 2
+    #    decimals, which is a display choice of the annotation output; feeding 2
+    #    decimals into the entropy would move it in the 4th digit.
+    #  * the marker sets come from dt_top_marker BEFORE it is narrowed to the
+    #    cluster's winning cell type on the next line. Jaccard-Rao and Overlap-Rao
+    #    need a marker set for every candidate cell type, not just the winners.
+    if (!is.null(entropy) && !identical(entropy, FALSE)) {
+      ent_pct <- unique(anno_dt_cell_ptc[, .(seurat_clusters, annotation_per_cell,
+        pct3 = round((ncell_celltype_cluster / ncell_tot_cluster) * 100, 3))])
+      ent_in <- merge(as.data.table(anno_dt_cl_rank), ent_pct,
+                      by.x = c(names(anno_dt_cl_rank)[1], name),
+                      by.y = c("seurat_clusters", "annotation_per_cell"), all.x = TRUE)
+      ent_in <- ent_in[, .(cluster = get(names(anno_dt_cl_rank)[1]),
+                           celltype = get(name),
+                           percentage = pct3,
+                           celltype_impact_score = celltype_impact_score)]
+      # Il quantile dei marker per (cell type, cluster): il driver poi usa, per
+      # ogni cluster, i set di quel cluster.
+      ent_mk <- unique(dt_top_marker[, .(quantile_score_marker =
+                         quantile(score, probs = top_marker_score_quantile_threshold,
+                                  na.rm = TRUE)),
+                       by = c("CL_celltype", "seurat_clusters", "marker", "marker_type")])
+      ent_mk <- ent_mk[quantile_score_marker > 0]
+      data.table::setnames(ent_mk, c("CL_celltype", "quantile_score_marker"),
+                           c("celltype", "gene_impact_score_per_cluster"))
+      ent_res <- compute_cluster_entropies(ent_in, entropy, ontology = ontology,
+                                           dt_all_marker = ent_mk,
+                                           min_percentage_celltype_entropy =
+                                             min_percentage_celltype_entropy)
+      for (nm in names(ent_res)) {
+        tab <- ent_res[[nm]]
+        data.table::setnames(tab, "cluster", names(anno_dt_cl_rank)[1])
+        cluster_res_detailed_annotation_info[["cluster_resolution"]][["detailed_annotation_info"]][[nm]] <- tab
+      }
+    }
 
     dt_top_marker<-dt_top_marker[CL_celltype == annotation_per_cluster]
 

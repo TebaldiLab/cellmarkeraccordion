@@ -76,6 +76,21 @@
 #'   consistency score and SPs score. Only markers >  the
 #'   quantile_threshold are kept. If  NULL, no filter is applied. Default is
 #'   NULL.
+#' @param entropy Character vector of annotation-entropy metrics, or "all" for
+#'   every one of them. Available: "Shannon", "Gini", "Ontology-sp-Rao",
+#'   "Ontology-Lin-Rao", "Jaccard-Rao", "Overlap-Rao". NULL (the default)
+#'   computes none.
+#'
+#'   The disease database names its cell types with NCIT terms, which have no
+#'   Cell Ontology counterpart, so the two ontology metrics are refused for the
+#'   whole analysis and a message says which cell types are responsible. The
+#'   other four are computed as usual. At cluster resolution they land in the
+#'   detailed annotation info and need
+#'   \code{include_detailed_annotation_info = TRUE}; at cell resolution they go
+#'   to the metadata as \code{<annotation_name>_<metric>_entropy} regardless.
+#' @param min_percentage_celltype_entropy Numeric value: candidate cell types
+#'   below this percentage of the cluster's cells are left out of the entropy.
+#'   Cluster resolution only. Default 0.05.
 #' @param annotation_resolution Character string or character string vector
 #'   specifying the resolution of the annotation. Either “cluster” and/or “cell”
 #'   are supported. Default is “cluster”.
@@ -222,6 +237,8 @@ accordion_disease<-function(data,
                             max_n_marker = 30,
                             combined_score_quantile_threshold = NULL,
                             annotation_resolution = "cluster",
+                            entropy = NULL,
+                            min_percentage_celltype_entropy = 0.05,
                             cluster_score_quantile_threshold = 0.75,
                             allow_unknown = TRUE,
                             annotation_name = "accordion_disease",
@@ -710,6 +727,36 @@ accordion_disease<-function(data,
     stop("No marker genes were detected in the dataset. Please check your input or filtering criteria.")
   }
 
+  # Python takes min_percentage_celltype_entropy as a fraction in [0, 1] and
+  # multiplies it by 100 before comparing it with the percentage column, so the
+  # 0.05 default means "at least 5% of the cluster's cells". Mirrored here.
+  if (!is.null(min_percentage_celltype_entropy)) {
+    if (!is.numeric(min_percentage_celltype_entropy)) {
+      warning("min_percentage_celltype_entropy should be a number between 0 and 1, defaulting to 0.05")
+      min_percentage_celltype_entropy <- 5
+    } else {
+      min_percentage_celltype_entropy <- min_percentage_celltype_entropy * 100
+    }
+  }
+
+  # The ontology metrics need the built-in Cell Ontology. It is loaded even here,
+  # where the cell types are NCIT terms and the check is bound to fail: letting
+  # the precondition run against the real ontology is what produces the message
+  # naming the cell types, instead of silently dropping the two metrics.
+  entropy_ontology <- NULL
+  if (!is.null(entropy) && !identical(entropy, FALSE)) {
+    if (identical(entropy, "all")) entropy <- ACCORDION_METRICS
+    entropy <- intersect(entropy, ACCORDION_METRICS)
+    if (!length(entropy)) {
+      warning("No valid entropy metric requested. Valid values: ",
+              paste(ACCORDION_METRICS, collapse = ", "), ", or \"all\".")
+      entropy <- NULL
+    } else if (any(entropy %in% ACCORDION_ONTOLOGY_METRICS)) {
+      data("cell_onto", package = "cellmarkeraccordion", envir = environment())
+      entropy_ontology <- get("cell_onto", envir = environment())
+    }
+  }
+
   # scale data based on markers used for the annotation
   suppressWarnings({
   data<-ScaleData(data, features = unique(disease_accordion_marker$marker))
@@ -815,12 +862,41 @@ accordion_disease<-function(data,
     if(!identical(colnames(data),anno_dt_cell$cell)){
       anno_dt_cell<-anno_dt_cell[order(match(anno_dt_cell$cell,colnames(data))),]
     }
+    # Cell-level entropies. Same as in accordion(): Python writes them to the cell
+    # metadata regardless of include_detailed_annotation_info, so they are
+    # computed here. final_dt is the full score table, one row per (cell,
+    # candidate cell type), with NCIT_celltype in place of CL_celltype.
+    cell_ent <- list()
+    if (!is.null(entropy) && !identical(entropy, FALSE)) {
+      cell_ent <- compute_cell_entropies(
+        final_dt,
+        cells = colnames(data),
+        entropy = entropy,
+        ontology = entropy_ontology,
+        accordion_marker = disease_accordion_marker,
+        top_cell_score_quantile_threshold = top_cell_score_quantile_threshold,
+        n_top_celltypes = n_top_celltypes,
+        allow_unknown = allow_unknown)
+    }
+
     if(data_type == "seurat"){
       data@meta.data[,name]<-anno_dt_cell$annotation_per_cell
       data@meta.data[,name_score]<-anno_dt_cell$diff_score
+      for (nm in names(cell_ent)) {
+        tab <- cell_ent[[nm]]
+        col <- setdiff(names(tab), "cell")[1]
+        data@meta.data[, paste0(annotation_name, "_", col)] <-
+          tab[[col]][match(colnames(data), tab$cell)]
+      }
     } else{
       cell_table<-anno_dt_cell[,c("cell","annotation_per_cell","diff_score")]
       colnames(cell_table)<-c("cell",eval(name), eval(name_score))
+      for (nm in names(cell_ent)) {
+        tab <- cell_ent[[nm]]
+        col <- setdiff(names(tab), "cell")[1]
+        cell_table[[paste0(annotation_name, "_", col)]] <-
+          tab[[col]][match(cell_table$cell, tab$cell)]
+      }
 
       if(!is_empty(accordion_output)){
         accordion_output<-append(accordion_output,cell_table)
@@ -853,7 +929,10 @@ accordion_disease<-function(data,
                                                       top_marker_score_quantile_threshold,
                                                       top_cell_score_quantile_threshold,
                                                       condition_group_info,
-                                                      celltype_group_info)
+                                                      celltype_group_info,
+                                                      entropy,
+                                                      entropy_ontology,
+                                                      min_percentage_celltype_entropy)
     } else{
       accordion_output<-include_detailed_annotation_info_helper(accordion_output,
                                                                 data_type,
@@ -871,7 +950,10 @@ accordion_disease<-function(data,
                                                                 top_marker_score_quantile_threshold,
                                                                 top_cell_score_quantile_threshold,
                                                                 condition_group_info,
-                                                                celltype_group_info)
+                                                                celltype_group_info,
+                                                                entropy,
+                                                                entropy_ontology,
+                                                                min_percentage_celltype_entropy)
     }
 
   }

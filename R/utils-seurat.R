@@ -21,10 +21,29 @@ NULL
             error = function(e) NULL
         )
     } else{
-        SeuratObject::SetAssayData(
+        tryCatch(
+            SeuratObject::GetAssayData(object, assay = assay, slot = layer),
+            error = function(e) NULL
+        )
+    }
+}
+
+#' Set an assay layer/slot independently of the Seurat version
+#' @keywords internal
+#' @noRd
+
+.accordion_set_layer <- function(object, assay, layer, new.data){
+    if(is.null(new.data)){
+        return(object)
+    }
+    if(.use_layers()){
+        SeuratObject::LayerData(object, assay = assay, layer = layer) <- new.data
+    } else{
+        object <- SeuratObject::SetAssayData(
             object, assay = assay, slot = layer, new.data = new.data
         )
     }
+    object
 }
 
 #' Join split layers (Seurat v5)
@@ -49,4 +68,4 @@ NULL
     object
 }
 
-utils::globalVariables(c("new.data", ".accordion_set_layer", "accordion_join_layers"))
+utils::globalVariables(c("accordion_join_layers"))

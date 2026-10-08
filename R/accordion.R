@@ -58,6 +58,49 @@
 #' @param min_n_marker Integer value specifying the minimum number of markers to
 #'   keep for each cell type. Only cell types with a number of markers >= this
 #'   threshold are kept.  Default is 5.
+#' @param entropy Character vector of annotation-entropy metrics, or "all" for
+#'   every one of them. Available: "Shannon" (normalized by log2(n)), "Gini" (raw
+#'   impurity, i.e. Tsallis of order q = 2), "Ontology-sp-Rao",
+#'   "Ontology-Lin-Rao", "Jaccard-Rao", "Overlap-Rao". NULL (the default)
+#'   computes none. The two ontology metrics load the built-in Cell Ontology
+#'   automatically. If any candidate cell type cannot be placed -- no ontology
+#'   term, or no markers left in the marker table -- the affected metric is not
+#'   computed for that analysis and a message says which cell types are
+#'   responsible.
+#'
+#'   They are computed at whichever resolution is requested. At cluster
+#'   resolution they land in the detailed annotation info, one table per metric,
+#'   and require \code{include_detailed_annotation_info = TRUE}. At cell
+#'   resolution they land in the cell metadata as
+#'   \code{<annotation_name>_<metric>_entropy}, regardless of
+#'   \code{include_detailed_annotation_info}. The two resolutions do not share a
+#'   definition of the probability vector: per cluster it is the candidates'
+#'   percentage times their impact score, per cell it is the square of the score
+#'   of the candidates the cell keeps (see \code{top_cell_score_quantile_threshold}
+#'   and \code{n_top_celltypes}).
+#' @param min_percentage_celltype_entropy Numeric value: candidate cell types
+#'   below this percentage of the cluster's cells are left out of the entropy.
+#'   Cluster resolution only. Default 0.05.
+#' @param do_deconvolution Logical. When TRUE, and at cell resolution, each
+#'   observation is also deconvolved into a composition of candidate cell types:
+#'   see \code{accordion_spatial_deconvolution()}, which is the wrapper meant for
+#'   spatial data. The composition is stored as the assay
+#'   \code{<annotation_name>_proportions} (cell types x spots, each spot's column
+#'   summing to 1), and the assigned cell type's share goes to
+#'   \code{<annotation_name>_per_cell_percentage} in the metadata. Default FALSE.
+#' @param deconvolution_threshold Numeric in [0, 1]: contributions below this
+#'   fraction are dropped from a spot's composition before the top
+#'   \code{n_top_celltypes} are kept and the row is renormalized. Default 0.05.
+#' @param deconvolution_empty_fallback Logical. A spot whose signal is spread
+#'   over many cell types can have no single contribution above
+#'   \code{deconvolution_threshold} and would come out with an empty composition.
+#'   With TRUE it keeps its top \code{n_top_celltypes} pre-threshold types
+#'   instead. Default FALSE.
+#' @param cell_block_size Integer value specifying how many cells are scored at a
+#'   time. The marker x cell x celltype table is the memory bottleneck of the
+#'   function, and this bounds its size: lower it on large datasets or on a
+#'   machine with little RAM, raise it for a modest speed gain. Blocking is exact,
+#'   so the results do not depend on this value. Default 500.
 #' @param max_n_marker Integer value specifying the maximum number of markers to
 #'   keep for each cell type. For the selection, markers are ranked according to
 #'   their combined score, obtained by multiplying evidence consistency score
@@ -211,6 +254,9 @@ accordion<-function(data,
                     log2FC_threshold = NULL,
                     min_n_marker = 5,
                     max_n_marker = 30,
+                    cell_block_size = 500,
+                    entropy = NULL,
+                    min_percentage_celltype_entropy = 0.05,
                     combined_score_quantile_threshold = NULL,
                     annotation_resolution = "cluster",
                     cluster_score_quantile_threshold = 0.75,
@@ -222,6 +268,9 @@ accordion<-function(data,
                     group_markers_by = "celltype_cluster",
                     top_cell_score_quantile_threshold = 0.90,
                     n_top_celltypes = 5,
+                    do_deconvolution = FALSE,
+                    deconvolution_threshold = 0.05,
+                    deconvolution_empty_fallback = FALSE,
                     n_top_markers = 5,
                     top_marker_score_quantile_threshold = 0.75,
                     plot = TRUE,
@@ -689,6 +738,33 @@ accordion<-function(data,
     stop("No marker genes were detected in your dataset. Please try again using different parameters")
   }
 
+  # Python takes min_percentage_celltype_entropy as a fraction in [0, 1] and
+  # multiplies it by 100 before comparing it with the percentage column, so the
+  # 0.05 default means "at least 5% of the cluster's cells". Mirrored here.
+  if (!is.null(min_percentage_celltype_entropy)) {
+    if (!is.numeric(min_percentage_celltype_entropy)) {
+      warning("min_percentage_celltype_entropy should be a number between 0 and 1, defaulting to 0.05")
+      min_percentage_celltype_entropy <- 5
+    } else {
+      min_percentage_celltype_entropy <- min_percentage_celltype_entropy * 100
+    }
+  }
+
+  # The ontology metrics need the built-in Cell Ontology; load it only if asked.
+  entropy_ontology <- NULL
+  if (!is.null(entropy) && !identical(entropy, FALSE)) {
+    if (identical(entropy, "all")) entropy <- ACCORDION_METRICS
+    entropy <- intersect(entropy, ACCORDION_METRICS)
+    if (!length(entropy)) {
+      warning("No valid entropy metric requested. Valid values: ",
+              paste(ACCORDION_METRICS, collapse = ", "), ", or \"all\".")
+      entropy <- NULL
+    } else if (any(entropy %in% ACCORDION_ONTOLOGY_METRICS)) {
+      data("cell_onto", package = "cellmarkeraccordion", envir = environment())
+      entropy_ontology <- get("cell_onto", envir = environment())
+    }
+  }
+
   # scale data based on markers used for the annotation
   suppressWarnings({
   data<-ScaleData(data, features = unique(accordion_marker$marker))
@@ -697,18 +773,68 @@ accordion<-function(data,
   SE_data<-as.data.table(as.data.frame(SE_data),keep.rownames = "marker")
   setkey(SE_data, marker)
 
-  SE_m_data<-melt.data.table(SE_data,id.vars = c("marker"))
-  colnames(SE_m_data)<-c("marker","cell","expr_scaled")
-  dt_score<-merge.data.table(SE_m_data,accordion_marker, by="marker",allow.cartesian = TRUE)
+  # The scoring is done in blocks of cells. The full marker x cell x celltype
+  # table (dt_score) is the memory bottleneck of this function: with the whole
+  # marker database it is n_cells x nrow(accordion_marker) rows -- 2700 x 10767 =
+  # 29 million on a PBMC -- times twelve columns, which is how a 2700-cell dataset
+  # could need over 6 GB and be killed by the OOM killer.
+  #
+  # Blocking is exact, not an approximation: the aggregation below is keyed by
+  # (CL_celltype, cell, marker_type) and never combines two cells, so a cell's
+  # score does not depend on which other cells are in its block.
+  #
+  # Only two things survive a block: the aggregated scores (two rows per
+  # celltype/cell) and, for the detailed annotation tables, the rows of dt_score
+  # belonging to each cell's own best cell type -- about max_n_marker rows per
+  # cell instead of one row per (marker, celltype) pair. Which cell type that is
+  # depends only on that cell's own scores, so it is known inside the block.
+  cell_names <- setdiff(names(SE_data), "marker")
+  blocks <- split(cell_names, ceiling(seq_along(cell_names) / cell_block_size))
 
-  # compute the score for each cell
-  dt_score[,score := expr_scaled * combined_score]
-  dt_score_ct <- unique(dt_score[, c("CL_celltype", "cell")])
-  setkey(dt_score, CL_celltype, cell, marker_type)
-  sum_dt <- dt_score[data.table("CL_celltype" = rep(dt_score_ct$CL_celltype, each = 2),
-                                "cell" = rep(dt_score_ct$cell, each = 2),
-                                "marker_type" = c("positive", "negative")),
-                     .(score= (sum(score)/(sqrt((sum(ECs_reg * SPs_reg)))))), by = .EACHI]
+  sum_dt_list <- vector("list", length(blocks))
+  dt_score_list <- vector("list", length(blocks))
+
+  for (bi in seq_along(blocks)) {
+    SE_m_data <- melt.data.table(SE_data[, c("marker", blocks[[bi]]), with = FALSE],
+                                 id.vars = c("marker"))
+    colnames(SE_m_data) <- c("marker", "cell", "expr_scaled")
+    dt_score_b <- merge.data.table(SE_m_data, accordion_marker, by = "marker",
+                                   allow.cartesian = TRUE)
+    rm(SE_m_data)
+
+    # compute the score for each cell
+    dt_score_b[, score := expr_scaled * combined_score]
+    dt_score_ct <- unique(dt_score_b[, c("CL_celltype", "cell")])
+    setkey(dt_score_b, CL_celltype, cell, marker_type)
+    sum_dt_b <- dt_score_b[data.table("CL_celltype" = rep(dt_score_ct$CL_celltype, each = 2),
+                                      "cell" = rep(dt_score_ct$cell, each = 2),
+                                      "marker_type" = c("positive", "negative")),
+                           .(score= (sum(score)/(sqrt((sum(ECs_reg * SPs_reg)))))), by = .EACHI]
+    sum_dt_list[[bi]] <- sum_dt_b
+
+    # Rows kept for the detailed annotation tables: each cell's own best cell
+    # type, by the same rule the annotation itself uses further down.
+    sum_u <- unique(sum_dt_b)
+    sum_u[is.na(score), score := 0]
+    fin_b <- sum_u[marker_type == "positive"
+    ][, diff_score := score - sum_u[marker_type == "negative", score]]
+    best_b <- fin_b[order(-diff_score)][, head(.SD, 1), "cell"][, c("cell", "CL_celltype")]
+    dt_score_list[[bi]] <- dt_score_b[best_b, on = c("cell", "CL_celltype"), nomatch = 0L]
+
+    rm(dt_score_b, dt_score_ct, sum_dt_b, sum_u, fin_b, best_b)
+    gc(verbose = FALSE)
+  }
+
+  dt_score <- rbindlist(dt_score_list)
+  sum_dt <- rbindlist(sum_dt_list)
+  rm(dt_score_list, sum_dt_list)
+  # melt() makes "cell" a factor whose levels are the columns it saw. Per block
+  # that is only the block's cells, so the levels are restored to the full set in
+  # column order -- the same factor the unblocked melt produced, which keeps row
+  # ordering and tie-breaking downstream identical.
+  dt_score[, cell := factor(as.character(cell), levels = cell_names)]
+  sum_dt[, cell := factor(as.character(cell), levels = cell_names)]
+  gc(verbose = FALSE)
 
 
   sum_dt<-unique(sum_dt)
@@ -784,12 +910,74 @@ accordion<-function(data,
     if(!identical(colnames(data),anno_dt_cell$cell)){
       anno_dt_cell<-anno_dt_cell[order(match(anno_dt_cell$cell,colnames(data))),]
     }
+    # Per-spot cell type composition. Python is the reference: the deconvolution
+    # exists only there, so this follows it step by step, including the order --
+    # threshold, then top-N cap, then renormalize.
+    cell_prop <- NULL
+    if (isTRUE(do_deconvolution)) {
+      if (!is.numeric(deconvolution_threshold)) {
+        warning("deconvolution_threshold should be a number between 0 and 1, defaulting to 0.05")
+        deconvolution_threshold <- 0.05
+      }
+      cell_prop <- .accordion_deconvolution_proportions(
+        final_dt,
+        cells = colnames(data),
+        deconvolution_threshold = deconvolution_threshold,
+        n_top_celltypes = n_top_celltypes,
+        deconvolution_empty_fallback = deconvolution_empty_fallback)
+    }
+
+    # Cell-level entropies. Python is the reference for these metrics, and there
+    # the cell-level entropy is written to the cell metadata regardless of
+    # include_detailed_annotation_info, so it is computed here and not in the
+    # detailed-info helper. final_dt is the full score table -- one row per
+    # (cell, candidate cell type) -- which is exactly the score matrix Python
+    # feeds to calculate_entropies_from_score_matrix.
+    cell_ent <- list()
+    if (!is.null(entropy) && !identical(entropy, FALSE)) {
+      cell_ent <- compute_cell_entropies(
+        final_dt,
+        cells = colnames(data),
+        entropy = entropy,
+        ontology = entropy_ontology,
+        accordion_marker = accordion_marker,
+        top_cell_score_quantile_threshold = top_cell_score_quantile_threshold,
+        n_top_celltypes = n_top_celltypes,
+        allow_unknown = allow_unknown,
+        cell_block_size = max(1000L, as.integer(cell_block_size)))
+    }
+
     if(data_type == "seurat"){
       data@meta.data[,name]<-anno_dt_cell$annotation_per_cell
       data@meta.data[,name_score]<-anno_dt_cell$diff_score
+      for (nm in names(cell_ent)) {
+        tab <- cell_ent[[nm]]
+        col <- setdiff(names(tab), "cell")[1]
+        data@meta.data[, paste0(annotation_name, "_", col)] <-
+          tab[[col]][match(colnames(data), tab$cell)]
+      }
+      if (!is.null(cell_prop)) {
+        # Stored as an assay, the way deconvolution results are normally kept in
+        # a Seurat object: it survives subsetting with the object and
+        # SpatialFeaturePlot() draws one cell type's fraction straight from it.
+        prop_assay <- paste0(annotation_name, "_proportions")
+        data[[prop_assay]] <- SeuratObject::CreateAssayObject(data = t(cell_prop))
+        data@meta.data[, paste0(annotation_name, "_per_cell_percentage")] <-
+          apply(cell_prop, 1, max)[colnames(data)] * 100
+      }
     } else{
       cell_table<-anno_dt_cell[,c("cell","annotation_per_cell","diff_score")]
       colnames(cell_table)<-c("cell",eval(name), eval(name_score))
+      for (nm in names(cell_ent)) {
+        tab <- cell_ent[[nm]]
+        col <- setdiff(names(tab), "cell")[1]
+        cell_table[[paste0(annotation_name, "_", col)]] <-
+          tab[[col]][match(cell_table$cell, tab$cell)]
+      }
+      if (!is.null(cell_prop)) {
+        cell_table[[paste0(annotation_name, "_per_cell_percentage")]] <-
+          apply(cell_prop, 1, max)[cell_table$cell] * 100
+      }
 
       if(!is_empty(accordion_output)){
         accordion_output<-append(accordion_output,cell_table)
@@ -798,6 +986,11 @@ accordion<-function(data,
         accordion_output<-list(.accordion_get_layer(data, assay, 'scale.data'), cell_table)
         names(accordion_output)<-c("scaled_matrix","cell_annotation")
         }
+      if (!is.null(cell_prop)) {
+        # No Seurat object to hang an assay off, so the composition comes back as
+        # a plain spots x celltypes matrix.
+        accordion_output[[paste0(annotation_name, "_proportions")]] <- cell_prop
+      }
 
     }
 
@@ -821,7 +1014,10 @@ accordion<-function(data,
                                                       top_marker_score_quantile_threshold,
                                                       top_cell_score_quantile_threshold,
                                                       condition_group_info,
-                                                      celltype_group_info)
+                                                      celltype_group_info,
+                                                      entropy,
+                                                      entropy_ontology,
+                                                      min_percentage_celltype_entropy)
     } else{
       accordion_output<-include_detailed_annotation_info_helper(accordion_output,
                                                                 data_type,
@@ -839,7 +1035,10 @@ accordion<-function(data,
                                                                 top_marker_score_quantile_threshold,
                                                                 top_cell_score_quantile_threshold,
                                                                 condition_group_info,
-                                                                celltype_group_info)
+                                                                celltype_group_info,
+                                                                entropy,
+                                                                entropy_ontology,
+                                                                min_percentage_celltype_entropy)
     }
 
   }
