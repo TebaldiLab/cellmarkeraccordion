@@ -68,4 +68,4 @@ NULL
     object
 }
 
-utils::globalVariables(c("accordion_join_layers"))
+

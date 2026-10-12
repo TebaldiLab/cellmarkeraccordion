@@ -5,12 +5,13 @@
 #' metrics: the deconvolution exists only there, so these follow it step by step.
 #'
 #' @keywords internal
-#' @name spatial_deconvolution
+#' @noRd
 NULL
 
 #' Keep only the `n` largest entries of each row, zeroing the rest.
 #'
 #' @keywords internal
+#' @noRd
 .accordion_keep_top_n <- function(P, n) {
   n <- min(as.integer(n), ncol(P))
   if (n < 1L || !nrow(P)) return(P)
@@ -36,6 +37,7 @@ NULL
 #' @return a spots x celltypes matrix whose rows sum to 1 (a row with no positive
 #'   signal at all stays all zero)
 #' @keywords internal
+#' @noRd
 .accordion_deconvolution_proportions <- function(final_dt, cells,
                                                  deconvolution_threshold = 0.05,
                                                  n_top_celltypes = 5,
@@ -151,6 +153,7 @@ ACCORDION_ENTROPY_PALETTES <- c(
 #' Spot coordinates for the spatial plot
 #'
 #' @keywords internal
+#' @noRd
 .accordion_spot_coordinates <- function(data, coordinates = NULL) {
   if (!is.null(coordinates)) {
     co <- as.data.frame(coordinates)
@@ -297,7 +300,12 @@ plot_spatial_entropy <- function(data,
 
   combined <- cowplot::plot_grid(p_space, p_hist, ncol = 2, rel_widths = c(3, 1.4))
   if (!is.null(save)) {
-    ggplot2::ggsave(save, combined, width = width, height = height, dpi = dpi)
+    ggplot2::ggsave(save, combined, width = width, height = height, dpi = dpi,
+                    bg = "white")
   }
-  list(plot = combined, spatial = p_space, distribution = p_hist, data = pd)
+  .as_accordion_plot(list(plot = combined, spatial = p_space,
+                          distribution = p_hist, data = pd))
 }
+
+# Column names ggplot2 resolves inside aes().
+utils::globalVariables(c("entropy", "x", "y"))

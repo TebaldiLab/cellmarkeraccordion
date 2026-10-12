@@ -23,6 +23,8 @@ accordion_disease(
   max_n_marker = 30,
   combined_score_quantile_threshold = NULL,
   annotation_resolution = "cluster",
+  entropy = NULL,
+  min_percentage_celltype_entropy = 0.05,
   cluster_score_quantile_threshold = 0.75,
   allow_unknown = TRUE,
   annotation_name = "accordion_disease",
@@ -127,6 +129,23 @@ NULL.}
 \item{annotation_resolution}{Character string or character string vector
 specifying the resolution of the annotation. Either “cluster” and/or “cell”
 are supported. Default is “cluster”.}
+
+\item{entropy}{Character vector of annotation-entropy metrics, or "all" for
+every one of them. Available: "Shannon", "Gini", "Ontology-sp-Rao",
+"Ontology-Lin-Rao", "Jaccard-Rao", "Overlap-Rao". NULL (the default)
+computes none.
+
+The disease database names its cell types with NCIT terms, which have no
+Cell Ontology counterpart, so the two ontology metrics are refused for the
+whole analysis and a message says which cell types are responsible. The
+other four are computed as usual. At cluster resolution they land in the
+detailed annotation info and need
+\code{include_detailed_annotation_info = TRUE}; at cell resolution they go
+to the metadata as \code{<annotation_name>_<metric>_entropy} regardless.}
+
+\item{min_percentage_celltype_entropy}{Numeric value: candidate cell types
+below this percentage of the cluster's cells are left out of the entropy.
+Cluster resolution only. Default 0.05.}
 
 \item{cluster_score_quantile_threshold}{numeric value in (0,1) specifying the
 cluster score quantile threshold. For each cell a score specific for each

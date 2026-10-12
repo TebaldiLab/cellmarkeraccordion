@@ -12,17 +12,17 @@
 #' placed, the affected metric is not computed for that analysis.
 #'
 #' @keywords internal
-#' @name entropy_core
+#' @noRd
 NULL
 
-#' @rdname entropy_core
+#' @noRd
 ACCORDION_METRICS <- c("Shannon", "Gini", "Ontology-sp-Rao", "Ontology-Lin-Rao",
                        "Jaccard-Rao", "Overlap-Rao")
 
-#' @rdname entropy_core
+#' @noRd
 ACCORDION_ONTOLOGY_METRICS <- c("Ontology-sp-Rao", "Ontology-Lin-Rao")
 
-#' @rdname entropy_core
+#' @noRd
 ACCORDION_MARKER_METRICS <- c("Jaccard-Rao", "Overlap-Rao")
 
 .missing_value <- function(missing) {
@@ -32,7 +32,7 @@ ACCORDION_MARKER_METRICS <- c("Jaccard-Rao", "Overlap-Rao")
 
 # --- probability vector ---
 
-#' @rdname entropy_core
+#' @noRd
 clean_probabilities <- function(probabilities) {
   p <- as.numeric(probabilities)
   p <- p[is.finite(p) & p > 0]
@@ -43,7 +43,7 @@ clean_probabilities <- function(probabilities) {
   list(p = p / total, n = n)
 }
 
-#' @rdname entropy_core
+#' @noRd
 normalized_shannon <- function(probabilities) {
   cp <- clean_probabilities(probabilities)
   if (is.null(cp$p)) return(0)
@@ -53,7 +53,7 @@ normalized_shannon <- function(probabilities) {
   max(0, sum(-cp$p * log2(cp$p)) / log2(cp$n))
 }
 
-#' @rdname entropy_core
+#' @noRd
 raw_gini <- function(probabilities) {
   cp <- clean_probabilities(probabilities)
   if (is.null(cp$p)) return(0)
@@ -63,7 +63,7 @@ raw_gini <- function(probabilities) {
   max(0, 1 - sum(cp$p^2))
 }
 
-#' @rdname entropy_core
+#' @noRd
 rao <- function(p, D) {
   p <- as.numeric(p)
   if (length(p) == 0 || length(D) == 0 || nrow(D) != length(p)) return(0)
@@ -72,7 +72,7 @@ rao <- function(p, D) {
 
 # --- distance matrices ---
 
-#' @rdname entropy_core
+#' @noRd
 marker_sets <- function(dt_all_marker, annot_name, require_positive_impact = TRUE) {
   if (is.null(dt_all_marker) || nrow(dt_all_marker) == 0) return(list())
   dt <- data.table::as.data.table(dt_all_marker)
@@ -89,10 +89,12 @@ marker_sets <- function(dt_all_marker, annot_name, require_positive_impact = TRU
   sign <- ifelse(dt$marker_type == "positive", "+",
                  ifelse(dt$marker_type == "negative", "-", ""))
   signed <- paste0(ifelse(is.na(dt$marker), "", as.character(dt$marker)), sign)
-  split(signed, as.character(dt[[annot_name]])) |> lapply(unique)
+  # Written without the native pipe on purpose: `|>` would raise the package's
+  # declared R dependency to >= 4.1.0 for one line.
+  lapply(split(signed, as.character(dt[[annot_name]])), unique)
 }
 
-#' @rdname entropy_core
+#' @noRd
 marker_distance_matrix <- function(celltypes, sets, kind = "Overlap-Rao",
                                    missing = "max") {
   celltypes <- as.character(celltypes)
@@ -155,12 +157,12 @@ marker_distance_matrix <- function(celltypes, sets, kind = "Overlap-Rao",
   # term universe above, as Python counts nx.ancestors over the graph's nodes.
   anc <- lapply(ontology$ancestors[ids], function(a) a[a %in% ids])
   n_sub <- table(unlist(anc, use.names = FALSE))
-  subclasses <- setNames(rep(0L, length(ids)), ids)
+  subclasses <- stats::setNames(rep(0L, length(ids)), ids)
   common <- intersect(names(n_sub), ids)
   subclasses[common] <- as.integer(n_sub[common]) - 1L
 
   total <- length(ids)
-  IC <- setNames(-log((subclasses + 1) / total), ids)
+  IC <- stats::setNames(-log((subclasses + 1) / total), ids)
 
   out <- list(graph = g, undirected = igraph::as.undirected(g, mode = "collapse"),
               IC = IC, ancestors = anc, total = total)
@@ -168,7 +170,7 @@ marker_distance_matrix <- function(celltypes, sets, kind = "Overlap-Rao",
   out
 }
 
-#' @rdname entropy_core
+#' @noRd
 ontology_distance_matrix <- function(celltypes, ontology, kind = "Ontology-sp-Rao",
                                      missing = "max") {
   celltypes <- as.character(celltypes)
@@ -177,7 +179,7 @@ ontology_distance_matrix <- function(celltypes, ontology, kind = "Ontology-sp-Ra
   if (is.null(ontology) || n == 0) return(D)
   fill <- .missing_value(missing)
 
-  lab2id <- setNames(names(ontology$name), unlist(ontology$name, use.names = FALSE))
+  lab2id <- stats::setNames(names(ontology$name), unlist(ontology$name, use.names = FALSE))
   ids <- lab2id[celltypes]
   der <- .onto_derived(ontology)
 
@@ -223,7 +225,7 @@ ontology_distance_matrix <- function(celltypes, ontology, kind = "Ontology-sp-Ra
   D
 }
 
-#' @rdname entropy_core
+#' @noRd
 distance_matrix <- function(celltypes, kind, ontology = NULL, sets = NULL,
                             missing = "max") {
   if (kind %in% ACCORDION_ONTOLOGY_METRICS) {
@@ -238,7 +240,7 @@ distance_matrix <- function(celltypes, kind, ontology = NULL, sets = NULL,
 
 # --- preconditions: can these metrics be computed at all? ---
 
-#' @rdname entropy_core
+#' @noRd
 unmapped_celltypes <- function(celltypes, ontology) {
   celltypes <- unique(as.character(celltypes))
   if (is.null(ontology)) return(sort(celltypes))
@@ -246,13 +248,13 @@ unmapped_celltypes <- function(celltypes, ontology) {
   sort(celltypes[!(celltypes %in% labels)])
 }
 
-#' @rdname entropy_core
+#' @noRd
 celltypes_without_markers <- function(celltypes, sets) {
   celltypes <- unique(as.character(celltypes))
   sort(celltypes[vapply(celltypes, function(c) length(sets[[c]]) == 0, logical(1))])
 }
 
-#' @rdname entropy_core
+#' @noRd
 skip_message <- function(metrics, offenders, reason, limit = 10) {
   shown <- paste(utils::head(offenders, limit), collapse = ", ")
   if (length(offenders) > limit) {
@@ -278,6 +280,7 @@ skip_message <- function(metrics, offenders, reason, limit = 10) {
 #'
 #' @return named list of data.tables, `cluster_entropy_<metric>`
 #' @keywords internal
+#' @noRd
 compute_cluster_entropies <- function(info, entropy, ontology = NULL,
                                       dt_all_marker = NULL,
                                       min_percentage_celltype_entropy = 0.05,
@@ -399,6 +402,7 @@ compute_cluster_entropies <- function(info, entropy, ontology = NULL,
 #'
 #' @return named list of data.tables, `cell_entropy_<metric>`
 #' @keywords internal
+#' @noRd
 compute_cell_entropies <- function(final_dt, cells, entropy, ontology = NULL,
                                    accordion_marker = NULL,
                                    top_cell_score_quantile_threshold = 0.90,
@@ -575,3 +579,8 @@ compute_cell_entropies <- function(final_dt, cells, entropy, ontology = NULL,
   }
   out
 }
+
+# data.table evaluates these column names inside its own scope, so R CMD check
+# cannot see where they come from.
+utils::globalVariables(c("cluster", "celltype", "percentage",
+                         "celltype_impact_score", "CL_celltype", "diff_score"))

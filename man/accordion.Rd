@@ -19,6 +19,9 @@ accordion(
   log2FC_threshold = NULL,
   min_n_marker = 5,
   max_n_marker = 30,
+  cell_block_size = 500,
+  entropy = NULL,
+  min_percentage_celltype_entropy = 0.05,
   combined_score_quantile_threshold = NULL,
   annotation_resolution = "cluster",
   cluster_score_quantile_threshold = 0.75,
@@ -30,6 +33,9 @@ accordion(
   group_markers_by = "celltype_cluster",
   top_cell_score_quantile_threshold = 0.9,
   n_top_celltypes = 5,
+  do_deconvolution = FALSE,
+  deconvolution_threshold = 0.05,
+  deconvolution_empty_fallback = FALSE,
   n_top_markers = 5,
   top_marker_score_quantile_threshold = 0.75,
   plot = TRUE,
@@ -108,6 +114,37 @@ threshold are kept.  Default is 5.}
 keep for each cell type. For the selection, markers are ranked according to
 their combined score, obtained by multiplying evidence consistency score
 and specificity score. If  NULL, no filter is applied. Default is 30.}
+
+\item{cell_block_size}{Integer value specifying how many cells are scored at a
+time. The marker x cell x celltype table is the memory bottleneck of the
+function, and this bounds its size: lower it on large datasets or on a
+machine with little RAM, raise it for a modest speed gain. Blocking is exact,
+so the results do not depend on this value. Default 500.}
+
+\item{entropy}{Character vector of annotation-entropy metrics, or "all" for
+every one of them. Available: "Shannon" (normalized by log2(n)), "Gini" (raw
+impurity, i.e. Tsallis of order q = 2), "Ontology-sp-Rao",
+"Ontology-Lin-Rao", "Jaccard-Rao", "Overlap-Rao". NULL (the default)
+computes none. The two ontology metrics load the built-in Cell Ontology
+automatically. If any candidate cell type cannot be placed -- no ontology
+term, or no markers left in the marker table -- the affected metric is not
+computed for that analysis and a message says which cell types are
+responsible.
+
+They are computed at whichever resolution is requested. At cluster
+resolution they land in the detailed annotation info, one table per metric,
+and require \code{include_detailed_annotation_info = TRUE}. At cell
+resolution they land in the cell metadata as
+\code{<annotation_name>_<metric>_entropy}, regardless of
+\code{include_detailed_annotation_info}. The two resolutions do not share a
+definition of the probability vector: per cluster it is the candidates'
+percentage times their impact score, per cell it is the square of the score
+of the candidates the cell keeps (see \code{top_cell_score_quantile_threshold}
+and \code{n_top_celltypes}).}
+
+\item{min_percentage_celltype_entropy}{Numeric value: candidate cell types
+below this percentage of the cluster's cells are left out of the entropy.
+Cluster resolution only. Default 0.05.}
 
 \item{combined_score_quantile_threshold}{numeric value in (0,1) specifying
 the combined score quantile threshold. For the selection, markers are
@@ -194,6 +231,24 @@ is set to "score_cell". Default is 0.90.}
 \item{n_top_celltypes}{Integer value specifying the number of the top cell
 types to be included in the output for each cluster and cell depending on
 the selected \code{annotation_resolution} parameter Default is 5.}
+
+\item{do_deconvolution}{Logical. When TRUE, and at cell resolution, each
+observation is also deconvolved into a composition of candidate cell types:
+see \code{accordion_spatial_deconvolution()}, which is the wrapper meant for
+spatial data. The composition is stored as the assay
+\code{<annotation_name>_proportions} (cell types x spots, each spot's column
+summing to 1), and the assigned cell type's share goes to
+\code{<annotation_name>_per_cell_percentage} in the metadata. Default FALSE.}
+
+\item{deconvolution_threshold}{Numeric in \link{0, 1}: contributions below this
+fraction are dropped from a spot's composition before the top
+\code{n_top_celltypes} are kept and the row is renormalized. Default 0.05.}
+
+\item{deconvolution_empty_fallback}{Logical. A spot whose signal is spread
+over many cell types can have no single contribution above
+\code{deconvolution_threshold} and would come out with an empty composition.
+With TRUE it keeps its top \code{n_top_celltypes} pre-threshold types
+instead. Default FALSE.}
 
 \item{n_top_markers}{Integer value specifying the number of the top markers
 to be included in the output for each cell type, cluster or cell depending

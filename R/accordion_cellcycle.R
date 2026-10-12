@@ -403,8 +403,8 @@ accordion_cellcycle<-function(data,
         data@meta.data[,name_score] = ""
 
         for (cl in unique(anno_dt_cl$seurat_clusters)){
-          data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
-          data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
+          data@meta.data[which(data@meta.data[[cluster_info]] == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
+          data@meta.data[which(data@meta.data[[cluster_info]] == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
 
         }
       } else {

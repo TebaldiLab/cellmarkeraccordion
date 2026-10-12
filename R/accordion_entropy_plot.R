@@ -5,6 +5,7 @@
 #' that both can be drawn on the same embedding.
 #'
 #' @keywords internal
+#' @noRd
 .accordion_entropy_values <- function(data, entropy_type, annotation_name) {
   md <- data@meta.data
   cell_col <- paste0(annotation_name, "_", entropy_type, "_entropy")
@@ -46,6 +47,7 @@
 #' Which embedding to draw on
 #'
 #' @keywords internal
+#' @noRd
 .accordion_pick_reduction <- function(data, reduction = NULL) {
   have <- tryCatch(SeuratObject::Reductions(data), error = function(e) character(0))
   if (!is.null(reduction)) {
@@ -238,8 +240,13 @@ plot_entropy <- function(data,
   combined <- if (is.null(p_emb)) p_dist else
     cowplot::plot_grid(p_emb, p_dist, ncol = 2, rel_widths = c(3, w_dist))
   if (!is.null(save)) {
-    ggplot2::ggsave(save, combined, width = width, height = height, dpi = dpi)
+    ggplot2::ggsave(save, combined, width = width, height = height, dpi = dpi,
+                    bg = "white")
   }
-  list(plot = combined, embedding = p_emb, distribution = p_dist, data = pd,
-       resolution = ent$resolution)
+  .as_accordion_plot(list(plot = combined, embedding = p_emb,
+                          distribution = p_dist, data = pd,
+                          resolution = ent$resolution))
 }
+
+# Column names ggplot2 resolves inside aes().
+utils::globalVariables(c("dim1", "dim2", "entropy", "group"))

@@ -285,7 +285,7 @@ accordion_custom<-function(data,
 
       DefaultAssay(data)<-assay
       #join split layers (Seurat v5) so single-matrix accessors work
-      data<-accordion_join_layers(data, assay)
+      data<-.accordion_join_layers(data, assay)
       #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
         if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){

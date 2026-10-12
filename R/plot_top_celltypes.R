@@ -1,6 +1,7 @@
 #' The detailed annotation tables of a run, whatever the input was
 #'
 #' @keywords internal
+#' @noRd
 .accordion_detailed_info <- function(data, annotation_name, resolution = "cluster") {
   slot <- paste0(resolution, "_resolution")
   info <- if (inherits(data, "Seurat")) {
@@ -19,6 +20,7 @@
 #' First of `candidates` that is a column of `df`
 #'
 #' @keywords internal
+#' @noRd
 .accordion_first_col <- function(df, candidates) {
   candidates <- candidates[!is.na(candidates) & nzchar(candidates)]
   hit <- candidates[candidates %in% names(df)]
@@ -303,6 +305,11 @@ plot_top_celltypes_per_cluster <- function(data,
     ggplot2::ggsave(save, combined, width = width, height = height, dpi = dpi,
                     limitsize = FALSE, bg = "white")
   }
-  list(plot = combined, main = p_main, n_cells = p_n, entropy = ent_plots,
-       data = df, width = width, height = height)
+  .as_accordion_plot(list(plot = combined, main = p_main, n_cells = p_n,
+                          entropy = ent_plots, data = df,
+                          width = width, height = height))
 }
+
+# Column names ggplot2 resolves inside aes().
+utils::globalVariables(c("cluster", "celltype", "size_value", "score", "value",
+                         "ncell_tot_cluster"))
