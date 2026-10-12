@@ -495,28 +495,7 @@ types actually are.
 | `Jaccard-Rao` | 0-1 | overlap of their marker sets (Jaccard) |
 | `Overlap-Rao` | 0-1 | overlap of their marker sets (overlap coefficient) |
 
-### Reading the output
-
-On the PBMC dataset above:
-
-| cluster | annotation | % of cells | Shannon | Gini | Ontology-sp-Rao | Ontology-Lin-Rao | Jaccard-Rao | Overlap-Rao |
-|---|---|---|---|---|---|---|---|---|
-| 0 | naive thymus-derived CD4⁺ αβ T cell | 21.98 | 0.819 | 0.549 | 0.070 | 0.158 | 0.340 | 0.243 |
-| 1 | monocyte | 31.98 | 0.888 | 0.674 | 0.100 | 0.146 | 0.506 | 0.365 |
-| 2 | CD4⁺ αβ T cell | 15.09 | 0.899 | 0.682 | 0.123 | 0.222 | 0.505 | 0.376 |
-| 3 | B cell | 57.88 | 0.577 | 0.409 | 0.084 | 0.075 | 0.318 | 0.238 |
-| 4 | CD8⁺ αβ T cell | 30.79 | 0.793 | 0.508 | 0.112 | 0.230 | 0.402 | 0.256 |
-| 5 | CD14-low, CD16⁺ monocyte | 88.61 | **0.000** | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
-| 6 | natural killer cell | 70.95 | 0.397 | 0.211 | 0.091 | 0.094 | 0.135 | 0.081 |
-| 7 | dendritic cell | 55.88 | 0.697 | 0.507 | 0.109 | 0.136 | 0.459 | 0.356 |
-| 8 | megakaryocyte | 86.67 | 0.367 | 0.190 | 0.045 | 0.164 | 0.126 | 0.049 |
-
-Note that a high entropy is not the same as a bad annotation. Clusters 0 and 2
-are both CD4⁺ T populations, and the candidates competing for them are their
-close relatives in the Cell Ontology — which is why their Shannon is high while
-`Ontology-Lin-Rao` stays low.
-
-### Visualising it
+### Visualising the output
 
 The dot plot of the top cell types carries one heatmap row per entropy metric
 underneath:
