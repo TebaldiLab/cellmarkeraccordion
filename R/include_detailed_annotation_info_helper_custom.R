@@ -190,14 +190,19 @@ include_detailed_annotation_info_helper_custom<-function(data,
             colnames(condition_table)<-c("cell","celltype")
           }
           dt_top_marker_condition<-merge(dt_top_marker, condition_table, by="cell")
-          dt_top <- unique(dt_top_marker_condition[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell","celltype")][,c("annotation_per_cell","marker","marker_type","quantile_score_marker","weight","SPs")])
-          dt_top<-unique(dt_top[,c("annotation_per_cell","marker","marker_type","quantile_score_marker","weight","SPs")])
-          dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),c("annotation_per_cell","condition")]
+          # The cell type column has to survive the two selections and group the
+          # head(), as `condition` does in the branch above. It used to be dropped,
+          # and the head() then grouped by a `condition` column that does not exist
+          # here, so a cell type group without a condition group always stopped
+          # with "object 'condition' not found".
+          dt_top <- unique(dt_top_marker_condition[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cell","celltype")][,c("celltype","annotation_per_cell","marker","marker_type","quantile_score_marker","weight","SPs")])
+          dt_top<-unique(dt_top[,c("annotation_per_cell","celltype","marker","marker_type","quantile_score_marker","weight","SPs")])
+          dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),c("annotation_per_cell","celltype")]
 
           name<-paste0(annotation_name,"_per_cell")
           name_score<-paste0(annotation_name,"_per_cell_score")
 
-          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(condition_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","weight","SPs")
+          colnames(dt_top_marker_by_cell)<-c(eval(name), eval(celltype_group_info),"marker","marker_type","gene_impact_score_per_celltype_cell","weight","SPs")
 
           cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_celltype_cell"]] <- as.data.table(dt_top_marker_by_cell)
         }
@@ -318,11 +323,18 @@ include_detailed_annotation_info_helper_custom<-function(data,
         cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_score_cell"]] <- as.data.table(dt_top_marker_by_cell)
       }
     }
+    # Merge, do not overwrite: the cluster block above has already written here.
     if("seurat" %in% data_type){
-      data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
+      data@misc[[annotation_name]]<-c(data@misc[[annotation_name]],
+                                      cell_res_detailed_annotation_info)
     } else{
-      info_list[[annotation_name]]<-cell_res_detailed_annotation_info
-      data<-append(data,info_list)
+      if(!is.null(data[[annotation_name]])){
+        data[[annotation_name]]<-c(data[[annotation_name]],
+                                   cell_res_detailed_annotation_info)
+      } else{
+        info_list[[annotation_name]]<-cell_res_detailed_annotation_info
+        data<-append(data,info_list)
+      }
 
     }
 }

@@ -70,10 +70,13 @@
 #'
 #'   They are computed at whichever resolution is requested. At cluster
 #'   resolution they land in the detailed annotation info, one table per metric,
-#'   and require \code{include_detailed_annotation_info = TRUE}. At cell
-#'   resolution they land in the cell metadata as
+#'   and require \code{include_detailed_annotation_info = TRUE}; they are also
+#'   copied onto every cell of the cluster, in the cell metadata, as
+#'   \code{<annotation_name>_cluster_<metric>_entropy}. At cell resolution they
+#'   land in the cell metadata as
 #'   \code{<annotation_name>_<metric>_entropy}, regardless of
-#'   \code{include_detailed_annotation_info}. The two resolutions do not share a
+#'   \code{include_detailed_annotation_info}. Both sets of columns can be turned
+#'   off with \code{save_entropy_to_metadata = FALSE}. The two resolutions do not share a
 #'   definition of the probability vector: per cluster it is the candidates'
 #'   percentage times their impact score, per cell it is the square of the score
 #'   of the candidates the cell keeps (see \code{top_cell_score_quantile_threshold}
@@ -81,6 +84,13 @@
 #' @param min_percentage_celltype_entropy Numeric value: candidate cell types
 #'   below this percentage of the cluster's cells are left out of the entropy.
 #'   Cluster resolution only. Default 0.05.
+#' @param save_entropy_to_metadata Logical. When TRUE (the default) the entropies
+#'   are also written to the cell metadata, one column per metric, so that
+#'   \code{FeaturePlot()}, \code{VlnPlot()} and anything else that reads
+#'   \code{data@meta.data} can use them directly. Cluster-level values are
+#'   repeated on every cell of their cluster. The tables in the detailed
+#'   annotation info are written in any case. This mirrors
+#'   \code{save_entropy_to_obs} in the Python package. Default TRUE.
 #' @param do_deconvolution Logical. When TRUE, and at cell resolution, each
 #'   observation is also deconvolved into a composition of candidate cell types:
 #'   see \code{accordion_spatial_deconvolution()}, which is the wrapper meant for
@@ -88,7 +98,7 @@
 #'   \code{<annotation_name>_proportions} (cell types x spots, each spot's column
 #'   summing to 1), and the assigned cell type's share goes to
 #'   \code{<annotation_name>_per_cell_percentage} in the metadata. Default FALSE.
-#' @param deconvolution_threshold Numeric in [0, 1]: contributions below this
+#' @param deconvolution_threshold Numeric between 0 and 1: contributions below this
 #'   fraction are dropped from a spot's composition before the top
 #'   \code{n_top_celltypes} are kept and the row is renormalized. Default 0.05.
 #' @param deconvolution_empty_fallback Logical. A spot whose signal is spread
@@ -236,6 +246,7 @@
 #' @import stringr
 #' @import ontologyIndex
 #' @import knitr
+#' @importFrom utils head
 #' @importFrom stats aggregate
 #' @importFrom methods as
 #' @importFrom stats quantile
@@ -257,6 +268,7 @@ accordion<-function(data,
                     cell_block_size = 500,
                     entropy = NULL,
                     min_percentage_celltype_entropy = 0.05,
+                    save_entropy_to_metadata = TRUE,
                     combined_score_quantile_threshold = NULL,
                     annotation_resolution = "cluster",
                     cluster_score_quantile_threshold = 0.75,
@@ -950,11 +962,13 @@ accordion<-function(data,
     if(data_type == "seurat"){
       data@meta.data[,name]<-anno_dt_cell$annotation_per_cell
       data@meta.data[,name_score]<-anno_dt_cell$diff_score
-      for (nm in names(cell_ent)) {
-        tab <- cell_ent[[nm]]
-        col <- setdiff(names(tab), "cell")[1]
-        data@meta.data[, paste0(annotation_name, "_", col)] <-
-          tab[[col]][match(colnames(data), tab$cell)]
+      if (isTRUE(save_entropy_to_metadata)) {
+        for (nm in names(cell_ent)) {
+          tab <- cell_ent[[nm]]
+          col <- setdiff(names(tab), "cell")[1]
+          data@meta.data[, paste0(annotation_name, "_", col)] <-
+            tab[[col]][match(colnames(data), tab$cell)]
+        }
       }
       if (!is.null(cell_prop)) {
         # Stored as an assay, the way deconvolution results are normally kept in
@@ -1041,6 +1055,28 @@ accordion<-function(data,
                                                                 min_percentage_celltype_entropy)
     }
 
+  }
+
+  # Cluster-level entropies into the cell metadata. Done here, after the
+  # detailed-info helper, because that is what computes them: the tables live in
+  # misc and these columns are a copy of them, one value repeated on every cell
+  # of the cluster, so that FeaturePlot/VlnPlot and ggplot(data@meta.data) can
+  # read them. Python writes the same columns to adata.obs.
+  if (isTRUE(save_entropy_to_metadata) && !is.null(entropy) &&
+      !identical(entropy, FALSE) && "cluster" %in% annotation_resolution) {
+    if (data_type == "seurat") {
+      ent_cols <- .accordion_cluster_entropy_columns(
+        data@misc[[annotation_name]][["cluster_resolution"]][["detailed_annotation_info"]],
+        data@meta.data[[cluster_info]], annotation_name)
+      for (nm in names(ent_cols)) data@meta.data[[nm]] <- ent_cols[[nm]]
+    } else if (!is.null(accordion_output[["cluster_annotation"]])) {
+      ct <- as.data.frame(accordion_output[["cluster_annotation"]])
+      ent_cols <- .accordion_cluster_entropy_columns(
+        accordion_output[["cluster_resolution"]][["detailed_annotation_info"]],
+        ct[["cluster"]], annotation_name)
+      for (nm in names(ent_cols)) ct[[nm]] <- ent_cols[[nm]]
+      accordion_output[["cluster_annotation"]] <- data.table::as.data.table(ct)
+    }
   }
 
   #re-assigned the original scale.data slot

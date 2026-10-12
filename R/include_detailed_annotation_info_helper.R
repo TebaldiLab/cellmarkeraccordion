@@ -23,22 +23,35 @@ include_detailed_annotation_info_helper<-function(data,
   if(data_type == "matrix"){
     info_list<-list()
   }
-  if(annotation_resolution %in% "cell"){
-    if(!(group_markers_by %in% c("cell","celltype_cell","score_cell"))){
-      group_markers_by<-"celltype_cell"
-    }
-  } else if(annotation_resolution %in% "cluster"){
-    if(!(group_markers_by %in% c("cluster","celltype_cluster"))){
-      group_markers_by<-"celltype_cluster"
-    }
+  # One group_markers_by, two resolutions that accept different values for it.
+  # Resolved per resolution instead of globally: the original
+  # `annotation_resolution %in% "cell"` was also the wrong way round, so asking
+  # for both resolutions stopped with "the condition has length > 1", and
+  # collapsing it to a single value left the cluster block with a value it does
+  # not recognise, which is why the cluster top-marker table went missing.
+  # The user's choice is kept wherever it is valid for that block.
+  group_markers_by_cluster <- if (any(c("cluster", "celltype_cluster") %in%
+                                     group_markers_by)) {
+    group_markers_by
+  } else {
+    "celltype_cluster"
+  }
+  group_markers_by_cell <- if (any(c("cell", "celltype_cell", "score_cell") %in%
+                                   group_markers_by)) {
+    group_markers_by
+  } else {
+    "celltype_cell"
   }
   if("NCIT_celltype" %in% colnames(dt_score)){
     func<-"disease"
     names(dt_score)[names(dt_score) == 'NCIT_celltype'] <- 'CL_celltype'
-    if(annotation_resolution %in% "cell"){
+    # Two independent ifs, not if/else: with both resolutions requested the
+    # cluster tables have to be renamed as well.
+    if("cell" %in% annotation_resolution){
       names(anno_dt_cell)[names(anno_dt_cell) == 'NCIT_celltype'] <- 'CL_celltype'
       names(final_dt)[names(final_dt) == 'NCIT_celltype'] <- 'CL_celltype'
-    } else if(annotation_resolution %in% "cluster"){
+    }
+    if("cluster" %in% annotation_resolution){
       names(final_dt_cluster)[names(final_dt_cluster) == 'NCIT_celltype'] <- 'CL_celltype'
       names(anno_dt_cl)[names(anno_dt_cl) == 'NCIT_celltype'] <- 'CL_celltype'
     }
@@ -108,7 +121,7 @@ include_detailed_annotation_info_helper<-function(data,
 
     dt_top_marker<-dt_top_marker[CL_celltype == annotation_per_cluster]
 
-    if("cluster" %in% group_markers_by){
+    if("cluster" %in% group_markers_by_cluster){
 
       # for each cluster retrieves first N markers
       dt_top<- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","seurat_clusters")][,c("CL_celltype","marker","seurat_clusters","quantile_score_marker","ECs","SPs","marker_type","annotation_per_cluster")])
@@ -125,7 +138,7 @@ include_detailed_annotation_info_helper<-function(data,
 
       cluster_res_detailed_annotation_info[["cluster_resolution"]][["detailed_annotation_info"]][["top_markers_per_cluster"]] <- as.data.table(dt_top_marker_by_cl)
     }
-    if("celltype_cluster" %in% group_markers_by){
+    if("celltype_cluster" %in% group_markers_by_cluster){
       # for each cluster retrieves first N markers
       dt_top<- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","annotation_per_cluster")][,c("CL_celltype","marker","seurat_clusters","quantile_score_marker","ECs","SPs","marker_type","annotation_per_cluster")])
       dt_top_marker_by_cl<-dt_top[order(seurat_clusters,-quantile_score_marker)][,head(.SD, n_top_markers),by=c("annotation_per_cluster")]
@@ -169,7 +182,7 @@ include_detailed_annotation_info_helper<-function(data,
     dt_top_marker<-unique(merge.data.table(dt_score,anno_dt_cell, by=c("CL_celltype","cell")))
     dt_top_marker<-dt_top_marker[CL_celltype == annotation_per_cell]
 
-    if("cell" %in% group_markers_by){
+    if("cell" %in% group_markers_by_cell){
       dt_top <- unique(dt_top_marker[, quantile_score_marker := quantile(score,probs = top_marker_score_quantile_threshold, na.rm=TRUE), by=c("marker","marker_type","cell")][,c("CL_celltype","marker","marker_type","quantile_score_marker","cell","score","ECs","SPs","annotation_per_cell", "diff_score")])
       #for each cell retrieves first N cell type and first N markers
       dt_top_marker_by_cell<-dt_top[order(-quantile_score_marker)][,head(.SD, n_top_markers),cell]
@@ -180,7 +193,7 @@ include_detailed_annotation_info_helper<-function(data,
       cell_res_detailed_annotation_info[["cell_resolution"]][["detailed_annotation_info"]][["top_markers_per_cell"]] <- as.data.table(dt_top_marker_per_cell)
 
     }
-    if("celltype_cell" %in% group_markers_by){
+    if("celltype_cell" %in% group_markers_by_cell){
       #for each cell retrieves first N cell type and first N markers
       if(!is.null(condition_group_info)){
         if(is.null(celltype_group_info)){ # only condition group
@@ -282,7 +295,7 @@ include_detailed_annotation_info_helper<-function(data,
     }
 
 
-    if ("score_cell" %in% group_markers_by){
+    if ("score_cell" %in% group_markers_by_cell){
       #for each cell retrieves first N cell type and first N markers
       if(!is.null(condition_group_info)){
         if(is.null(celltype_group_info)){ # only condition group
@@ -390,12 +403,20 @@ include_detailed_annotation_info_helper<-function(data,
       names(cell_res_detailed_annotation_info)[names(cell_res_detailed_annotation_info) == 'CL_celltype'] <- 'NCIT_celltype'
 
     }
+    # Merge, do not overwrite: with both resolutions requested the cluster block
+    # above has already written its own results here, and a plain assignment
+    # threw them away -- misc ended up with cell_resolution only.
     if("seurat" %in% data_type){
-        data@misc[[annotation_name]]<-cell_res_detailed_annotation_info
+        data@misc[[annotation_name]]<-c(data@misc[[annotation_name]],
+                                        cell_res_detailed_annotation_info)
     } else{
-        info_list[[annotation_name]]<-cell_res_detailed_annotation_info
-        data<-append(data,info_list)
-
+        if(!is.null(data[[annotation_name]])){
+          data[[annotation_name]]<-c(data[[annotation_name]],
+                                     cell_res_detailed_annotation_info)
+        } else{
+          info_list[[annotation_name]]<-cell_res_detailed_annotation_info
+          data<-append(data,info_list)
+        }
       }
   }
   return(data)

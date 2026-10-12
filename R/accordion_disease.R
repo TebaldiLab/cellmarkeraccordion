@@ -86,11 +86,19 @@
 #'   whole analysis and a message says which cell types are responsible. The
 #'   other four are computed as usual. At cluster resolution they land in the
 #'   detailed annotation info and need
-#'   \code{include_detailed_annotation_info = TRUE}; at cell resolution they go
+#'   \code{include_detailed_annotation_info = TRUE}, and are copied onto every
+#'   cell of the cluster in the metadata as
+#'   \code{<annotation_name>_cluster_<metric>_entropy}; at cell resolution they go
 #'   to the metadata as \code{<annotation_name>_<metric>_entropy} regardless.
 #' @param min_percentage_celltype_entropy Numeric value: candidate cell types
 #'   below this percentage of the cluster's cells are left out of the entropy.
 #'   Cluster resolution only. Default 0.05.
+#' @param save_entropy_to_metadata Logical. When TRUE (the default) the entropies
+#'   are also written to the cell metadata, one column per metric, so that
+#'   \code{FeaturePlot()}, \code{VlnPlot()} and anything else that reads
+#'   \code{data@meta.data} can use them directly. Cluster-level values are
+#'   repeated on every cell of their cluster. The tables in the detailed
+#'   annotation info are written in any case. Default TRUE.
 #' @param annotation_resolution Character string or character string vector
 #'   specifying the resolution of the annotation. Either “cluster” and/or “cell”
 #'   are supported. Default is “cluster”.
@@ -239,6 +247,7 @@ accordion_disease<-function(data,
                             annotation_resolution = "cluster",
                             entropy = NULL,
                             min_percentage_celltype_entropy = 0.05,
+                            save_entropy_to_metadata = TRUE,
                             cluster_score_quantile_threshold = 0.75,
                             allow_unknown = TRUE,
                             annotation_name = "accordion_disease",
@@ -815,8 +824,8 @@ accordion_disease<-function(data,
           data@meta.data[,name_score] = ""
 
           for (cl in unique(anno_dt_cl$seurat_clusters)){
-            data@meta.data[which(data@meta.data$seurat_clusters == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
-            data@meta.data[which(data@meta.data$seurat_clusters == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
+            data@meta.data[which(data@meta.data[[cluster_info]] == cl),name]<- anno_dt_cl[seurat_clusters==cl]$annotation_per_cluster
+            data@meta.data[which(data@meta.data[[cluster_info]] == cl),name_score]<- anno_dt_cl[seurat_clusters==cl]$quantile_score_cluster
 
             }
         } else {
@@ -882,11 +891,13 @@ accordion_disease<-function(data,
     if(data_type == "seurat"){
       data@meta.data[,name]<-anno_dt_cell$annotation_per_cell
       data@meta.data[,name_score]<-anno_dt_cell$diff_score
-      for (nm in names(cell_ent)) {
-        tab <- cell_ent[[nm]]
-        col <- setdiff(names(tab), "cell")[1]
-        data@meta.data[, paste0(annotation_name, "_", col)] <-
-          tab[[col]][match(colnames(data), tab$cell)]
+      if (isTRUE(save_entropy_to_metadata)) {
+        for (nm in names(cell_ent)) {
+          tab <- cell_ent[[nm]]
+          col <- setdiff(names(tab), "cell")[1]
+          data@meta.data[, paste0(annotation_name, "_", col)] <-
+            tab[[col]][match(colnames(data), tab$cell)]
+        }
       }
     } else{
       cell_table<-anno_dt_cell[,c("cell","annotation_per_cell","diff_score")]
@@ -956,6 +967,26 @@ accordion_disease<-function(data,
                                                                 min_percentage_celltype_entropy)
     }
 
+  }
+
+  # Cluster-level entropies into the cell metadata, the same columns Python
+  # writes to adata.obs: one value per cluster, repeated on its cells, so the
+  # Seurat plotting functions can read them.
+  if (isTRUE(save_entropy_to_metadata) && !is.null(entropy) &&
+      !identical(entropy, FALSE) && "cluster" %in% annotation_resolution) {
+    if (data_type == "seurat") {
+      ent_cols <- .accordion_cluster_entropy_columns(
+        data@misc[[annotation_name]][["cluster_resolution"]][["detailed_annotation_info"]],
+        data@meta.data[[cluster_info]], annotation_name)
+      for (nm in names(ent_cols)) data@meta.data[[nm]] <- ent_cols[[nm]]
+    } else if (!is.null(accordion_output[["cluster_annotation"]])) {
+      ct <- as.data.frame(accordion_output[["cluster_annotation"]])
+      ent_cols <- .accordion_cluster_entropy_columns(
+        accordion_output[["cluster_resolution"]][["detailed_annotation_info"]],
+        ct[["cluster"]], annotation_name)
+      for (nm in names(ent_cols)) ct[[nm]] <- ent_cols[[nm]]
+      accordion_output[["cluster_annotation"]] <- data.table::as.data.table(ct)
+    }
   }
 
   #re-assigned the original scale.data slot

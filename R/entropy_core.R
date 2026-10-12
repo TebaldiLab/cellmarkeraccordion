@@ -580,6 +580,37 @@ compute_cell_entropies <- function(final_dt, cells, entropy, ontology = NULL,
   out
 }
 
+#' Copy the cluster-level entropies into the cell metadata.
+#'
+#' The entropy of a cluster is a property of the cluster, but repeating it on
+#' every one of its cells is what makes it plottable: `FeaturePlot()`,
+#' `VlnPlot()` and `ggplot(data@meta.data)` all read the metadata, and Python
+#' writes the same columns to `adata.obs`. The column names match Python's,
+#' `<annotation_name>_cluster_<metric>_entropy`.
+#'
+#' @keywords internal
+#' @noRd
+.accordion_cluster_entropy_columns <- function(info, cluster_values, annotation_name) {
+  out <- list()
+  if (is.null(info)) {
+    return(out)
+  }
+  tabs <- grep("^cluster_entropy_", names(info), value = TRUE)
+  if (!length(tabs)) {
+    return(out)
+  }
+  cluster_values <- as.character(cluster_values)
+  for (nm in tabs) {
+    tab <- as.data.frame(info[[nm]])
+    if (!nrow(tab) || ncol(tab) < 2) next
+    metric <- sub("^cluster_entropy_", "", nm)
+    key <- as.character(tab[[1]])
+    out[[paste0(annotation_name, "_cluster_", metric, "_entropy")]] <-
+      tab[[2]][match(cluster_values, key)]
+  }
+  out
+}
+
 # data.table evaluates these column names inside its own scope, so R CMD check
 # cannot see where they come from.
 utils::globalVariables(c("cluster", "celltype", "percentage",
