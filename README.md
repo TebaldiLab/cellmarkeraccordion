@@ -488,12 +488,12 @@ distribution of the candidates' weights, not at who the candidates are.
 entropies: they weight each pair of candidates by how far apart the two cell
 types actually are.
 
-| metric | range | distance between two cell types |
-|---|---|---|
-| `Ontology-sp-Rao` | 0-1 | shortest path on the Cell Ontology graph |
-| `Ontology-Lin-Rao` | 0-1 | Lin semantic similarity on the Cell Ontology |
-| `Jaccard-Rao` | 0-1 | overlap of their marker sets (Jaccard) |
-| `Overlap-Rao` | 0-1 | overlap of their marker sets (overlap coefficient) |
+| metric | distance between two cell types |
+|---|---|
+| `Ontology-sp-Rao` | shortest path on the Cell Ontology graph |
+| `Ontology-Lin-Rao` | Lin semantic similarity on the Cell Ontology |
+| `Jaccard-Rao` | overlap of their marker sets (Jaccard) |
+| `Overlap-Rao` | overlap of their marker sets (overlap coefficient) |
 
 ### Visualising the output
 
