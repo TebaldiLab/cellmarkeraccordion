@@ -288,7 +288,7 @@ accordion_custom<-function(data,
       data<-.accordion_join_layers(data, assay)
       #check that the Seurat data not contain an empty count matrix
       if (assay != "integrated"){
-        if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))==0){
+        if(sum(dim(.accordion_get_layer(data, assay, 'counts')))==0){
             stop("Count matrix is empty")
         }
       }
@@ -361,7 +361,7 @@ accordion_custom<-function(data,
 
   #avoid warnings
   suppressWarnings({
-    if(sum(dim(GetAssayData(data, assay=assay, slot='counts')))!=0){
+    if(sum(dim(.accordion_get_layer(data, assay, 'counts')))!=0){
       #perform data normalization if not already performed
       if(identical(.accordion_get_layer(data, assay, 'counts'), .accordion_get_layer(data, assay, 'data')) | sum(dim(.accordion_get_layer(data, assay, 'data')))==0){
         data <- NormalizeData(data)
