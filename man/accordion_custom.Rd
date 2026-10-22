@@ -29,6 +29,9 @@ accordion_custom(
   n_top_celltypes = 5,
   n_top_markers = 5,
   top_marker_score_quantile_threshold = 0.75,
+  entropy = NULL,
+  min_percentage_celltype_entropy = 0.05,
+  save_entropy_to_metadata = TRUE,
   plot = TRUE
 )
 }
@@ -184,6 +187,23 @@ each cell is computed. To identify the \code{n_top_markers} for a cluster cl
 or a cell type ct, the \code{top_marker_score_quantile_threshold} is
 computed across cells belonging to that cluster or labeled as ct, and the
 \code{n_top_markers} with the maximum score are reported. Default is 0.75.}
+
+\item{entropy}{Character vector of annotation-entropy metrics, or "all" for
+every one: "Shannon", "Gini", "Ontology-sp-Rao", "Ontology-Lin-Rao",
+"Jaccard-Rao" and "Overlap-Rao". NULL (the default) computes none. With a
+custom marker table the categories are usually not Cell Ontology terms, so
+the two ontology metrics are skipped with a message and the other four are
+computed: the refusal is per metric family, not for the whole call.}
+
+\item{min_percentage_celltype_entropy}{Numeric value: candidate categories
+below this percentage of the cluster's cells are left out of the entropy.
+Given as a fraction, so the default 0.05 means 5\%.}
+
+\item{save_entropy_to_metadata}{Logical. When TRUE (the default) the
+entropies are also written to the cell metadata, at cluster resolution as
+\code{<annotation_name>_cluster_<metric>_entropy} and at cell resolution as
+\code{<annotation_name>_<metric>_entropy}. The tables in misc are written
+either way.}
 
 \item{plot}{Logical value indicating whether to store plots displaying
 detailed annotation information.  This parameter can be set to TRUE only

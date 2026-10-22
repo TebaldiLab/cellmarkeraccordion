@@ -418,12 +418,14 @@ compute_cell_entropies <- function(final_dt, cells, entropy, ontology = NULL,
   if (!nrow(dt)) return(list())
   cells <- as.character(cells)
 
-  # The healthy database calls the column CL_celltype and the disease one
-  # NCIT_celltype; the metrics do not care which, only the preconditions do, and
-  # those are checked against the labels themselves further down.
-  ct_col <- intersect(c("CL_celltype", "NCIT_celltype", "celltype"), names(dt))
+  # The healthy database calls the column CL_celltype, the disease one
+  # NCIT_celltype and a custom marker table cell_type; the metrics do not care
+  # which, only the preconditions do, and those are checked against the labels
+  # themselves further down.
+  ct_col <- intersect(c("CL_celltype", "NCIT_celltype", "celltype", "cell_type"),
+                      names(dt))
   if (!length(ct_col)) {
-    stop("final_dt has no cell type column (CL_celltype, NCIT_celltype or celltype).")
+    stop("final_dt has no cell type column (CL_celltype, NCIT_celltype, celltype or cell_type).")
   }
   if (ct_col[1] != "CL_celltype") data.table::setnames(dt, ct_col[1], "CL_celltype")
 
@@ -464,7 +466,8 @@ compute_cell_entropies <- function(final_dt, cells, entropy, ontology = NULL,
     sets <- list()
     if (!is.null(accordion_marker) && nrow(accordion_marker)) {
       mk <- data.table::as.data.table(accordion_marker)
-      mk_ct <- intersect(c("CL_celltype", "NCIT_celltype", "celltype"), names(mk))
+      mk_ct <- intersect(c("CL_celltype", "NCIT_celltype", "celltype", "cell_type"),
+                         names(mk))
       if (length(mk_ct)) {
         mk <- unique(mk[, c(mk_ct[1], "marker", "marker_type"), with = FALSE])
         sets <- marker_sets(mk, mk_ct[1])

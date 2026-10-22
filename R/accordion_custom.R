@@ -147,6 +147,21 @@
 #'
 #'
 #' @return A Seurat object or a list
+#' @param entropy Character vector of annotation-entropy metrics, or "all" for
+#'   every one: "Shannon", "Gini", "Ontology-sp-Rao", "Ontology-Lin-Rao",
+#'   "Jaccard-Rao" and "Overlap-Rao". NULL (the default) computes none. With a
+#'   custom marker table the categories are usually not Cell Ontology terms, so
+#'   the two ontology metrics are skipped with a message and the other four are
+#'   computed: the refusal is per metric family, not for the whole call.
+#' @param min_percentage_celltype_entropy Numeric value: candidate categories
+#'   below this percentage of the cluster's cells are left out of the entropy.
+#'   Given as a fraction, so the default 0.05 means 5%.
+#' @param save_entropy_to_metadata Logical. When TRUE (the default) the
+#'   entropies are also written to the cell metadata, at cluster resolution as
+#'   \code{<annotation_name>_cluster_<metric>_entropy} and at cell resolution as
+#'   \code{<annotation_name>_<metric>_entropy}. The tables in misc are written
+#'   either way.
+#'
 #' @details If a Seurat object was provided in input, the function returns the
 #' Seurat object with markers-based scaled data in the scale.data slot and cell
 #' types annotation results in the metadata. If
@@ -206,6 +221,9 @@ accordion_custom<-function(data,
                            n_top_celltypes = 5,
                            n_top_markers = 5,
                            top_marker_score_quantile_threshold = 0.75,
+                           entropy = NULL,
+                           min_percentage_celltype_entropy = 0.05,
+                           save_entropy_to_metadata = TRUE,
                            plot = TRUE
 ){
 
@@ -399,6 +417,35 @@ accordion_custom<-function(data,
   marker_table[,SPs:=as.numeric(format(round(1/SPs,2), nsmall=2))]
   marker_table[,SPs_reg:=log10(SPs_reg)+1]
 
+  # Python takes min_percentage_celltype_entropy as a fraction in [0, 1] and
+  # multiplies it by 100 before comparing it with the percentage column, so the
+  # 0.05 default means "at least 5% of the cluster's cells". Mirrored here.
+  if (!is.null(min_percentage_celltype_entropy)) {
+    if (!is.numeric(min_percentage_celltype_entropy)) {
+      warning("min_percentage_celltype_entropy should be a number between 0 and 1, defaulting to 0.05")
+      min_percentage_celltype_entropy <- 5
+    } else {
+      min_percentage_celltype_entropy <- min_percentage_celltype_entropy * 100
+    }
+  }
+
+  # The ontology metrics need the built-in Cell Ontology; load it only if asked.
+  # With a custom table the categories usually have no ontology term, and the
+  # drivers then skip those two metrics with a message.
+  entropy_ontology <- NULL
+  if (!is.null(entropy) && !identical(entropy, FALSE)) {
+    if (identical(entropy, "all")) entropy <- ACCORDION_METRICS
+    entropy <- intersect(entropy, ACCORDION_METRICS)
+    if (!length(entropy)) {
+      warning("No valid entropy metric requested. Valid values: ",
+              paste(ACCORDION_METRICS, collapse = ", "), ", or \"all\".")
+      entropy <- NULL
+    } else if (any(entropy %in% ACCORDION_ONTOLOGY_METRICS)) {
+      data("cell_onto", package = "cellmarkeraccordion", envir = environment())
+      entropy_ontology <- get("cell_onto", envir = environment())
+    }
+  }
+
   setkey(marker_table,marker,cell_type)
 
   # merge Z_scaled_dt and accordion table
@@ -536,12 +583,48 @@ accordion_custom<-function(data,
     if(!identical(colnames(data),anno_dt_cell$cell)){
       anno_dt_cell<-anno_dt_cell[order(match(anno_dt_cell$cell,colnames(data))),]
     }
+
+    # Cell-level entropies. As in accordion(), they are computed here and not in
+    # the detailed-info helper, because Python writes them to the cell metadata
+    # regardless of include_detailed_annotation_info. final_dt is the full score
+    # table -- one row per (cell, candidate category) -- which is the score
+    # matrix Python feeds to calculate_entropies_from_score_matrix. The marker
+    # sets come from the custom table itself, so they are never empty.
+    cell_ent <- list()
+    if (!is.null(entropy) && !identical(entropy, FALSE)) {
+      cell_ent <- compute_cell_entropies(
+        final_dt,
+        cells = colnames(data),
+        entropy = entropy,
+        ontology = entropy_ontology,
+        accordion_marker = marker_table,
+        top_cell_score_quantile_threshold = top_cell_score_quantile_threshold,
+        n_top_celltypes = n_top_celltypes,
+        allow_unknown = allow_unknown)
+    }
+
     if(data_type == "seurat"){
       data@meta.data[,name]<-anno_dt_cell$annotation_per_cell
       data@meta.data[,name_score]<-anno_dt_cell$diff_score
+      if (isTRUE(save_entropy_to_metadata)) {
+        for (nm in names(cell_ent)) {
+          tab <- cell_ent[[nm]]
+          col <- setdiff(names(tab), "cell")[1]
+          data@meta.data[, paste0(annotation_name, "_", col)] <-
+            tab[[col]][match(colnames(data), tab$cell)]
+        }
+      }
     } else{
       cell_table<-anno_dt_cell[,c("cell","annotation_per_cell","diff_score")]
       colnames(cell_table)<-c("cell",eval(name), eval(name_score))
+      if (isTRUE(save_entropy_to_metadata)) {
+        for (nm in names(cell_ent)) {
+          tab <- cell_ent[[nm]]
+          col <- setdiff(names(tab), "cell")[1]
+          cell_table[[paste0(annotation_name, "_", col)]] <-
+            tab[[col]][match(cell_table$cell, tab$cell)]
+        }
+      }
 
       if(!is_empty(accordion_output)){
         accordion_output<-append(accordion_output,cell_table)
@@ -573,7 +656,10 @@ accordion_custom<-function(data,
                                                       top_marker_score_quantile_threshold,
                                                       top_cell_score_quantile_threshold,
                                                       condition_group_info,
-                                                      celltype_group_info)
+                                                      celltype_group_info,
+                                                      entropy,
+                                                      entropy_ontology,
+                                                      min_percentage_celltype_entropy)
     } else{
       accordion_output<-include_detailed_annotation_info_helper_custom(accordion_output,
                                                                 data_type,
@@ -591,10 +677,36 @@ accordion_custom<-function(data,
                                                                 top_marker_score_quantile_threshold,
                                                                 top_cell_score_quantile_threshold,
                                                                 condition_group_info,
-                                                                celltype_group_info)
+                                                                celltype_group_info,
+                                                                entropy,
+                                                                entropy_ontology,
+                                                                min_percentage_celltype_entropy)
     }
 
   }
+
+  # Cluster-level entropies into the cell metadata. Done here, after the
+  # detailed-info helper, because that is what computes them: the tables live in
+  # misc and these columns are a copy of them, one value repeated on every cell
+  # of the cluster, so that FeaturePlot/VlnPlot and ggplot(data@meta.data) can
+  # read them. Python writes the same columns to adata.obs.
+  if (isTRUE(save_entropy_to_metadata) && !is.null(entropy) &&
+      !identical(entropy, FALSE) && "cluster" %in% annotation_resolution) {
+    if (data_type == "seurat") {
+      ent_cols <- .accordion_cluster_entropy_columns(
+        data@misc[[annotation_name]][["cluster_resolution"]][["detailed_annotation_info"]],
+        data@meta.data[[cluster_info]], annotation_name)
+      for (nm in names(ent_cols)) data@meta.data[[nm]] <- ent_cols[[nm]]
+    } else if (!is.null(accordion_output[["cluster_annotation"]])) {
+      ct <- as.data.frame(accordion_output[["cluster_annotation"]])
+      ent_cols <- .accordion_cluster_entropy_columns(
+        accordion_output[["cluster_resolution"]][["detailed_annotation_info"]],
+        ct[["cluster"]], annotation_name)
+      for (nm in names(ent_cols)) ct[[nm]] <- ent_cols[[nm]]
+      accordion_output[["cluster_annotation"]] <- data.table::as.data.table(ct)
+    }
+  }
+
   #re-assigned the original scale.data slot
   if(exists("orig.scale_data")){
     accordion_scale.data<-list()
