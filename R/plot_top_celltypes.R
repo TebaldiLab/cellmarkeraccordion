@@ -131,10 +131,9 @@ plot_top_celltypes_per_cluster <- function(data,
   # Rows: each cell type sits in the cluster where it scores highest, and inside
   # that block the order is by score, so a cluster's winner heads its own block
   # instead of being buried in it.
-  best <- do.call(rbind, lapply(split(df, df$celltype), function(d) d[which.max(d$score), ]))
-  best$cx <- match(best$cluster, clusters)
-  best <- best[order(best$cx, -best$score), ]
-  celltypes <- best$celltype
+  df$cx <- match(df$cluster, clusters)
+  ord <- df[order(df$cx, -df$score), ]
+  celltypes <- unique(as.character(ord$celltype))
 
   df$cluster <- factor(df$cluster, levels = clusters)
   df$celltype <- factor(df$celltype, levels = rev(celltypes))
