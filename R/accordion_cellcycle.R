@@ -156,6 +156,7 @@ accordion_cellcycle<-function(data,
                               n_top_celltypes = 5,
                               n_top_markers = 5,
                               top_marker_score_quantile_threshold = 0.75,
+                              top_cell_score_quantile_threshold = 0.90,
                               plot = FALSE
                               ){
 
@@ -459,7 +460,7 @@ accordion_cellcycle<-function(data,
 
     if(include_detailed_annotation_info == T){
       if(data_type == "seurat"){
-        data <- include_detailed_annotation_info_helper(data,
+        data <- include_detailed_annotation_info_helper_custom(data,
                                                         data_type,
                                                         annotation_resolution,
                                                         final_dt_cluster,
@@ -467,17 +468,17 @@ accordion_cellcycle<-function(data,
                                                         dt_score,
                                                         annotation_name,
                                                         group_markers_by,
-                                                        dt_top_marker,
                                                         cluster_info,
                                                         final_dt,
                                                         anno_dt_cell,
                                                         n_top_celltypes,
                                                         n_top_markers,
                                                         top_marker_score_quantile_threshold,
+                                                        top_cell_score_quantile_threshold,
                                                         condition_group_info,
                                                         celltype_group_info)
       } else{
-        accordion_output<-include_detailed_annotation_info_helper(accordion_output,
+        accordion_output<-include_detailed_annotation_info_helper_custom(accordion_output,
                                                                   data_type,
                                                                   annotation_resolution,
                                                                   final_dt_cluster,
@@ -485,13 +486,13 @@ accordion_cellcycle<-function(data,
                                                                   dt_score,
                                                                   annotation_name,
                                                                   group_markers_by,
-                                                                  dt_top_marker,
                                                                   cluster_info,
                                                                   final_dt,
                                                                   anno_dt_cell,
                                                                   n_top_celltypes,
                                                                   n_top_markers,
                                                                   top_marker_score_quantile_threshold,
+                                                                  top_cell_score_quantile_threshold,
                                                                   condition_group_info,
                                                                   celltype_group_info)
       }
