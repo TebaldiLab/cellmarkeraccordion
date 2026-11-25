@@ -148,7 +148,16 @@ marker_database_integration<-function(marker_table,
 
     #add gene description
     data("gene_description", package = "cellmarkeraccordion",envir = environment())
-    marker_table<-merge(marker_table, gene_description, by.x="marker",by.y="gene_symbol")
+    #one row per symbol: 7005 symbols occur more than once in the table (HGNC and
+    #MGI entries sharing a name), and the join below would duplicate those rows
+    gene_description<-unique(as.data.table(gene_description), by="gene_symbol")
+    #all.x: a marker with no description keeps its row instead of being dropped
+    #silently, as the inner join used to do
+    marker_no_description<-unique(marker_table[!(marker %in% gene_description$gene_symbol)]$marker)
+    if(length(marker_no_description) > 0){
+      warning(knitr::combine_words(marker_no_description), " not found in the gene description table. The markers are kept, with an empty description.")
+    }
+    marker_table<-merge(marker_table, gene_description, by.x="marker",by.y="gene_symbol", all.x=TRUE)
 
 
     marker_table<-marker_table[,c("species","original_tissue","Uberon_tissue","Uberon_ID","tissue_definition","original_celltype","CL_celltype","CL_ID","CL_cell_definition", "marker","gene_description","marker_type", "resource", "log2FC", "p.value", "adjusted_p.value","pct1")]
@@ -157,11 +166,18 @@ marker_database_integration<-function(marker_table,
     marker_table[,CL_cell_definition:=str_remove_all(CL_cell_definition, "\\$")]
     marker_table[,CL_cell_definition:=str_remove_all(CL_cell_definition, r"(\\)")]
     marker_table[,CL_cell_definition:=tstrsplit(CL_cell_definition, "[", fixed = TRUE, keep = 1)]
+    #tstrsplit cuts at the "[" but keeps the space in front of it, while the
+    #database stores the trimmed string. Without the trim the same cell type ends
+    #up with two definitions after the rbind below, and every unique() carrying
+    #this column counts it twice.
+    marker_table[,CL_cell_definition:=trimws(CL_cell_definition)]
     marker_table[,gene_description:=tstrsplit(gene_description,"[",fixed=TRUE,keep=1)]
+    marker_table[,gene_description:=trimws(gene_description)]
     marker_table[,tissue_definition:=str_remove_all(tissue_definition, '"')]
     marker_table[,tissue_definition:=str_remove_all(tissue_definition, "\\$")]
     marker_table[,tissue_definition:=str_remove_all(tissue_definition, r"(\\)")]
     marker_table[,tissue_definition:=tstrsplit(tissue_definition, "[", fixed = TRUE, keep = 1)]
+    marker_table[,tissue_definition:=trimws(tissue_definition)]
     marker_database<-rbind(accordion_marker, marker_table)
 
     #Compute score
@@ -279,18 +295,29 @@ marker_database_integration<-function(marker_table,
 
       #add gene description
       data("gene_description", package = "cellmarkeraccordion",envir = environment())
-      marker_table<-merge(marker_table, gene_description, by.x="marker",by.y="gene_symbol")
+      #see the comment in the healthy branch
+      gene_description<-unique(as.data.table(gene_description), by="gene_symbol")
+      marker_no_description<-unique(marker_table[!(marker %in% gene_description$gene_symbol)]$marker)
+      if(length(marker_no_description) > 0){
+        warning(knitr::combine_words(marker_no_description), " not found in the gene description table. The markers are kept, with an empty description.")
+      }
+      marker_table<-merge(marker_table, gene_description, by.x="marker",by.y="gene_symbol", all.x=TRUE)
 
       marker_table<-unique(marker_table)
       marker_table[,NCIT_cell_definition:=str_remove_all(NCIT_cell_definition, '"')]
       marker_table[,NCIT_cell_definition:=str_remove_all(NCIT_cell_definition, "\\$")]
       marker_table[,NCIT_cell_definition:=str_remove_all(NCIT_cell_definition, r"(\\)")]
       marker_table[,NCIT_cell_definition:=tstrsplit(NCIT_cell_definition, "[", fixed = TRUE, keep = 1)]
+      #see the comment in the healthy branch: tstrsplit leaves the space before
+      #the "[", the database stores the trimmed string
+      marker_table[,NCIT_cell_definition:=trimws(NCIT_cell_definition)]
       marker_table[,gene_description:=tstrsplit(gene_description,"[",fixed=TRUE,keep=1)]
+      marker_table[,gene_description:=trimws(gene_description)]
       marker_table[,tissue_definition:=str_remove_all(tissue_definition, '"')]
       marker_table[,tissue_definition:=str_remove_all(tissue_definition, "\\$")]
       marker_table[,tissue_definition:=str_remove_all(tissue_definition, r"(\\)")]
       marker_table[,tissue_definition:=tstrsplit(tissue_definition, "[", fixed = TRUE, keep = 1)]
+      marker_table[,tissue_definition:=trimws(tissue_definition)]
 
       marker_table<-marker_table[,c("species","original_diseasetype","DO_diseasetype","DO_ID","DO_definition","original_tissue","Uberon_tissue","Uberon_ID","tissue_definition","original_celltype","NCIT_celltype","NCIT_ID","NCIT_cell_definition", "marker","gene_description","marker_type", "resource", "log2FC", "p.value", "adjusted_p.value","pct1")]
       marker_table<-unique(marker_table)
