@@ -63,6 +63,37 @@ marker_database_integration<-function(marker_table,
   }
 
   marker_table<-as.data.table(marker_table)
+
+  #Normalize invisible characters in the user's table. A no-break space (U+00A0,
+  #what a copy-paste from a PDF, Word or a web page usually leaves behind) or a
+  #zero-width space is invisible on screen but makes the string different from
+  #the Cell Ontology term, so the cell type is silently added as a new one and
+  #the same name ends up twice in the annotation. Same reasoning for the markers,
+  #the tissues and the diseases.
+  .clean_text<-function(x){
+    x<-as.character(x)
+    #unicode spaces -> plain space
+    x<-gsub("\u00a0|\u2000|\u2001|\u2002|\u2003|\u2004|\u2005|\u2006|\u2007|\u2008|\u2009|\u200a|\u202f|\u205f|\u3000", " ", x)
+    #zero width characters and BOM -> removed
+    x<-gsub("\u200b|\u200c|\u200d|\u2060|\ufeff", "", x)
+    x<-gsub("[[:space:]]+", " ", x)
+    trimws(x)
+  }
+  .clean_columns<-function(dt, cols){
+    for(cc in intersect(cols, colnames(dt))){
+      if(!all(is.na(dt[[cc]]))){
+        cleaned<-.clean_text(dt[[cc]])
+        n<-sum(cleaned != as.character(dt[[cc]]), na.rm = TRUE)
+        if(n > 0){
+          warning(n, " value(s) in \"", cc, "\" contained invisible characters ",
+                  "(no-break or zero-width spaces) and were normalized.")
+          set(dt, j = cc, value = cleaned)
+        }
+      }
+    }
+    dt
+  }
+
   #healthy integration
   if(database == "healthy"){
     if(!celltype_column %in% colnames(marker_table)){
@@ -110,6 +141,9 @@ marker_database_integration<-function(marker_table,
 
     }
 
+    marker_table<-.clean_columns(marker_table,
+      c("CL_celltype","marker","species","Uberon_tissue","marker_type","resource"))
+
     marker_table[,original_celltype:=CL_celltype]
     marker_table[,log2FC:=NA]
     marker_table[,p.value:=NA]
@@ -121,6 +155,16 @@ marker_database_integration<-function(marker_table,
     accordion_marker$SPs_global<-NULL
     accordion_marker$ECs_tissue_specific<-NULL
     accordion_marker$ECs_global<-NULL
+
+    #the shipped database is not consistent about trailing whitespace: 309 of its
+    #832 cell type definitions and 2059 of its 19742 gene descriptions are stored
+    #with a trailing space and the rest without. BOTH sides have to be normalized,
+    #otherwise the same cell type ends up with two definitions after the rbind
+    #below -- trimming only the custom rows fixes one group and breaks the other.
+    accordion_marker[,CL_cell_definition:=trimws(CL_cell_definition)]
+    accordion_marker[,gene_description:=trimws(gene_description)]
+    accordion_marker[,tissue_definition:=trimws(tissue_definition)]
+    accordion_marker<-unique(accordion_marker)
 
     marker_table<-unique(marker_table)
 
@@ -265,6 +309,8 @@ marker_database_integration<-function(marker_table,
 
       }
 
+      marker_table<-.clean_columns(marker_table,
+        c("NCIT_celltype","marker","species","DO_diseasetype","Uberon_tissue","marker_type","resource"))
 
       marker_table[,NCIT_cell_definition:=NA]
       marker_table[,NCIT_ID:=NA]
@@ -280,6 +326,16 @@ marker_database_integration<-function(marker_table,
       disease_accordion_marker$ECs_disease_tissue_specific<-NULL
       disease_accordion_marker$ECs_disease_specific<-NULL
       disease_accordion_marker$ECs_global<-NULL
+
+      #see the comment in the healthy branch. In the disease database almost
+      #everything is stored with a trailing space: 150 of 151 cell type
+      #definitions, 6466 of 6467 gene descriptions, 132 of 133 disease definitions
+      disease_accordion_marker[,NCIT_cell_definition:=trimws(NCIT_cell_definition)]
+      disease_accordion_marker[,gene_description:=trimws(gene_description)]
+      disease_accordion_marker[,tissue_definition:=trimws(tissue_definition)]
+      disease_accordion_marker[,DO_definition:=trimws(DO_definition)]
+      disease_accordion_marker<-unique(disease_accordion_marker)
+
       marker_table<-unique(marker_table)
 
       #Add Uberon_ID
